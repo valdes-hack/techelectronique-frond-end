@@ -8,16 +8,19 @@ const baseApi = axios.create({
     baseURL: rawBaseURL.endsWith('/') ? `${rawBaseURL}api/v1` : `${rawBaseURL}/api/v1`,
     headers: { 'Content-Type': 'application/json' }
 });
-
 baseApi.interceptors.request.use((config) => {
     const token = sessionStorage.getItem('techstore_token');
     if (token && token !== "null" && token !== "undefined") {
         const cleanToken = token.replace(/"/g, '');
         config.headers.Authorization = `Bearer ${cleanToken}`;
     }
+    
     const sessionId = localStorage.getItem('techstore_session_id');
-    if (sessionId) config.headers['X-Session-Id'] = sessionId;
+    // ✨ CORRECTION : On vérifie strictement que le sessionId existe et n'est pas une chaîne fantôme
+    if (sessionId && sessionId !== "null" && sessionId !== "undefined" && sessionId.trim() !== "") {
+        config.headers['X-Session-Id'] = sessionId;
+    }
+    
     return config;
 }, error => Promise.reject(error));
-
 export default baseApi;
