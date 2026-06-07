@@ -7,7 +7,7 @@ const Home = () => {
     // NOTRE TEST DE LA VÉRITÉ
     useEffect(() => {
         console.log("🚀 Lancement du test brut...");
-        fetch('http://localhost:8080/api/v1/categories')
+        fetch('http://import.meta.env.VITE_API_URL/api/v1/categories')
             .then(res => {
                 console.log("🕵️‍♂️ RÉSULTAT DU TEST BRUT (Status) :", res.status);
                 if (res.status === 200) console.log("✅ HOURRA ! L'URL est bonne, c'est Axios qui bloque !");
