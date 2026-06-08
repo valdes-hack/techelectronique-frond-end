@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Search, ShoppingBag, User, Menu, X, ChevronDown, Package, Sun, Moon, Bell } from 'lucide-react';
+import { Search, ShoppingBag, User, Menu, X, ChevronDown, Package, Sun, Moon, Bell, Settings } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../context/AuthContext';
 import { useCart } from '../../context/CartContext';
@@ -53,14 +53,15 @@ const Navbar = () => {
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, []);
 
-    // Ne pas afficher la Navbar si on est en plein écran sur un dashboard spécifique (optionnel)
-    const isDashboard = location.pathname.startsWith('/admin') && !isScrolled;
+    if (location.pathname.startsWith('/admin')) {
+        return null;
+    }
 
     return (
         <div className="fixed top-0 w-full z-[100] transition-all duration-500 px-0 md:px-6 pt-0 md:pt-4">
             <nav className={`mx-auto max-w-7xl transition-all duration-500 ${
                 isScrolled 
-                ? 'md:rounded-full bg-white/70 dark:bg-[#0b0e14]/70 backdrop-blur-xl border border-white/20 dark:border-white/5 shadow-2xl py-3 px-8' 
+                ? 'md:rounded-2xl bg-white dark:bg-[#0b0e14] border border-gray-100 dark:border-white/5 shadow-lg py-4 px-8' 
                 : 'bg-transparent py-6 px-4'
             }`}>
                 <div className="flex justify-between items-center gap-8">
@@ -68,20 +69,20 @@ const Navbar = () => {
                     {/* LOGO STYLE APPLE */}
                     <Link to="/" className="flex items-center space-x-2 shrink-0 group">
                         <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-indigo-500/30 group-hover:scale-110 transition-transform">
-                            <span className="font-black text-xl italic">{settings?.siteName ? settings.siteName.charAt(0).toUpperCase() : 'T'}</span>
+                            <span className="font-bold text-xl">{settings?.siteName ? settings.siteName.charAt(0).toUpperCase() : 'T'}</span>
                         </div>
-                        <span className="text-xl font-black tracking-tighter text-apple-dark dark:text-white uppercase italic">
+                        <span className="text-xl font-bold text-apple-dark dark:text-white uppercase tracking-wide">
                             {settings?.siteName || 'TechStore'}
                         </span>
                     </Link>
 
                     {/* MENU CENTRAL - NAVIGATION */}
-                    <div className="hidden lg:flex items-center bg-white/5 dark:bg-white/5 rounded-full px-2 border border-white/5">
-                        <Link to="/" className={`px-4 py-2 text-[12px] font-black uppercase tracking-widest transition-colors ${location.pathname === '/' ? 'text-indigo-500' : 'text-apple-dark/50 dark:text-white/40 hover:text-indigo-500'}`}>ACCUEIL</Link>
-                        <Link to="/catalog" className={`px-4 py-2 text-[12px] font-black uppercase tracking-widest transition-colors ${location.pathname === '/catalog' ? 'text-indigo-500' : 'text-apple-dark/50 dark:text-white/40 hover:text-indigo-500'}`}>BOUTIQUE</Link>
+                    <div className="hidden lg:flex items-center bg-gray-50 dark:bg-white/5 rounded-full px-2 py-1 border border-transparent dark:border-white/5">
+                        <Link to="/" className={`px-4 py-2 text-xs font-bold uppercase tracking-wider transition-colors ${location.pathname === '/' ? 'text-indigo-600' : 'text-gray-600 dark:text-gray-300 hover:text-indigo-600'}`}>ACCUEIL</Link>
+                        <Link to="/catalog" className={`px-4 py-2 text-xs font-bold uppercase tracking-wider transition-colors ${location.pathname === '/catalog' ? 'text-indigo-600' : 'text-gray-600 dark:text-gray-300 hover:text-indigo-600'}`}>BOUTIQUE</Link>
                         
                         <div className="relative group" onMouseEnter={() => setIsProductsOpen(true)} onMouseLeave={() => setIsProductsOpen(false)}>
-                            <button className="flex items-center space-x-1 px-4 py-2 text-[12px] font-black uppercase tracking-widest text-apple-dark/50 dark:text-white/40 group-hover:text-indigo-500 transition-colors">
+                            <button className="flex items-center space-x-1 px-4 py-2 text-xs font-bold uppercase tracking-wider text-gray-600 dark:text-gray-300 group-hover:text-indigo-600 transition-colors">
                                 <span>RAYONS</span>
                                 <ChevronDown size={14} className={`transition-transform duration-300 ${isProductsOpen ? 'rotate-180' : ''}`} />
                             </button>
@@ -126,6 +127,14 @@ const Navbar = () => {
                         <button onClick={toggleTheme} className="p-3 rounded-2xl bg-white/5 dark:bg-white/5 hover:scale-110 transition-all text-apple-dark dark:text-white border border-white/5">
                             {theme === 'light' ? <Moon size={20} /> : <Sun size={20} className="text-yellow-400" />}
                         </button>
+
+                        {/* ADMIN DASHBOARD LINK */}
+                        {isAdmin() && (
+                            <Link to="/admin" className="hidden sm:flex items-center space-x-2 bg-indigo-600/10 text-indigo-600 dark:bg-indigo-500/20 dark:text-indigo-400 px-4 py-2.5 rounded-2xl font-bold text-xs hover:scale-105 transition-transform border border-indigo-500/10">
+                                <Settings size={16} />
+                                <span className="uppercase tracking-widest text-[10px]">Gestion</span>
+                            </Link>
+                        )}
 
                         {/* NOTIFICATIONS (VISIBLE UNIQUEMENT POUR ADMIN) */}
                         {isAdmin() && (

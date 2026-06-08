@@ -9,13 +9,21 @@ const ProductCard = ({ product }) => {
 
     if (!product) return null;
 
-    // --- LOGIQUE IMAGE ---
     let displayImage = "https://images.unsplash.com/photo-1510557880182-3d4d3cba3f21?w=600"; 
+    
+    const getFullUrl = (url) => {
+        if (!url) return displayImage;
+        if (url.startsWith('http')) return url;
+        const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8080/api/v1';
+        return `${baseUrl.replace('/api/v1', '')}/uploads/products/${url}`;
+    };
 
-    if (product.images && product.images.length > 0) {
+    if (product.imageUrl) {
+        displayImage = getFullUrl(product.imageUrl);
+    } else if (product.images && product.images.length > 0) {
         const primaryImg = product.images.find(img => img.isPrimary) || product.images[0];
-        if (primaryImg.url) {
-            displayImage = primaryImg.url;
+        if (primaryImg && primaryImg.url) {
+            displayImage = getFullUrl(primaryImg.url);
         }
     }
 
@@ -46,8 +54,11 @@ const ProductCard = ({ product }) => {
                     <img 
                         src={displayImage} 
                         alt={product.name}
-                        className="max-h-full max-w-full object-contain mix-blend-multiply group-hover:scale-110 transition-transform duration-700 ease-out"
-                        onError={(e) => { e.target.src = "https://placehold.co/400?text=Produit+TechStore"; }}
+                        className="max-h-full max-w-full object-contain group-hover:scale-110 transition-transform duration-700 ease-out"
+                        onError={(e) => { 
+                            e.target.onerror = null; 
+                            e.target.src = "https://images.unsplash.com/photo-1526406915894-7bcd65f60845?w=600"; 
+                        }}
                     />
                 </div>
                 

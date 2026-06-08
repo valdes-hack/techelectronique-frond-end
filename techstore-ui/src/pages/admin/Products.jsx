@@ -135,8 +135,8 @@ const AdminProducts = () => {
                 </div>
 
                 {/* TABLEAU AVEC SCROLLBAR */}
-                <div className={`flex-1 rounded-[2.5rem] border overflow-hidden flex flex-col ${isDark ? 'bg-[#161926] border-white/5 shadow-2xl' : 'bg-white border-slate-200 shadow-xl'}`}>
-                    <div className="overflow-x-auto custom-scrollbar flex-1">
+                <div className={`w-full max-w-full rounded-[2.5rem] border flex flex-col ${isDark ? 'bg-[#161926] border-white/5 shadow-2xl' : 'bg-white border-slate-200 shadow-xl'}`}>
+                    <div className="overflow-x-auto w-full custom-scrollbar rounded-[2.5rem]">
                         <table className="w-full text-left min-w-[1000px] border-collapse">
                             <thead className={`sticky top-0 z-20 ${isDark ? 'bg-[#1a1e2e]' : 'bg-slate-50'} text-[11px] font-black uppercase tracking-widest ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
                                 <tr>
