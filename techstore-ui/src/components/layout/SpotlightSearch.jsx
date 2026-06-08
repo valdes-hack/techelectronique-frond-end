@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Search, X, Loader, Package, ChevronRight, CornerDownLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import baseApi from '../../services/axiosConfig';
+import baseApi from '../../api/axiosConfig';
 
 const SpotlightSearch = ({ isOpen, onClose }) => {
     const [query, setQuery] = useState('');

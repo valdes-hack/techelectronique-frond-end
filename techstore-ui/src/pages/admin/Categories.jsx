@@ -35,12 +35,6 @@ const Categories = () => {
     // Options pour le sélecteur de hiérarchie dans le filtre
     const hierarchyOptions = ["Tous", "Racine", "Sous-rayon"];
 
-    const toggleTheme = () => {
-        const newTheme = theme === 'dark' ? 'light' : 'dark';
-        setTheme(newTheme);
-        
-    };
-
     // --- LOGIQUE D'ICÔNES PAR DÉFAUT ---
     const getIconBySlug = (slug) => {
         const s = slug?.toLowerCase() || "";

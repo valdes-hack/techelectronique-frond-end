@@ -23,11 +23,6 @@ const Suppliers = () => {
     });
 
     const { theme, toggleTheme } = useTheme();
-    const toggleTheme = () => {
-        const newTheme = theme === 'dark' ? 'light' : 'dark';
-        setTheme(newTheme);
-        
-    };
 
     const loadData = async () => {
         setLoading(true);

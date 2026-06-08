@@ -41,11 +41,6 @@ const Navbar = () => {
         fetchCats();
     }, []);
 
-            } catch (err) { console.error(err); }
-        };
-        fetchCats();
-    }, []);
-
     // Handle global keyboard shortcut Cmd+K or Ctrl+K to open search
     useEffect(() => {
         const handleKeyDown = (e) => {

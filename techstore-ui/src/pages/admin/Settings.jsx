@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import AdminLayout from '../../components/admin/AdminLayout';
-import baseApi from '../../services/axiosConfig';
+import baseApi from '../../api/axiosConfig';
 import { Save, Loader, Settings as SettingsIcon } from 'lucide-react';
 import { useAppContext } from '../../context/AppContext';
 

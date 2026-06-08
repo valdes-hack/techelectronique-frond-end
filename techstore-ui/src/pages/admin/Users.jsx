@@ -16,8 +16,6 @@ const AdminUsers = () => {
     
     // 2. ÉTAT DU THÈME (Persistance)
     const { theme, toggleTheme } = useTheme();
-        return savedTheme ? savedTheme : 'light';
-    });
 
     // 3. ÉTATS DU FORMULAIRE ET FILTRES
     const [showForm, setShowForm] = useState(false);
@@ -27,8 +25,6 @@ const AdminUsers = () => {
         selCat: "Tous", // Utilisé pour le Rôle
         dispo: "Tous"   // Utilisé pour l'état (Vérifié/Bloqué)
     });
-
-    const toggleTheme = () => setTheme(prev => prev === 'dark' ? 'light' : 'dark');
 
     const loadUsers = async () => {
         setLoading(true);
