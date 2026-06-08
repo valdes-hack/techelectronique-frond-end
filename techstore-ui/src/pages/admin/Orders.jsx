@@ -20,7 +20,7 @@ const AdminOrders = () => {
     
     const navigate = useNavigate();
     const invoiceRef = useRef();
-    const [theme] = useState(() => localStorage.getItem('admin_hub_theme') || 'dark');
+    const { theme, toggleTheme } = useTheme();
     const isDark = theme === 'dark';
 
     const [filters, setFilters] = useState({ searchTerm: "", selCat: "Tous", dispo: "Tous" });

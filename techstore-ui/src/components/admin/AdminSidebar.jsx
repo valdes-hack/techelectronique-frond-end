@@ -5,8 +5,10 @@ import {
     ChevronLeft, ChevronRight, X, Layers, Truck, PackagePlus 
 } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
+import { useTheme } from '../../context/ThemeContext';
 
-const AdminSidebar = ({ width, setWidth, theme, toggleTheme, isMobileOpen, setIsMobileOpen }) => {
+const AdminSidebar = ({ width, setWidth, isMobileOpen, setIsMobileOpen }) => {
+    const { theme, toggleTheme } = useTheme();
     const location = useLocation();
     const isCollapsed = width < 140;
 

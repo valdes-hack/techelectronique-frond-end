@@ -11,7 +11,7 @@ import { XAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } fro
 const Dashboard = () => {
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [theme, setTheme] = useState(() => localStorage.getItem('admin_hub_theme') || 'dark');
+    const { theme, toggleTheme } = useTheme();
     const navigate = useNavigate();
 
     const isDark = theme === 'dark';

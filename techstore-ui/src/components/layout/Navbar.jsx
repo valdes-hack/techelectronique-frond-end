@@ -6,33 +6,24 @@ import { useAuth } from '../../context/AuthContext';
 import { useCart } from '../../context/CartContext';
 import ProductService from '../../services/product.service';
 import NotificationBell from '../admin/NotificationBell';
+import { useTheme } from '../../context/ThemeContext';
+import { useAppContext } from '../../context/AppContext';
+import SpotlightSearch from './SpotlightSearch';
 
 const Navbar = () => {
     const [isScrolled, setIsScrolled] = useState(false);
     const [isProductsOpen, setIsProductsOpen] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-    const [searchQuery, setSearchQuery] = useState('');
+    const [isSearchOpen, setIsSearchOpen] = useState(false);
     const [categories, setCategories] = useState([]);
     
     const { isAuthenticated, user, isAdmin } = useAuth();
     const { setIsOpen, cart } = useCart();
+    const { settings } = useAppContext();
     const navigate = useNavigate();
     const location = useLocation();
 
-    // --- SYNCHRONISATION DU THÈME (MÊME LOGIQUE QUE ADMIN) ---
-    const [theme, setTheme] = useState(() => localStorage.getItem('admin_hub_theme') || 'dark');
-
-    useEffect(() => {
-        const root = window.document.documentElement;
-        if (theme === 'dark') {
-            root.classList.add('dark');
-        } else {
-            root.classList.remove('dark');
-        }
-        localStorage.setItem('admin_hub_theme', theme);
-    }, [theme]);
-
-    const toggleTheme = () => setTheme(theme === 'light' ? 'dark' : 'light');
+    const { theme, toggleTheme } = useTheme();
 
     useEffect(() => {
         const handleScroll = () => setIsScrolled(window.scrollY > 20);
@@ -50,14 +41,22 @@ const Navbar = () => {
         fetchCats();
     }, []);
 
-    const handleSearch = (e) => {
-        e.preventDefault();
-        if (searchQuery.trim()) {
-            navigate(`/catalog?q=${encodeURIComponent(searchQuery.trim())}`);
-            setSearchQuery('');
-            setIsMobileMenuOpen(false);
-        }
-    };
+            } catch (err) { console.error(err); }
+        };
+        fetchCats();
+    }, []);
+
+    // Handle global keyboard shortcut Cmd+K or Ctrl+K to open search
+    useEffect(() => {
+        const handleKeyDown = (e) => {
+            if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+                e.preventDefault();
+                setIsSearchOpen(true);
+            }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, []);
 
     // Ne pas afficher la Navbar si on est en plein écran sur un dashboard spécifique (optionnel)
     const isDashboard = location.pathname.startsWith('/admin') && !isScrolled;
@@ -74,10 +73,10 @@ const Navbar = () => {
                     {/* LOGO STYLE APPLE */}
                     <Link to="/" className="flex items-center space-x-2 shrink-0 group">
                         <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-indigo-500/30 group-hover:scale-110 transition-transform">
-                            <span className="font-black text-xl italic">T</span>
+                            <span className="font-black text-xl italic">{settings?.siteName ? settings.siteName.charAt(0).toUpperCase() : 'T'}</span>
                         </div>
                         <span className="text-xl font-black tracking-tighter text-apple-dark dark:text-white uppercase italic">
-                            TechStore
+                            {settings?.siteName || 'TechStore'}
                         </span>
                     </Link>
 
@@ -112,19 +111,18 @@ const Navbar = () => {
                         </div>
                     </div>
 
-                    {/* RECHERCHE - DESIGN PREMIUM */}
-                    <form onSubmit={handleSearch} className="hidden md:flex flex-1 max-w-sm relative group">
-                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-apple-dark/30 dark:text-white/20 group-focus-within:text-indigo-500 transition-colors">
+                    {/* RECHERCHE - SPOTLIGHT */}
+                    <div className="hidden md:flex flex-1 max-w-sm relative group cursor-pointer" onClick={() => setIsSearchOpen(true)}>
+                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-apple-dark/30 dark:text-white/20 group-hover:text-indigo-500 transition-colors">
                             <Search size={18} />
                         </div>
-                        <input 
-                            type="text" 
-                            placeholder="Recherche un modèle, une marque..." 
-                            value={searchQuery} 
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full bg-apple-dark/5 dark:bg-white/5 border border-transparent dark:border-white/5 rounded-2xl py-3 px-12 text-xs font-bold dark:text-white focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500/50 outline-none transition-all placeholder:opacity-50" 
-                        />
-                    </form>
+                        <div className="w-full bg-apple-dark/5 dark:bg-white/5 border border-transparent dark:border-white/5 rounded-2xl py-3 px-12 text-xs font-bold text-gray-400 transition-all hover:bg-apple-dark/10 dark:hover:bg-white/10 flex justify-between items-center">
+                            <span>Rechercher...</span>
+                            <span className="flex items-center gap-1 text-[10px] font-black uppercase tracking-widest bg-white dark:bg-white/10 px-2 py-1 rounded-md shadow-sm border dark:border-white/5">
+                                <span className="text-lg leading-none">⌘</span> K
+                            </span>
+                        </div>
+                    </div>
 
                     {/* ACTIONS DROITE */}
                     <div className="flex items-center space-x-3">
@@ -167,6 +165,9 @@ const Navbar = () => {
                     </div>
                 </div>
             </nav>
+
+            {/* Composant Spotlight Search Global */}
+            <SpotlightSearch isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
         </div>
     );
 };

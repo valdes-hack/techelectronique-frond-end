@@ -22,7 +22,7 @@ const CheckoutPage = () => {
     const [isSuccess, setIsSuccess] = useState(false);
     const [deliveryMode, setDeliveryMode] = useState('delivery');
     const [step, setStep] = useState(1);
-    const [theme] = useState(() => localStorage.getItem('admin_hub_theme') || 'light');
+    const { theme, toggleTheme } = useTheme();
     const [statusMsg, setStatusMsg] = useState({ type: '', text: '' });
 
     const [formData, setFormData] = useState({

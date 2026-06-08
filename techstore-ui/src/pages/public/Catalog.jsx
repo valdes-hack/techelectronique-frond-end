@@ -11,7 +11,7 @@ const Catalog = () => {
     
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [theme] = useState(() => localStorage.getItem('admin_hub_theme') || 'light');
+    const { theme, toggleTheme } = useTheme();
 
     // États des filtres
     const [priceMax, setPriceMax] = useState(2500000);

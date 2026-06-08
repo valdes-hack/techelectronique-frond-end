@@ -22,11 +22,11 @@ const Suppliers = () => {
         dispo: "Tous" // Tous, Actifs, Inactifs
     });
 
-    const [theme, setTheme] = useState(() => localStorage.getItem('admin_hub_theme') || 'dark');
+    const { theme, toggleTheme } = useTheme();
     const toggleTheme = () => {
         const newTheme = theme === 'dark' ? 'light' : 'dark';
         setTheme(newTheme);
-        localStorage.setItem('admin_hub_theme', newTheme);
+        
     };
 
     const loadData = async () => {

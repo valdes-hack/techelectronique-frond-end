@@ -23,7 +23,7 @@ const Categories = () => {
     const [selectedCategory, setSelectedCategory] = useState(null);
 
     // --- ÉTAT DU THÈME ---
-    const [theme, setTheme] = useState(() => localStorage.getItem('admin_hub_theme') || 'dark');
+    const { theme, toggleTheme } = useTheme();
 
     // --- ÉTAT DES FILTRES DYNAMIQUES ---
     const [filters, setFilters] = useState({
@@ -38,7 +38,7 @@ const Categories = () => {
     const toggleTheme = () => {
         const newTheme = theme === 'dark' ? 'light' : 'dark';
         setTheme(newTheme);
-        localStorage.setItem('admin_hub_theme', newTheme);
+        
     };
 
     // --- LOGIQUE D'ICÔNES PAR DÉFAUT ---

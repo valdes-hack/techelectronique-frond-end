@@ -1,18 +1,33 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Smartphone, Laptop, Gamepad2, ShieldCheck, Truck, Headphones } from 'lucide-react';
+import { Smartphone, Laptop, Gamepad2, ShieldCheck, Truck, Headphones, Mail, MapPin, Phone } from 'lucide-react';
+import { useAppContext } from '../../context/AppContext';
 
 const Footer = () => {
+    const { settings } = useAppContext();
     return (
         <footer className="bg-apple-gray dark:bg-[#050505] pt-20 pb-10 px-6 border-t border-apple-border dark:border-white/5">
             <div className="max-w-7xl mx-auto">
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
                     <div className="col-span-1 md:col-span-1">
-                        <Link to="/" className="text-2xl font-black text-apple-dark dark:text-white italic mb-6 block">TECHSTORE.</Link>
-                        <p className="text-sm text-apple-dark/50 dark:text-white/40 leading-relaxed">
+                        <Link to="/" className="text-2xl font-black text-apple-dark dark:text-white italic mb-4 block">
+                            {settings?.siteName?.toUpperCase() || 'TECHSTORE.'}
+                        </Link>
+                        <p className="text-sm text-apple-dark/50 dark:text-white/40 leading-relaxed mb-6">
                             La référence high-tech au Cameroun. <br/>
                             Qualité certifiée, garantie locale et livraison express.
                         </p>
+                        <div className="space-y-3">
+                            <p className="text-xs text-apple-dark/60 dark:text-white/50 flex items-center gap-2">
+                                <Phone size={14} className="text-apple-blue" /> {settings?.contactPhone || '+237 600 000 000'}
+                            </p>
+                            <p className="text-xs text-apple-dark/60 dark:text-white/50 flex items-center gap-2">
+                                <Mail size={14} className="text-apple-blue" /> {settings?.contactEmail || 'contact@techstore.cm'}
+                            </p>
+                            <p className="text-xs text-apple-dark/60 dark:text-white/50 flex items-center gap-2">
+                                <MapPin size={14} className="text-apple-blue" /> {settings?.contactAddress || 'Douala, Cameroun'}
+                            </p>
+                        </div>
                     </div>
 
                     <div>
@@ -44,7 +59,7 @@ const Footer = () => {
                 </div>
 
                 <div className="border-t border-apple-dark/5 dark:border-white/5 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
-                    <p className="text-[11px] text-apple-dark/40 dark:text-white/30 font-medium italic">© 2025 TechStore Valdes - Douala, Cameroun.</p>
+                    <p className="text-[11px] text-apple-dark/40 dark:text-white/30 font-medium italic">© {new Date().getFullYear()} {settings?.siteName || 'TechStore'} - {settings?.contactAddress || 'Douala, Cameroun'}.</p>
                     <div className="flex space-x-6 text-[11px] text-apple-dark/40 dark:text-white/30 font-bold uppercase tracking-widest">
                         <Link to="/terms" className="hover:text-apple-blue">Mentions</Link>
                         <Link to="/privacy" className="hover:text-apple-blue">Confidentialité</Link>

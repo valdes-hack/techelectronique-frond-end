@@ -22,7 +22,7 @@ const StockSupply = () => {
         purchasePrice: ''
     });
 
-    const [theme] = useState(() => localStorage.getItem('admin_hub_theme') || 'dark');
+    const { theme, toggleTheme } = useTheme();
 
     // --- CHARGEMENT DES DONNÉES ---
     const loadInitialData = async () => {

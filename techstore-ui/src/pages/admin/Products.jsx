@@ -16,7 +16,7 @@ const AdminProducts = () => {
     const [loading, setLoading] = useState(true);
     
     // 2. ÉTAT DU THÈME
-    const [theme, setTheme] = useState(() => localStorage.getItem('admin_hub_theme') || 'dark');
+    const { theme, toggleTheme } = useTheme();
     
     // 3. ÉTAT DES FILTRES
     const [filters, setFilters] = useState({

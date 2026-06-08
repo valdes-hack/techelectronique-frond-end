@@ -2,8 +2,9 @@ import React, { useState, useCallback, useEffect } from 'react';
 import AdminSidebar from './AdminSidebar';
 import NotificationBell from './NotificationBell'; 
 import { ListFilter, Menu } from 'lucide-react';
+import { useTheme } from '../../context/ThemeContext';
 
-const AdminLayout = ({ children, filters, theme, toggleTheme }) => {
+const AdminLayout = ({ children, filters }) => {
     // ---------------------------------------------------------
     // 1. ÉTATS : STRUCTURE & RÉACTIVITÉ
     // ---------------------------------------------------------
@@ -12,6 +13,7 @@ const AdminLayout = ({ children, filters, theme, toggleTheme }) => {
     const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
     const [isFilterOpen, setIsFilterOpen] = useState(true);
 
+    const { theme } = useTheme();
     const isDark = theme === 'dark';
 
     // ---------------------------------------------------------
@@ -64,8 +66,6 @@ const AdminLayout = ({ children, filters, theme, toggleTheme }) => {
             <AdminSidebar 
                 width={sideWidth} 
                 setWidth={setSideWidth}
-                theme={theme} 
-                toggleTheme={toggleTheme}
                 onResize={startResizeLeft}
                 isMobileOpen={isMobileNavOpen}
                 setIsMobileOpen={setIsMobileNavOpen}
@@ -88,7 +88,7 @@ const AdminLayout = ({ children, filters, theme, toggleTheme }) => {
 
                     <div className="flex items-center space-x-4 md:space-x-8">
                         {/* 🔔 HUB TEMPS RÉEL (Produits, Commandes, Fournisseurs) */}
-                        <NotificationBell theme={theme} />
+                        <NotificationBell />
 
                         {/* TOGGLE FILTRES */}
                         {filters && (
@@ -130,8 +130,7 @@ const AdminLayout = ({ children, filters, theme, toggleTheme }) => {
                     <div className="p-8 flex flex-col h-full overflow-hidden">
                         {/* Injection dynamique de la logique de filtrage par page */}
                         {React.cloneElement(filters, { 
-                            onClose: () => setIsFilterOpen(false),
-                            theme: theme 
+                            onClose: () => setIsFilterOpen(false)
                         })}
                     </div>
                 </aside>

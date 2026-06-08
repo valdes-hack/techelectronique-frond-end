@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Bell, Check, Info, AlertTriangle, Package, ShoppingBag } from 'lucide-react';
 import AdminService from '../../services/admin.service';
+import { useTheme } from '../../context/ThemeContext';
 
-const NotificationBell = ({ theme }) => {
+const NotificationBell = () => {
+    const { theme } = useTheme();
     const [notifications, setNotifications] = useState([]);
     const [isOpen, setIsOpen] = useState(false);
     const dropdownRef = useRef(null);

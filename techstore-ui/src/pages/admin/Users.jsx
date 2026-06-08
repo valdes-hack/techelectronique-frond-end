@@ -15,8 +15,7 @@ const AdminUsers = () => {
     const [loading, setLoading] = useState(true);
     
     // 2. ÉTAT DU THÈME (Persistance)
-    const [theme, setTheme] = useState(() => {
-        const savedTheme = localStorage.getItem('admin_hub_theme');
+    const { theme, toggleTheme } = useTheme();
         return savedTheme ? savedTheme : 'light';
     });
 
@@ -48,7 +47,7 @@ const AdminUsers = () => {
     useEffect(() => { loadUsers(); }, []);
 
     useEffect(() => {
-        localStorage.setItem('admin_hub_theme', theme);
+        
     }, [theme]);
 
     // ⚡ FILTRAGE INSTANTANÉ (C'EST ICI QUE J'AI CORRIGÉ LA RECHERCHE ✨)

@@ -23,6 +23,7 @@ import AdminSuppliers from '../pages/admin/Suppliers';
 import StockSupply from '../pages/admin/StockSupply';
 import AdminUsers from '../pages/admin/Users';
 import AdminOrders from '../pages/admin/Orders';
+import AdminSettings from '../pages/admin/Settings';
 
 const AppRouter = () => {
     return (
@@ -94,6 +95,12 @@ const AppRouter = () => {
             <Route path="/admin/orders" element={
                 <AdminRoute>
                     <AdminOrders />
+                </AdminRoute>
+            } />
+
+            <Route path="/admin/settings" element={
+                <AdminRoute>
+                    <AdminSettings />
                 </AdminRoute>
             } />
 
