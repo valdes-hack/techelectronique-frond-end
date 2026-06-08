@@ -185,7 +185,7 @@ const Categories = () => {
                                         }`}>
                                             {c.iconUrl ? (
                                                 <img 
-                                                    src={c.iconUrl.startsWith('http') ? c.iconUrl : `http://import.meta.env.VITE_API_URL/uploads/categories/${c.iconUrl}`} 
+                                                    src={c.iconUrl.startsWith('http') ? c.iconUrl : `${import.meta.env.VITE_API_URL}/uploads/categories/${c.iconUrl}`} 
                                                     className="w-full h-full object-cover p-2 rounded-[2.2rem]" 
                                                     alt={c.name}
                                                 />

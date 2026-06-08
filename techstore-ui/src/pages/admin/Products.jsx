@@ -158,7 +158,7 @@ const AdminProducts = () => {
                                                 <img 
                                                     src={p.images?.[imgIdxMap[p.id]]?.url?.startsWith('http') 
                                                         ? p.images[imgIdxMap[p.id]].url 
-                                                        : `http://import.meta.env.VITE_API_URL/uploads/products/${p.images?.[imgIdxMap[p.id]]?.url}`} 
+                                                        : `${import.meta.env.VITE_API_URL}/uploads/products/${p.images?.[imgIdxMap[p.id]]?.url}`} 
                                                     className="w-full h-full object-contain" 
                                                     alt={p.name} 
                                                 />
