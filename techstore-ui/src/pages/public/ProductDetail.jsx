@@ -10,6 +10,7 @@ import { useCart } from '../../context/CartContext';
 import { useTheme } from '../../context/ThemeContext';
 import Button from '../../components/common/Button';
 import ProductCard from '../../components/product/ProductCard';
+import { getFullImageUrl } from '../../utils/imageUtils';
 
 const ProductDetail = () => {
     const { slug } = useParams();
@@ -90,23 +91,18 @@ const ProductDetail = () => {
         window.open(`https://wa.me/237686669222?text=${msg}`, '_blank');
     };
 
-    const getFullUrl = (url) => {
-        if (!url) return "https://images.unsplash.com/photo-1526406915894-7bcd65f60845?w=600";
-        if (url.startsWith('http')) return url;
-        const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8080/api/v1';
-        return `${baseUrl.replace('/api/v1', '')}/uploads/products/${url}`;
-    };
+    
 
     // Images display array
     const displayImages = useMemo(() => {
         if (!product) return [];
         let imgs = [];
         if (product.images && product.images.length > 0) {
-            imgs = product.images.map(img => getFullUrl(img.url));
+            imgs = product.images.map(img => getFullImageUrl(img.url));
         } else if (product.imageUrl) {
-            imgs = [getFullUrl(product.imageUrl)];
+            imgs = [getFullImageUrl(product.imageUrl)];
         } else {
-            imgs = [getFullUrl(null)];
+            imgs = [getFullImageUrl(null)];
         }
         return imgs;
     }, [product]);
@@ -146,7 +142,16 @@ const ProductDetail = () => {
                                         exit={{ opacity: 0, scale: 1.1 }}
                                         transition={{ duration: 0.4 }}
                                         src={displayImages[activeImg]} 
-                                        className="max-h-full object-contain group-hover:scale-105 transition-transform duration-700"
+                                        className="w-full h-full object-contain hover:scale-[2] cursor-zoom-in transition-transform duration-200 ease-out"
+                                        onMouseMove={(e) => {
+                                            const { left, top, width, height } = e.target.getBoundingClientRect();
+                                            const x = ((e.clientX - left) / width) * 100;
+                                            const y = ((e.clientY - top) / height) * 100;
+                                            e.target.style.transformOrigin = `${x}% ${y}%`;
+                                        }}
+                                        onMouseLeave={(e) => {
+                                            e.target.style.transformOrigin = "center center";
+                                        }}
                                         onError={(e) => { 
                                             e.target.onerror = null; 
                                             e.target.src = "https://images.unsplash.com/photo-1526406915894-7bcd65f60845?w=600"; 

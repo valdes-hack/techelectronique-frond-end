@@ -54,31 +54,31 @@ const Settings = () => {
                     <form onSubmit={handleSubmit} className="space-y-6">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
-                                <label className="block text-xs font-black uppercase tracking-widest mb-2 opacity-50">Nom du site</label>
+                                <label className="block text-xs font-black uppercase tracking-widest mb-2 text-slate-500 dark:text-slate-400">Nom du site</label>
                                 <input required type="text" name="siteName" value={formData?.siteName || ''} onChange={handleChange} 
-                                    className="w-full bg-gray-50 dark:bg-white/5 border-none rounded-xl p-3 focus:ring-2 focus:ring-indigo-500 outline-none transition-all font-bold" />
+                                    className="w-full bg-gray-50 dark:bg-white/5 border-none rounded-xl p-3 focus:ring-2 focus:ring-indigo-500 outline-none transition-all font-bold dark:text-white" />
                             </div>
                             <div>
-                                <label className="block text-xs font-black uppercase tracking-widest mb-2 opacity-50">Email de contact</label>
+                                <label className="block text-xs font-black uppercase tracking-widest mb-2 text-slate-500 dark:text-slate-400">Email de contact</label>
                                 <input required type="email" name="contactEmail" value={formData?.contactEmail || ''} onChange={handleChange} 
-                                    className="w-full bg-gray-50 dark:bg-white/5 border-none rounded-xl p-3 focus:ring-2 focus:ring-indigo-500 outline-none transition-all font-bold" />
+                                    className="w-full bg-gray-50 dark:bg-white/5 border-none rounded-xl p-3 focus:ring-2 focus:ring-indigo-500 outline-none transition-all font-bold dark:text-white" />
                             </div>
                             <div>
-                                <label className="block text-xs font-black uppercase tracking-widest mb-2 opacity-50">Téléphone de contact</label>
+                                <label className="block text-xs font-black uppercase tracking-widest mb-2 text-slate-500 dark:text-slate-400">Téléphone de contact</label>
                                 <input required type="text" name="contactPhone" value={formData?.contactPhone || ''} onChange={handleChange} 
-                                    className="w-full bg-gray-50 dark:bg-white/5 border-none rounded-xl p-3 focus:ring-2 focus:ring-indigo-500 outline-none transition-all font-bold" />
+                                    className="w-full bg-gray-50 dark:bg-white/5 border-none rounded-xl p-3 focus:ring-2 focus:ring-indigo-500 outline-none transition-all font-bold dark:text-white" />
                             </div>
                             <div>
-                                <label className="block text-xs font-black uppercase tracking-widest mb-2 opacity-50">Adresse physique</label>
+                                <label className="block text-xs font-black uppercase tracking-widest mb-2 text-slate-500 dark:text-slate-400">Adresse physique</label>
                                 <input required type="text" name="contactAddress" value={formData?.contactAddress || ''} onChange={handleChange} 
-                                    className="w-full bg-gray-50 dark:bg-white/5 border-none rounded-xl p-3 focus:ring-2 focus:ring-indigo-500 outline-none transition-all font-bold" />
+                                    className="w-full bg-gray-50 dark:bg-white/5 border-none rounded-xl p-3 focus:ring-2 focus:ring-indigo-500 outline-none transition-all font-bold dark:text-white" />
                             </div>
                         </div>
 
                         <div>
-                            <label className="block text-xs font-black uppercase tracking-widest mb-2 opacity-50">URL du Logo (Optionnel)</label>
+                            <label className="block text-xs font-black uppercase tracking-widest mb-2 text-slate-500 dark:text-slate-400">URL du Logo (Optionnel)</label>
                             <input type="text" name="logoUrl" value={formData?.logoUrl || ''} onChange={handleChange} placeholder="https://..."
-                                className="w-full bg-gray-50 dark:bg-white/5 border-none rounded-xl p-3 focus:ring-2 focus:ring-indigo-500 outline-none transition-all font-bold" />
+                                className="w-full bg-gray-50 dark:bg-white/5 border-none rounded-xl p-3 focus:ring-2 focus:ring-indigo-500 outline-none transition-all font-bold dark:text-white" />
                         </div>
 
                         <div className="flex justify-end pt-4">

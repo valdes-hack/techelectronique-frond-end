@@ -11,19 +11,14 @@ const ProductCard = ({ product }) => {
 
     let displayImage = "https://images.unsplash.com/photo-1510557880182-3d4d3cba3f21?w=600"; 
     
-    const getFullUrl = (url) => {
-        if (!url) return displayImage;
-        if (url.startsWith('http')) return url;
-        const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8080/api/v1';
-        return `${baseUrl.replace('/api/v1', '')}/uploads/products/${url}`;
-    };
+    
 
     if (product.imageUrl) {
-        displayImage = getFullUrl(product.imageUrl);
+        displayImage = getFullImageUrl(product.imageUrl);
     } else if (product.images && product.images.length > 0) {
         const primaryImg = product.images.find(img => img.isPrimary) || product.images[0];
         if (primaryImg && primaryImg.url) {
-            displayImage = getFullUrl(primaryImg.url);
+            displayImage = getFullImageUrl(primaryImg.url);
         }
     }
 

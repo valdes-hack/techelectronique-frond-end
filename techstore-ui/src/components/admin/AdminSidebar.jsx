@@ -2,14 +2,17 @@ import React from 'react';
 import { 
     LayoutDashboard, Box, Users, ShoppingCart, 
     BarChart3, Settings, Sun, Moon, Zap, 
-    ChevronLeft, ChevronRight, X, Layers, Truck, PackagePlus 
+    ChevronLeft, ChevronRight, X, Layers, Truck, PackagePlus, LogOut, Globe 
 } from 'lucide-react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useTheme } from '../../context/ThemeContext';
+import { useAuth } from '../../context/AuthContext';
 
 const AdminSidebar = ({ width, setWidth, isMobileOpen, setIsMobileOpen }) => {
     const { theme, toggleTheme } = useTheme();
+    const { logout } = useAuth();
     const location = useLocation();
+    const navigate = useNavigate();
     const isCollapsed = width < 140;
 
     const toggleCollapse = () => {
@@ -93,6 +96,29 @@ const AdminSidebar = ({ width, setWidth, isMobileOpen, setIsMobileOpen }) => {
 
                 {/* FOOTER SIDEBAR */}
                 <div className={`p-4 border-t ${theme === 'dark' ? 'border-white/5' : 'border-gray-100'}`}>
+                    <Link 
+                        to="/"
+                        className={`flex items-center w-full p-3 rounded-xl hover:bg-emerald-500/10 text-emerald-500 transition-all mb-2 ${isCollapsed && !isMobileOpen ? 'justify-center' : 'space-x-3'}`}
+                    >
+                        <Globe size={20} />
+                        {(!isCollapsed || isMobileOpen) && (
+                            <span className="text-sm font-bold">Retour au site</span>
+                        )}
+                    </Link>
+
+                    <button 
+                        onClick={() => {
+                            logout();
+                            navigate('/login');
+                        }} 
+                        className={`flex items-center w-full p-3 rounded-xl hover:bg-red-500/10 text-red-500 transition-all mb-2 ${isCollapsed && !isMobileOpen ? 'justify-center' : 'space-x-3'}`}
+                    >
+                        <LogOut size={20} />
+                        {(!isCollapsed || isMobileOpen) && (
+                            <span className="text-sm font-bold">Déconnexion</span>
+                        )}
+                    </button>
+
                     <button 
                         onClick={toggleTheme} 
                         className={`flex items-center w-full p-3 rounded-xl hover:bg-white/5 transition-all ${isCollapsed && !isMobileOpen ? 'justify-center' : 'space-x-3'}`}
