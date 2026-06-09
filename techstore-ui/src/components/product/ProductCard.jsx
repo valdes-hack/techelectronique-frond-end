@@ -1,7 +1,8 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Star, Plus, ShieldCheck } from 'lucide-react';
-import { useCart } from '../../context/CartContext'; 
+import { useCart } from '../../context/CartContext';
+import { getFullImageUrl } from '../../utils/imageUtils'; 
 
 const ProductCard = ({ product }) => {
     // 1. Branchement au cerveau du panier
