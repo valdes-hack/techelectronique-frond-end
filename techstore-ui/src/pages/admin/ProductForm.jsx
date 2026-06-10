@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { X, Save, Image as ImageIcon, Trash2, FileUp, Loader2, Plus, Globe, HardDrive, Cpu } from 'lucide-react';
 import AdminService from '../../services/admin.service';
 import Input from '../../components/common/Input';
+import { getFullImageUrl } from '../../utils/imageUtils';
 
 const ProductForm = ({ product, onClose, onSave, theme }) => {
     const isDark = theme === 'dark';
@@ -55,7 +56,8 @@ const ProductForm = ({ product, onClose, onSave, theme }) => {
             // On sépare les images existantes pour ne pas les uploader à nouveau
             const existing = product.images?.map(img => img.url) || [];
             setImageUrls(existing);
-            setPreviews(existing);
+            // On utilise getFullImageUrl pour l'affichage de la miniature, afin d'éviter les erreurs Mixed Content sur les URLs localhost
+            setPreviews(existing.map(url => getFullImageUrl(url)));
         }
         
         const loadInitialData = async () => {
