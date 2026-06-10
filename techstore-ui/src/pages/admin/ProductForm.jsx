@@ -138,6 +138,8 @@ const ProductForm = ({ product, onClose, onSave, theme }) => {
 
             const payload = {
                 ...formData,
+                basePrice: parseFloat(formData.basePrice) || 0,
+                costPrice: parseFloat(formData.costPrice) || 0,
                 categoryId: parseInt(formData.categoryId),
                 defaultSupplierId: formData.defaultSupplierId ? parseInt(formData.defaultSupplierId) : null,
                 imageUrls: imageUrls, // URLs à conserver/ajouter

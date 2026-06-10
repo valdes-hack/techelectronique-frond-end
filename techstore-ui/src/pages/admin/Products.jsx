@@ -9,6 +9,7 @@ import {
     Plus, Edit2, Trash2, Box, AlertTriangle, 
     Wallet, RefreshCw, ChevronRight, Truck
 } from 'lucide-react';
+import { getFullImageUrl } from '../../utils/imageUtils';
 
 const AdminProducts = () => {
     // 1. ÉTATS DES DONNÉES
@@ -157,9 +158,7 @@ const AdminProducts = () => {
                                             <div onClick={() => setImgIdxMap({...imgIdxMap, [p.id]: (imgIdxMap[p.id] + 1) % (p.images?.length || 1)})}
                                                 className="w-14 h-14 mx-auto bg-black/10 rounded-2xl p-1 relative border border-white/5 cursor-pointer overflow-hidden group-hover:scale-110 transition-transform">
                                                 <img 
-                                                    src={p.images?.[imgIdxMap[p.id]]?.url?.startsWith('http') 
-                                                        ? p.images[imgIdxMap[p.id]].url 
-                                                        : `${import.meta.env.VITE_API_URL}/uploads/products/${p.images?.[imgIdxMap[p.id]]?.url}`} 
+                                                    src={getFullImageUrl(p.images?.[imgIdxMap[p.id]]?.url)} 
                                                     className="w-full h-full object-contain" 
                                                     alt={p.name} 
                                                 />
