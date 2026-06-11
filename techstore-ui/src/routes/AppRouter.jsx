@@ -10,6 +10,7 @@ import Register from '../pages/auth/Register';
 import Catalog from '../pages/public/Catalog';
 import ProductDetail from '../pages/public/ProductDetail';
 import CheckoutPage from '../pages/public/CheckoutPage';
+import TrackOrder from '../pages/public/TrackOrder';
 
 // --- PAGES CLIENTS (Privées) ---
 import Profile from '../pages/client/Profile';
@@ -24,6 +25,7 @@ import StockSupply from '../pages/admin/StockSupply';
 import AdminUsers from '../pages/admin/Users';
 import AdminOrders from '../pages/admin/Orders';
 import AdminSettings from '../pages/admin/Settings';
+import HistoryPage from '../pages/admin/HistoryPage';
 
 const AppRouter = () => {
     return (
@@ -36,6 +38,7 @@ const AppRouter = () => {
             <Route path="/category/:slug" element={<Catalog />} />
             <Route path="/product/:slug" element={<ProductDetail />} />
             <Route path="/checkout" element={<CheckoutPage />} />
+            <Route path="/track" element={<TrackOrder />} />
 
             {/* 2. ESPACE CLIENT (Nécessite connexion) */}
             <Route path="/profile" element={
@@ -101,6 +104,12 @@ const AppRouter = () => {
             <Route path="/admin/settings" element={
                 <AdminRoute>
                     <AdminSettings />
+                </AdminRoute>
+            } />
+
+            <Route path="/admin/history" element={
+                <AdminRoute>
+                    <HistoryPage />
                 </AdminRoute>
             } />
 

@@ -9,7 +9,8 @@ export const AppProvider = ({ children }) => {
         contactEmail: 'contact@techstore.cm',
         contactPhone: '+237 600 000 000',
         contactAddress: 'Douala, Cameroun',
-        logoUrl: ''
+        logoUrl: '',
+        heroImageUrl: ''
     });
 
     const loadSettings = async () => {

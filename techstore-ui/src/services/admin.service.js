@@ -191,6 +191,12 @@ const AdminService = {
         const response = await api.patch(`/admin/notifications/${id}/read`);
         return response.data;
     },
+
+    // Récupérer tout l'historique
+    getAllHistory: async (page = 0, size = 50) => {
+        const response = await api.get(`/admin/notifications?page=${page}&size=${size}`);
+        return response.data;
+    },
     // ==========================================
     // 📊 STATISTIQUES & ANALYTICS
     // ==========================================
@@ -200,6 +206,11 @@ const AdminService = {
 getDashboardStats: async () => {
     const response = await api.get('/admin/dashboard');
     return response.data; // Contient l'objet avec totalRevenue, topSellingProducts, etc.
+},
+
+getLowStockItems: async () => {
+    const response = await api.get('/admin/dashboard/low-stock');
+    return response.data;
 },
 // src/services/product.service.js
 

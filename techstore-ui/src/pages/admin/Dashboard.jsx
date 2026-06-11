@@ -11,6 +11,7 @@ import { XAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } fro
 
 const Dashboard = () => {
     const [data, setData] = useState(null);
+    const [lowStockData, setLowStockData] = useState([]);
     const [loading, setLoading] = useState(true);
     const { theme, toggleTheme } = useTheme();
     const navigate = useNavigate();
@@ -20,9 +21,15 @@ const Dashboard = () => {
     useEffect(() => {
         const loadData = async () => {
             try {
-                const res = await AdminService.getDashboardStats();
-                if (res.status === 'success') {
-                    setData(res.data);
+                const [resStats, resLowStock] = await Promise.all([
+                    AdminService.getDashboardStats(),
+                    AdminService.getLowStockItems()
+                ]);
+                if (resStats.status === 'success') {
+                    setData(resStats.data);
+                }
+                if (resLowStock.status === 'success') {
+                    setLowStockData(resLowStock.data);
                 }
             } catch (e) {
                 console.error("Erreur Dashboard", e);
@@ -153,8 +160,8 @@ const Dashboard = () => {
                             <button onClick={() => navigate('/admin/stock')} className="bg-red-500 text-white text-[9px] font-black px-3 py-1.5 rounded-xl hover:bg-red-600 transition-all shadow-lg shadow-red-500/20">RAVITAILLER</button>
                         </div>
                         <div className="space-y-4 max-h-[350px] overflow-y-auto custom-scrollbar pr-2">
-                            {data?.lowStockProducts && data.lowStockProducts.length > 0 ? (
-                                data.lowStockProducts.map((prod, i) => (
+                            {lowStockData && lowStockData.length > 0 ? (
+                                lowStockData.map((prod, i) => (
                                     <div key={i} className={`flex items-center justify-between p-4 rounded-2xl border transition-all ${isDark ? 'bg-white/5 border-white/5' : 'bg-slate-50 border-slate-100'}`}>
                                         <div className="flex items-center gap-3">
                                             <div className="w-10 h-10 bg-red-500/10 rounded-xl flex items-center justify-center text-red-500 font-black text-xs">
@@ -162,7 +169,7 @@ const Dashboard = () => {
                                             </div>
                                             <div>
                                                 <p className={`text-sm font-bold ${isDark ? 'text-white' : 'text-slate-700'}`}>{prod.name}</p>
-                                                <p className="text-[10px] text-gray-500 font-medium uppercase">{prod.brand}</p>
+                                                <p className="text-[10px] text-gray-500 font-medium uppercase">{prod.type === 'VARIANT' ? 'Variante' : 'Produit'} - SKU: {prod.sku}</p>
                                             </div>
                                         </div>
                                         <button onClick={() => navigate('/admin/stock')} className={`p-2 rounded-full transition-all ${isDark ? 'hover:bg-white/10 text-white' : 'hover:bg-white text-slate-400 shadow-sm'}`}>

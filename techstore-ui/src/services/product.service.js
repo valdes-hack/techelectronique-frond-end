@@ -61,6 +61,17 @@ const ProductService = {
             return { status: 'error', data: [] }; 
         }
     },
+
+    // Récupérer les catégories avec un échantillon de produits pour l'accueil
+    getGroupedCategories: async () => {
+        try {
+            const response = await api.get('categories/grouped-products');
+            return response.data;
+        } catch (error) {
+            console.error("Erreur getGroupedCategories", error);
+            return { status: 'error', data: [] };
+        }
+    },
     
 // Récupérer les avis d'un produit (p. 15 du Swagger)
 getProductReviews: async (productId) => {
@@ -72,6 +83,12 @@ getProductReviews: async (productId) => {
 // reviewData: { productId, orderId, rating, title, body }
 postReview: async (reviewData) => {
     const res = await api.post('/reviews', reviewData);
+    return res.data;
+},
+
+// Poster un avis en tant qu'invité
+postGuestReview: async (reviewData, token) => {
+    const res = await api.post(`/reviews/guest?token=${token}`, reviewData);
     return res.data;
 }
 

@@ -7,6 +7,7 @@ import { useAppContext } from '../../context/AppContext';
 const Settings = () => {
     const { settings: currentSettings, reloadSettings } = useAppContext();
     const [formData, setFormData] = useState(currentSettings);
+    const [heroFile, setHeroFile] = useState(null);
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState(null);
 
@@ -18,12 +19,25 @@ const Settings = () => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
+    const handleFileChange = (e) => {
+        if (e.target.files && e.target.files[0]) {
+            setHeroFile(e.target.files[0]);
+        }
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
         setMessage(null);
         try {
             await baseApi.put('/settings', formData);
+            if (heroFile) {
+                const imgData = new FormData();
+                imgData.append('file', heroFile);
+                await baseApi.post('/settings/hero-image', imgData, {
+                    headers: { 'Content-Type': 'multipart/form-data' }
+                });
+            }
             await reloadSettings();
             setMessage({ type: 'success', text: 'Paramètres mis à jour avec succès.' });
         } catch (error) {
@@ -75,10 +89,22 @@ const Settings = () => {
                             </div>
                         </div>
 
-                        <div>
-                            <label className="block text-xs font-black uppercase tracking-widest mb-2 text-slate-500 dark:text-slate-400">URL du Logo (Optionnel)</label>
-                            <input type="text" name="logoUrl" value={formData?.logoUrl || ''} onChange={handleChange} placeholder="https://..."
-                                className="w-full bg-gray-50 dark:bg-white/5 border-none rounded-xl p-3 focus:ring-2 focus:ring-indigo-500 outline-none transition-all font-bold dark:text-white" />
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label className="block text-xs font-black uppercase tracking-widest mb-2 text-slate-500 dark:text-slate-400">URL du Logo (Optionnel)</label>
+                                <input type="text" name="logoUrl" value={formData?.logoUrl || ''} onChange={handleChange} placeholder="https://..."
+                                    className="w-full bg-gray-50 dark:bg-white/5 border-none rounded-xl p-3 focus:ring-2 focus:ring-indigo-500 outline-none transition-all font-bold dark:text-white" />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-black uppercase tracking-widest mb-2 text-slate-500 dark:text-slate-400">Image d'accueil (Hero)</label>
+                                {formData?.heroImageUrl && (
+                                    <div className="mb-2">
+                                        <img src={formData.heroImageUrl} alt="Hero" className="h-16 rounded-lg object-cover" />
+                                    </div>
+                                )}
+                                <input type="file" accept="image/*" onChange={handleFileChange}
+                                    className="w-full bg-gray-50 dark:bg-white/5 border-none rounded-xl p-2 focus:ring-2 focus:ring-indigo-500 outline-none transition-all font-bold dark:text-white" />
+                            </div>
                         </div>
 
                         <div className="flex justify-end pt-4">

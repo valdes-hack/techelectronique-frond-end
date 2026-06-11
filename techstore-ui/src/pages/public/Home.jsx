@@ -3,13 +3,18 @@ import { motion, useScroll, useTransform } from 'framer-motion';
 import { ChevronRight, Zap, ShieldCheck, Truck, Headphones, Activity } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import ProductService from '../../services/product.service';
+import { useAppContext } from '../../context/AppContext';
 
 const Home = () => {
+    const { settings } = useAppContext();
+    const heroImage = settings?.heroImageUrl || "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&q=80&w=2000";
+
     const { scrollYProgress } = useScroll();
     const yHero = useTransform(scrollYProgress, [0, 1], [0, 300]);
     const opacityHero = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
 
     const [stats, setStats] = useState({ products: 0, categories: 0 });
+    const [groupedCategories, setGroupedCategories] = useState([]);
 
     useEffect(() => {
         const fetchStats = async () => {
@@ -26,7 +31,20 @@ const Home = () => {
                 console.error("Erreur chargement stats:", err);
             }
         };
+        
+        const fetchGrouped = async () => {
+            try {
+                const res = await ProductService.getGroupedCategories();
+                if (res.status === 'success') {
+                    setGroupedCategories(res.data);
+                }
+            } catch (err) {
+                console.error("Erreur grouped categories", err);
+            }
+        };
+
         fetchStats();
+        fetchGrouped();
     }, []);
 
     return (
@@ -104,8 +122,8 @@ const Home = () => {
                             <p className="text-white/80 font-medium mt-2">La machine ultime pour les créateurs.</p>
                         </div>
                         <img 
-                            src="https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&q=80&w=2000" 
-                            alt="MacBook Pro" 
+                            src={heroImage} 
+                            alt="Hero Image" 
                             className="w-full h-auto object-cover transform group-hover:scale-105 transition-transform duration-1000"
                         />
                     </div>
@@ -144,6 +162,32 @@ const Home = () => {
                     </Link>
                 </div>
             </section>
+
+            {/* SECTIONS REPOSITORIES (CATEGORIES GROUPEES) */}
+            {groupedCategories && groupedCategories.map((group) => (
+                <section key={group.categoryId} className="py-12 px-4 md:px-6 max-w-7xl mx-auto">
+                    <div className="flex items-center justify-between mb-8">
+                        <h2 className="text-3xl font-black italic tracking-tighter text-apple-dark dark:text-white uppercase">{group.categoryName}</h2>
+                        <Link to={`/category/${group.categorySlug}`} className="text-sm font-bold text-indigo-500 hover:text-indigo-400 flex items-center gap-1 group">
+                            Voir tout <ChevronRight size={16} className="group-hover:translate-x-1 transition-transform" />
+                        </Link>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+                        {group.products && group.products.map(prod => (
+                            <Link to={`/product/${prod.slug}`} key={prod.id} className="group border border-gray-100 dark:border-white/5 rounded-[2rem] p-4 hover:shadow-2xl transition-all duration-500 bg-white dark:bg-[#161926]">
+                                <div className="h-48 w-full rounded-[1.5rem] overflow-hidden mb-4 bg-gray-50 dark:bg-[#111421] relative flex items-center justify-center">
+                                    <img src={prod.mainImageUrl || "https://placehold.co/400x400?text=No+Image"} alt={prod.name} className="h-[80%] w-auto object-contain group-hover:scale-110 transition-transform duration-700" />
+                                </div>
+                                <div>
+                                    <h3 className="font-bold text-apple-dark dark:text-white truncate">{prod.name}</h3>
+                                    <p className="text-xs text-gray-500 font-medium mt-1 truncate">{prod.brand}</p>
+                                    <p className="font-black text-indigo-500 mt-2">{prod.price?.toLocaleString()} F</p>
+                                </div>
+                            </Link>
+                        ))}
+                    </div>
+                </section>
+            ))}
 
             {/* STATS DYNAMIQUES */}
             <section className="py-20 px-4 md:px-6 border-y border-gray-100 dark:border-white/5 bg-gray-50/50 dark:bg-white/[0.02]">

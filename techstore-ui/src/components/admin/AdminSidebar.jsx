@@ -1,7 +1,7 @@
 import React from 'react';
 import { 
     LayoutDashboard, Box, Users, ShoppingCart, 
-    BarChart3, Settings, Sun, Moon, Zap, 
+    BarChart3, Settings, Sun, Moon, Zap, History,
     ChevronLeft, ChevronRight, X, Layers, Truck, PackagePlus, LogOut, Globe 
 } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
@@ -19,7 +19,6 @@ const AdminSidebar = ({ width, setWidth, isMobileOpen, setIsMobileOpen }) => {
         setWidth(isCollapsed ? 260 : 80);
     };
 
-    // --- LISTE COMPLÈTE DES ONGLETS (ORDONNÉE) ---
     const menuItems = [
         { icon: <LayoutDashboard size={22}/>, label: "Dashboard", path: "/admin" },
         { icon: <Box size={22}/>, label: "Produits", path: "/admin/products" },
@@ -28,6 +27,7 @@ const AdminSidebar = ({ width, setWidth, isMobileOpen, setIsMobileOpen }) => {
         { icon: <Truck size={22}/>, label: "Fournisseurs", path: "/admin/suppliers" },
         { icon: <Users size={22}/>, label: "Utilisateurs", path: "/admin/users" },
         { icon: <ShoppingCart size={22}/>, label: "Commandes", path: "/admin/orders" },
+        { icon: <History size={22}/>, label: "Historique", path: "/admin/history" },
         { icon: <BarChart3 size={22}/>, label: "Statistiques", path: "/admin/stats" },
         { icon: <Settings size={22}/>, label: "Paramètres", path: "/admin/settings" },
     ];

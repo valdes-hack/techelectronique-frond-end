@@ -22,6 +22,12 @@ const OrderService = {
     getAdminOrderDetails: async (orderId) => {
         const response = await api.get(`/admin/orders/${orderId}`);
         return response.data;
+    },
+
+    // Suivi commande (Invité ou non)
+    trackOrder: async (token) => {
+        const response = await api.get(`/orders/track/${token}`);
+        return response.data;
     }
 };
 
