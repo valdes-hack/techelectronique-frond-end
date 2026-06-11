@@ -53,6 +53,19 @@ const NotificationBell = () => {
         }
     };
 
+    const handleMarkAllAsRead = async () => {
+        try {
+            if (notifications.length > 0) {
+                await AdminService.markAllAsRead();
+                setNotifications([]);
+            }
+            setIsOpen(false);
+            navigate('/admin/history');
+        } catch (e) {
+            console.error(e);
+        }
+    };
+
     const getIcon = (type) => {
         switch (type) {
             case 'STOCK_LOW': return <AlertTriangle size={16} className="text-amber-500" />;
@@ -120,7 +133,7 @@ const NotificationBell = () => {
                         
                         <div className="p-4 bg-white/5 text-center border-t border-white/5">
                             <button 
-                                onClick={() => { setIsOpen(false); navigate('/admin/history'); }}
+                                onClick={handleMarkAllAsRead}
                                 className="text-[10px] font-black uppercase text-indigo-500 hover:text-indigo-400 transition-colors tracking-widest"
                             >
                                 Tout l'historique

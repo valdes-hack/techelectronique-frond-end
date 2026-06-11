@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import AdminService from '../../services/admin.service';
 import { History, CheckCircle, Package, ShoppingBag, AlertTriangle, Info } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
+import AdminLayout from '../../components/admin/AdminLayout';
 
 const HistoryPage = () => {
     const { theme } = useTheme();
@@ -37,6 +38,7 @@ const HistoryPage = () => {
     };
 
     return (
+        <AdminLayout filters={null}>
         <div className="p-6">
             <div className="flex items-center space-x-4 mb-8">
                 <div className="p-3 bg-indigo-500/10 rounded-xl">
@@ -81,6 +83,7 @@ const HistoryPage = () => {
                 )}
             </div>
         </div>
+        </AdminLayout>
     );
 };
 

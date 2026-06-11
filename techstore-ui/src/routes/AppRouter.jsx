@@ -26,6 +26,7 @@ import AdminUsers from '../pages/admin/Users';
 import AdminOrders from '../pages/admin/Orders';
 import AdminSettings from '../pages/admin/Settings';
 import HistoryPage from '../pages/admin/HistoryPage';
+import StatsPage from '../pages/admin/StatsPage';
 
 const AppRouter = () => {
     return (
@@ -110,6 +111,12 @@ const AppRouter = () => {
             <Route path="/admin/history" element={
                 <AdminRoute>
                     <HistoryPage />
+                </AdminRoute>
+            } />
+
+            <Route path="/admin/stats" element={
+                <AdminRoute>
+                    <StatsPage />
                 </AdminRoute>
             } />
 

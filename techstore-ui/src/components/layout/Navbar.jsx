@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Search, ShoppingBag, User, Menu, X, ChevronDown, Package, Sun, Moon, Bell, Settings } from 'lucide-react';
+import { Search, ShoppingBag, User, Menu, X, ChevronDown, Package, Sun, Moon, Bell, Settings, LogOut } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../context/AuthContext';
 import { useCart } from '../../context/CartContext';
@@ -17,7 +17,7 @@ const Navbar = () => {
     const [isSearchOpen, setIsSearchOpen] = useState(false);
     const [categories, setCategories] = useState([]);
     
-    const { isAuthenticated, user, isAdmin } = useAuth();
+    const { isAuthenticated, user, isAdmin, logout } = useAuth();
     const { setIsOpen, cart } = useCart();
     const { settings } = useAppContext();
     const navigate = useNavigate();
@@ -161,6 +161,14 @@ const Navbar = () => {
                             </div>
                             <span className="hidden sm:block uppercase tracking-tighter">{isAuthenticated ? (user?.firstName || "Profil") : "Login"}</span>
                         </Link>
+
+                        {/* DECONNEXION RAPIDE */}
+                        {isAuthenticated && (
+                            <button onClick={() => { logout(); navigate('/'); }} 
+                                    className="p-3 rounded-2xl bg-red-50 dark:bg-red-500/10 hover:bg-red-100 transition-all text-red-500">
+                                <LogOut size={20} />
+                            </button>
+                        )}
                         
                         {/* MENU MOBILE */}
                         <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="lg:hidden p-3 text-apple-dark dark:text-white">

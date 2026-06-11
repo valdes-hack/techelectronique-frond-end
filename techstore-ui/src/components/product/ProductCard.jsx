@@ -39,14 +39,14 @@ const ProductCard = ({ product }) => {
     };
 
     return (
-        <div className="bg-white rounded-[2rem] border border-apple-border/40 p-6 flex flex-col h-[480px] shadow-sm hover:shadow-2xl transition-all duration-500 group relative">
+        <div className="bg-white dark:bg-[#161926] rounded-[2rem] border border-apple-border/40 dark:border-white/5 p-6 flex flex-col h-auto sm:h-[480px] shadow-sm hover:shadow-2xl transition-all duration-500 group relative">
             
             <div className="absolute top-6 right-6 opacity-0 group-hover:opacity-100 transition-opacity duration-500 text-apple-blue">
                 <ShieldCheck size={18} />
             </div>
 
             <Link to={`/product/${product.slug}`} className="flex-grow flex flex-col">
-                <div className="h-56 w-full mb-6 rounded-2xl overflow-hidden bg-apple-gray/20 flex items-center justify-center p-6 relative text-center">
+                <div className="h-48 sm:h-56 w-full mb-6 rounded-2xl overflow-hidden bg-apple-gray/20 dark:bg-[#111421] flex items-center justify-center p-6 relative text-center">
                     <img 
                         src={displayImage} 
                         alt={product.name}
@@ -62,7 +62,7 @@ const ProductCard = ({ product }) => {
                     <p className="text-[10px] font-black text-apple-blue uppercase tracking-widest mb-1">
                         {product.brand || 'Premium'}
                     </p>
-                    <h3 className="text-xl font-bold text-apple-dark leading-tight group-hover:text-apple-blue transition-colors line-clamp-2">
+                    <h3 className="text-lg sm:text-xl font-bold text-apple-dark dark:text-white leading-tight group-hover:text-apple-blue transition-colors line-clamp-2">
                         {product.name}
                     </h3>
                     
@@ -75,10 +75,10 @@ const ProductCard = ({ product }) => {
                 </div>
             </Link>
 
-            <div className="mt-auto pt-4 flex justify-between items-center border-t border-apple-gray/50">
+            <div className="mt-auto pt-4 flex justify-between items-center border-t border-apple-gray/50 dark:border-white/5">
                 <div className="flex flex-col">
-                    <span className="text-[10px] text-apple-dark/40 font-bold uppercase">Prix</span>
-                    <span className="text-xl font-black text-apple-dark tracking-tighter">
+                    <span className="text-[10px] text-apple-dark/40 dark:text-gray-400 font-bold uppercase">Prix</span>
+                    <span className="text-lg sm:text-xl font-black text-apple-dark dark:text-white tracking-tighter">
                         {formattedPrice}
                     </span>
                 </div>

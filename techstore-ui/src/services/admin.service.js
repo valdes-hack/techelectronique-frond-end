@@ -192,6 +192,11 @@ const AdminService = {
         return response.data;
     },
 
+    markAllAsRead: async () => {
+        const response = await api.patch('/admin/notifications/read-all');
+        return response.data;
+    },
+
     // Récupérer tout l'historique
     getAllHistory: async (page = 0, size = 50) => {
         const response = await api.get(`/admin/notifications?page=${page}&size=${size}`);
