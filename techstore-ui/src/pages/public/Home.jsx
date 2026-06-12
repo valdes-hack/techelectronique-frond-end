@@ -144,7 +144,7 @@ const Home = () => {
             </section>
 
             {/* STATS DYNAMIQUES */}
-            <section className="py-16 px-4 md:px-6 border-y border-gray-100 dark:border-white/5 bg-gray-50/50 dark:bg-white/[0.02]">
+            <section className="py-8 md:h-[100px] flex items-center px-4 md:px-6 border-y border-gray-100 dark:border-white/5 bg-gray-50/50 dark:bg-white/[0.02]">
                 <div className="max-w-7xl mx-auto">
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
                         <div className="text-center group">
@@ -255,7 +255,7 @@ const Home = () => {
 
             {/* SECTIONS REPOSITORIES (CATEGORIES GROUPEES) */}
             {groupedCategories && groupedCategories.map((group) => (
-                <section key={group.categoryId} className="py-16 px-4 md:px-6 max-w-7xl mx-auto">
+                <section key={group.categoryId} className="py-24 px-4 md:px-6 max-w-7xl mx-auto">
                     <div className="flex items-center justify-between mb-8">
                         <h2 className="text-3xl font-black italic tracking-tighter text-apple-dark dark:text-white uppercase">{group.categoryName}</h2>
                         <Link to={`/category/${group.categorySlug}`} className="text-sm font-bold text-indigo-500 hover:text-indigo-400 flex items-center gap-1 group">
