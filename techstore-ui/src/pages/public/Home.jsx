@@ -64,7 +64,7 @@ const Home = () => {
         <div className="bg-apple-white dark:bg-[#0b0e14] transition-colors duration-500 overflow-hidden">
             
             {/* HERO SECTION - PREMIUM APPLE STYLE */}
-            <section className="relative min-h-screen flex flex-col items-center justify-center pt-20 pb-20 text-center px-4 md:px-6">
+            <section className="relative min-h-[90vh] flex flex-col items-center justify-center pt-24 pb-16 text-center px-4 md:px-6">
                 
                 {/* Background Gradient Orbs */}
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full overflow-hidden pointer-events-none">
@@ -127,17 +127,17 @@ const Home = () => {
                     initial={{ opacity: 0, y: 100 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 1.2, delay: 0.8, ease: "easeOut" }}
-                    className="relative z-10 mt-20 w-full max-w-6xl px-4"
+                    className="relative z-10 mt-12 w-full max-w-6xl px-4"
                 >
-                    <div className="relative rounded-[2rem] md:rounded-[3rem] overflow-hidden shadow-2xl border border-white/20 dark:border-white/10 group">
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-10 flex flex-col justify-end p-10">
-                            <h3 className="text-white text-3xl font-black italic">Collection Premium</h3>
-                            <p className="text-white/80 font-medium mt-2">Les meilleurs produits High-Tech du marché.</p>
+                    <div className="relative rounded-[2rem] md:rounded-[3rem] overflow-hidden shadow-2xl border border-white/20 dark:border-white/10 group aspect-[16/9] md:aspect-[21/9]">
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-10 flex flex-col justify-end p-6 md:p-10">
+                            <h3 className="text-white text-2xl md:text-3xl font-black italic">Collection Premium</h3>
+                            <p className="text-white/80 font-medium mt-1 md:mt-2">Les meilleurs produits High-Tech du marché.</p>
                         </div>
                         <img 
                             src={heroImage} 
                             alt="Hero Image" 
-                            className="w-full h-auto object-cover transform group-hover:scale-105 transition-transform duration-1000"
+                            className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-1000"
                         />
                     </div>
                 </motion.div>
@@ -191,7 +191,7 @@ const Home = () => {
                             <p className="text-lg opacity-80 max-w-sm">Titane forgé. Puce A19 Pro. Le design à son apogée.</p>
                         </div>
                         <img 
-                            src="https://images.unsplash.com/photo-1695048133142-1a20484d256e?auto=format&fit=crop&q=80&w=1000" 
+                            src="https://images.unsplash.com/photo-1510557880182-3d4d3cba35a5?auto=format&fit=crop&w=1000" 
                             className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:opacity-80 group-hover:scale-105 transition-all duration-700"
                             alt="iPhone 17 Pro"
                         />
