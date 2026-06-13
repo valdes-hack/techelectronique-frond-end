@@ -3,6 +3,7 @@ import AdminLayout from '../../components/admin/AdminLayout';
 import baseApi from '../../api/axiosConfig';
 import { Save, Loader, Settings as SettingsIcon } from 'lucide-react';
 import { useAppContext } from '../../context/AppContext';
+import { getFullImageUrl } from '../../utils/imageUtils';
 
 const Settings = () => {
     const { settings: currentSettings, reloadSettings } = useAppContext();
@@ -99,7 +100,7 @@ const Settings = () => {
                                 <label className="block text-xs font-black uppercase tracking-widest mb-2 text-slate-500 dark:text-slate-400">Image d'accueil (Hero)</label>
                                 {formData?.heroImageUrl && (
                                     <div className="mb-2">
-                                        <img src={formData.heroImageUrl} alt="Hero" className="h-16 rounded-lg object-cover" />
+                                        <img src={getFullImageUrl(formData.heroImageUrl)} alt="Hero" className="h-16 rounded-lg object-cover" />
                                     </div>
                                 )}
                                 <input type="file" accept="image/*" onChange={handleFileChange}

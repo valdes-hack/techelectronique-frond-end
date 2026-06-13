@@ -300,8 +300,8 @@ const Home = () => {
                     setStats(prev => ({ ...prev, categories: cats.value?.data?.length || 12 }));
                 }
                 if (prods.status === 'fulfilled') {
-                    const all = prods.value?.data || [];
-                    const total = prods.value?.totalElements || all.length;
+                    const all = prods.value?.data?.content || prods.value?.data || [];
+                    const total = prods.value?.data?.totalElements || all.length;
                     setStats(prev => ({ ...prev, products: total }));
                     setAllProducts(all);
                     setFeaturedProducts(all.slice(0, 8));
