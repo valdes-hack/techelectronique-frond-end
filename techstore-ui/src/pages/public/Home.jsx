@@ -209,8 +209,35 @@ const Home = () => {
     // Slides hero — images récupérées dynamiquement via produits ou fallback Unsplash queries
     const heroSlides = [];
 
-    if (settings?.heroImageUrl) {
+    if (settings?.heroVideoUrl) {
         heroSlides.push({
+            type: 'video',
+            badge: "L'Expérience",
+            title: settings.siteName || "TechStore",
+            subtitle: "Plongez dans l'univers de la technologie.",
+            cta: "Découvrir",
+            ctaLink: "/catalog",
+            video: getFullImageUrl(settings.heroVideoUrl),
+            accent: "from-indigo-500 to-purple-600",
+        });
+    }
+
+    if (settings?.heroImagesUrls && settings.heroImagesUrls.length > 0) {
+        settings.heroImagesUrls.forEach((url, i) => {
+            heroSlides.push({
+                type: 'image',
+                badge: i === 0 ? "Sélection Officielle" : "Découverte",
+                title: settings.siteName || "TechStore",
+                subtitle: "Votre destination High-Tech de référence au Cameroun.",
+                cta: "Découvrir",
+                ctaLink: "/catalog",
+                image: getFullImageUrl(url),
+                accent: ["from-indigo-500 to-purple-600", "from-blue-500 to-cyan-600", "from-violet-500 to-pink-600"][i % 3],
+            });
+        });
+    } else if (settings?.heroImageUrl) {
+        heroSlides.push({
+            type: 'image',
             badge: "Sélection Officielle",
             title: settings.siteName || "TechStore",
             subtitle: "Votre destination High-Tech de référence au Cameroun.",
@@ -229,6 +256,7 @@ const Home = () => {
                                    "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&w=2000&q=80"][i] || "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=2000&q=80";
 
             heroSlides.push({
+                type: 'image',
                 badge: "Nouveauté 2026",
                 title: p.name,
                 subtitle: p.description ? (p.description.length > 100 ? p.description.slice(0, 100) + "..." : p.description) : "La technologie au summum de l'excellence.",
@@ -243,6 +271,7 @@ const Home = () => {
     if (heroSlides.length === 0) {
         heroSlides.push(
             {
+                type: 'image',
                 badge: "Collection Premium 2026",
                 title: "Technologie Réinventée",
                 subtitle: "Découvrez une expérience au-delà des limites du possible.",
@@ -252,6 +281,7 @@ const Home = () => {
                 accent: "from-indigo-500 to-purple-600",
             },
             {
+                type: 'image',
                 badge: "Audio & Son",
                 title: "Immersion Totale",
                 subtitle: "Son haute fidélité, confort absolu, design iconique.",
@@ -261,6 +291,7 @@ const Home = () => {
                 accent: "from-blue-500 to-cyan-600",
             },
             {
+                type: 'image',
                 badge: "Mobilité Pro",
                 title: "Performance Mobile",
                 subtitle: "Smartphones et accessoires pour les professionnels exigeants.",
@@ -281,10 +312,12 @@ const Home = () => {
 
     // Auto-scroll hero
     useEffect(() => {
-        if (heroSlides.length === 0) return;
-        const id = setInterval(() => setCurrentHeroSlide(s => (s + 1) % heroSlides.length), 6000);
-        return () => clearInterval(id);
-    }, [heroSlides.length]);
+        if (heroSlides.length <= 1) return;
+        const currentSlide = heroSlides[currentHeroSlide];
+        const duration = currentSlide?.type === 'video' ? 12000 : 6000;
+        const id = setTimeout(() => setCurrentHeroSlide(s => (s + 1) % heroSlides.length), duration);
+        return () => clearTimeout(id);
+    }, [heroSlides.length, currentHeroSlide]);
 
     useEffect(() => {
         const fetchAll = async () => {
@@ -349,11 +382,22 @@ const Home = () => {
                         transition={{ duration: 1, ease: "easeInOut" }}
                         className="absolute inset-0"
                     >
-                        <img
-                            src={slide.image}
-                            alt="Hero"
-                            className="w-full h-full object-cover"
-                        />
+                        {slide.type === 'video' ? (
+                            <video 
+                                src={slide.video} 
+                                autoPlay 
+                                loop 
+                                muted 
+                                playsInline 
+                                className="w-full h-full object-cover" 
+                            />
+                        ) : (
+                            <img
+                                src={slide.image}
+                                alt="Hero"
+                                className="w-full h-full object-cover"
+                            />
+                        )}
                         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/20" />
                         <div className={`absolute inset-0 bg-gradient-to-br ${slide.accent} opacity-20`} />
                     </motion.div>
