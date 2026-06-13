@@ -103,3 +103,4 @@ techstore-ui/
     └── 📂 styles/
         ├── index.css           # Directives Tailwind
         └── animations.css      # Keyframes personnalisées
+        
