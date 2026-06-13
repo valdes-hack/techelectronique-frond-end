@@ -8,6 +8,7 @@ import {
 import { Link } from 'react-router-dom';
 import ProductService from '../../services/product.service';
 import { useAppContext } from '../../context/AppContext';
+import { getFullImageUrl } from '../../utils/imageUtils';
 
 /* ─────────────────────────────────────────────
    HOOKS UTILITAIRES
@@ -54,6 +55,22 @@ const useCountdown = (targetHours = 8) => {
    SOUS-COMPOSANTS
 ───────────────────────────────────────────── */
 
+const getProductImage = (p) => {
+    if (!p) return "https://images.unsplash.com/photo-1526406915894-7bcd65f60845?w=600";
+    if (p.mainImageUrl) {
+        return p.mainImageUrl;
+    }
+    if (p.imageUrl) {
+        return getFullImageUrl(p.imageUrl);
+    } else if (p.images && p.images.length > 0) {
+        const primaryImg = p.images.find(img => img.isPrimary) || p.images[0];
+        if (primaryImg && primaryImg.url) {
+            return getFullImageUrl(primaryImg.url);
+        }
+    }
+    return "https://images.unsplash.com/photo-1526406915894-7bcd65f60845?w=600";
+};
+
 // Carte produit réutilisable
 const ProductCard = ({ prod, index = 0 }) => (
     <motion.div
@@ -68,7 +85,7 @@ const ProductCard = ({ prod, index = 0 }) => (
         >
             <div className="h-44 sm:h-48 w-full rounded-[1.25rem] overflow-hidden mb-4 bg-gray-50 dark:bg-[#111421] relative flex items-center justify-center">
                 <img
-                    src={prod.mainImageUrl || `https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=400&q=80`}
+                    src={getProductImage(prod)}
                     alt={prod.name}
                     className="h-[80%] w-auto object-contain group-hover:scale-110 transition-transform duration-700"
                     loading="lazy"
@@ -168,6 +185,7 @@ const Home = () => {
 
     const [stats, setStats] = useState({ products: 0, categories: 0 });
     const [groupedCategories, setGroupedCategories] = useState([]);
+    const [allProducts, setAllProducts] = useState([]);
     const [featuredProducts, setFeaturedProducts] = useState([]);
     const [trendingProducts, setTrendingProducts] = useState([]);
     const [flashSaleProducts, setFlashSaleProducts] = useState([]);
@@ -182,18 +200,48 @@ const Home = () => {
     const productsCount = useCounter(stats.products, 1800, statsInView);
     const categoriesCount = useCounter(stats.categories, 1200, statsInView);
 
+    // Image dynamiques pour le Bento Grid extraites des produits réels
+    const appleImg = getProductImage(allProducts.find(p => p.brand?.toLowerCase() === 'apple')) || "https://images.unsplash.com/photo-1491933382434-500287f9b54b?auto=format&fit=crop&w=1200&q=80";
+    const audioImg = getProductImage(allProducts.find(p => p.slug?.includes('airpods') || p.name?.toLowerCase().includes('airpods') || p.slug?.includes('audio') || p.name?.toLowerCase().includes('audio'))) || "https://images.unsplash.com/photo-1590658268037-6bf12165a8df?auto=format&fit=crop&w=600&q=80";
+    const laptopImg = getProductImage(allProducts.find(p => p.category?.slug === 'laptops' || p.slug?.includes('macbook') || p.slug?.includes('laptop'))) || "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?auto=format&fit=crop&w=600&q=80";
+    const gamingImg = getProductImage(allProducts.find(p => p.slug?.includes('playstation') || p.slug?.includes('gaming') || p.slug?.includes('ps5'))) || "https://images.unsplash.com/photo-1547394765-185e1e68f34e?auto=format&fit=crop&w=600&q=80";
+
     // Slides hero — images récupérées dynamiquement via produits ou fallback Unsplash queries
-    const heroSlides = heroProducts.length > 0
-        ? heroProducts.slice(0, 3).map((p, i) => ({
-            badge: "Nouveauté 2026",
-            title: p.name,
-            subtitle: p.shortDescription || "La technologie au summum de l'excellence.",
+    const heroSlides = [];
+
+    if (settings?.heroImageUrl) {
+        heroSlides.push({
+            badge: "Sélection Officielle",
+            title: settings.siteName || "TechStore",
+            subtitle: "Votre destination High-Tech de référence au Cameroun.",
             cta: "Découvrir",
-            ctaLink: `/product/${p.slug}`,
-            image: p.mainImageUrl || `https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=2000&q=80`,
-            accent: ["from-indigo-500 to-purple-600", "from-blue-500 to-cyan-600", "from-violet-500 to-pink-600"][i] || "from-indigo-500 to-purple-600",
-        }))
-        : [
+            ctaLink: "/catalog",
+            image: getFullImageUrl(settings.heroImageUrl),
+            accent: "from-indigo-500 to-purple-600",
+        });
+    }
+
+    if (heroProducts.length > 0) {
+        heroProducts.slice(0, 3).forEach((p, i) => {
+            const pImg = getProductImage(p);
+            const fallbackImage = ["https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=2000&q=80",
+                                   "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=2000&q=80",
+                                   "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&w=2000&q=80"][i] || "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=2000&q=80";
+
+            heroSlides.push({
+                badge: "Nouveauté 2026",
+                title: p.name,
+                subtitle: p.description ? (p.description.length > 100 ? p.description.slice(0, 100) + "..." : p.description) : "La technologie au summum de l'excellence.",
+                cta: "Découvrir",
+                ctaLink: `/product/${p.slug}`,
+                image: pImg || fallbackImage,
+                accent: ["from-indigo-500 to-purple-600", "from-blue-500 to-cyan-600", "from-violet-500 to-pink-600"][i] || "from-indigo-500 to-purple-600",
+            });
+        });
+    }
+
+    if (heroSlides.length === 0) {
+        heroSlides.push(
             {
                 badge: "Collection Premium 2026",
                 title: "Technologie Réinventée",
@@ -220,8 +268,9 @@ const Home = () => {
                 ctaLink: "/catalog?q=mobile",
                 image: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&w=2000&q=80",
                 accent: "from-violet-500 to-pink-600",
-            },
-        ];
+            }
+        );
+    }
 
     const testimonials = [
         { name: "Marie K.", role: "Designer UI/UX", rating: 5, text: "Commande reçue en moins de 24h à Douala. Produits authentiques, packaging impeccable. Je recommande sans hésiter !" },
@@ -232,6 +281,7 @@ const Home = () => {
 
     // Auto-scroll hero
     useEffect(() => {
+        if (heroSlides.length === 0) return;
         const id = setInterval(() => setCurrentHeroSlide(s => (s + 1) % heroSlides.length), 6000);
         return () => clearInterval(id);
     }, [heroSlides.length]);
@@ -253,6 +303,7 @@ const Home = () => {
                     const all = prods.value?.data || [];
                     const total = prods.value?.totalElements || all.length;
                     setStats(prev => ({ ...prev, products: total }));
+                    setAllProducts(all);
                     setFeaturedProducts(all.slice(0, 8));
                     setTrendingProducts(all.slice(0, 6));
                     setFlashSaleProducts(all.filter(p => p.discountPrice).slice(0, 4));
@@ -278,7 +329,7 @@ const Home = () => {
         }
     };
 
-    const slide = heroSlides[currentHeroSlide];
+    const slide = heroSlides[currentHeroSlide] || heroSlides[0];
 
     return (
         <div className="bg-white dark:bg-[#0b0e14] transition-colors duration-500 overflow-x-hidden">
@@ -445,7 +496,7 @@ const Home = () => {
                             </div>
                         </div>
                         <img
-                            src="https://images.unsplash.com/photo-1491933382434-500287f9b54b?auto=format&fit=crop&w=1200&q=80"
+                            src={appleImg}
                             className="absolute inset-0 w-full h-full object-cover opacity-50 group-hover:opacity-70 group-hover:scale-105 transition-all duration-700"
                             alt="Apple"
                             loading="lazy"
@@ -464,8 +515,8 @@ const Home = () => {
                             <p className="text-xs opacity-50 mt-1">Réduction de bruit adaptative</p>
                         </div>
                         <img
-                            src="https://images.unsplash.com/photo-1590658268037-6bf12165a8df?auto=format&fit=crop&w=600&q=80"
-                            className="absolute bottom-0 right-0 h-[65%] w-auto object-cover group-hover:scale-110 transition-transform duration-700"
+                            src={audioImg}
+                            className="absolute bottom-0 right-0 h-[65%] w-auto object-contain p-4 group-hover:scale-110 transition-transform duration-700"
                             alt="AirPods"
                             loading="lazy"
                         />
@@ -482,8 +533,8 @@ const Home = () => {
                             <p className="text-xs opacity-50 mt-1">Puce M4 — Puissance ultime</p>
                         </div>
                         <img
-                            src="https://images.unsplash.com/photo-1496181133206-80ce9b88a853?auto=format&fit=crop&w=600&q=80"
-                            className="absolute bottom-0 right-0 h-[60%] w-auto object-cover opacity-60 group-hover:opacity-80 group-hover:scale-110 transition-all duration-700"
+                            src={laptopImg}
+                            className="absolute bottom-0 right-0 h-[60%] w-auto object-contain p-4 opacity-60 group-hover:opacity-80 group-hover:scale-110 transition-all duration-700"
                             alt="MacBook"
                             loading="lazy"
                         />
@@ -501,8 +552,8 @@ const Home = () => {
                             <p className="text-xs opacity-70 mt-1">Setup gamer de niveau pro</p>
                         </div>
                         <img
-                            src="https://images.unsplash.com/photo-1547394765-185e1e68f34e?auto=format&fit=crop&w=600&q=80"
-                            className="absolute bottom-0 right-0 h-[65%] w-auto object-cover opacity-40 group-hover:opacity-60 group-hover:scale-110 transition-all duration-700"
+                            src={gamingImg}
+                            className="absolute bottom-0 right-0 h-[65%] w-auto object-contain p-4 opacity-40 group-hover:opacity-60 group-hover:scale-110 transition-all duration-700"
                             alt="Gaming"
                             loading="lazy"
                         />
