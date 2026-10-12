@@ -15,13 +15,13 @@ const AppContent = () => {
   const isAdminRoute = location.pathname.startsWith('/admin');
 
   return (
-    <div className="min-h-screen bg-apple-white dark:bg-apple-dark text-apple-dark dark:text-white flex flex-col transition-colors duration-500">
-      <Navbar />
-      <CartDrawer /> 
+    <div className="min-h-screen bg-apple-white dark:bg-[#0b0e14] text-apple-dark dark:text-white flex flex-col transition-colors duration-500">
+      {!isAdminRoute && <Navbar />}
+      {!isAdminRoute && <CartDrawer />} 
       <main className={`flex-grow ${isAdminRoute ? '' : 'pt-24 md:pt-32'}`}>
           <AppRouter />
       </main>
-      <Footer />
+      {!isAdminRoute && <Footer />}
     </div>
   );
 };

@@ -86,12 +86,19 @@ const ProductDetail = () => {
     const unitPrice = currentVariant ? currentVariant.price : (product?.discountPrice || product?.basePrice || 0);
     const totalPrice = unitPrice * quantity;
 
+    const availableStock = currentVariant 
+        ? (currentVariant.stockQty ?? 0) 
+        : (product?.stockQty ?? 0);
+    const isOutOfStock = availableStock <= 0;
+
     const openWhatsApp = () => {
-        const msg = encodeURIComponent(`Bonjour TechStore ! Je souhaite commander : ${product.name} (${quantity} unité(s)).`);
+        const variantDetails = currentVariant && currentVariant.attributes 
+            ? ` (${Object.entries(parseJSON(currentVariant.attributes)).map(([k, v]) => `${k}: ${v}`).join(', ')})`
+            : '';
+        const msg = encodeURIComponent(`Bonjour TechStore ! Je souhaite commander : ${product.name}${variantDetails} (${quantity} unité(s)).`);
         window.open(`https://wa.me/237686669222?text=${msg}`, '_blank');
     };
 
-    
 
     // Images display array
     const displayImages = useMemo(() => {
@@ -229,11 +236,28 @@ const ProductDetail = () => {
 
                         {/* QUANTITÉ */}
                         <div className={`mb-10 p-6 rounded-[2rem] flex items-center justify-between border ${isDark ? 'bg-[#161926] border-white/5' : 'bg-white border-slate-100 shadow-sm'}`}>
-                            <span className={`text-xs font-black uppercase tracking-widest ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>Quantité</span>
+                            <div>
+                                <span className={`text-xs font-black uppercase tracking-widest block ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>Quantité</span>
+                                {availableStock > 0 && (
+                                    <span className="text-[10px] text-gray-400 font-bold">Max: {availableStock}</span>
+                                )}
+                            </div>
                             <div className="flex items-center space-x-6">
-                                <button onClick={() => quantity > 1 && setQuantity(quantity-1)} className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${isDark ? 'bg-white/5 hover:bg-white/10 text-white' : 'bg-slate-50 hover:bg-slate-200 text-slate-900'}`}><Minus size={16}/></button>
-                                <span className="text-2xl font-black">{quantity}</span>
-                                <button onClick={() => setQuantity(quantity+1)} className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${isDark ? 'bg-white/5 hover:bg-white/10 text-white' : 'bg-slate-50 hover:bg-slate-200 text-slate-900'}`}><Plus size={16}/></button>
+                                <button 
+                                    onClick={() => quantity > 1 && setQuantity(quantity - 1)} 
+                                    disabled={quantity <= 1 || isOutOfStock}
+                                    className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors disabled:opacity-30 ${isDark ? 'bg-white/5 hover:bg-white/10 text-white' : 'bg-slate-50 hover:bg-slate-200 text-slate-900'}`}
+                                >
+                                    <Minus size={16}/>
+                                </button>
+                                <span className="text-2xl font-black">{isOutOfStock ? 0 : quantity}</span>
+                                <button 
+                                    onClick={() => quantity < availableStock && setQuantity(quantity + 1)} 
+                                    disabled={quantity >= availableStock || isOutOfStock}
+                                    className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors disabled:opacity-30 ${isDark ? 'bg-white/5 hover:bg-white/10 text-white' : 'bg-slate-50 hover:bg-slate-200 text-slate-900'}`}
+                                >
+                                    <Plus size={16}/>
+                                </button>
                             </div>
                         </div>
 
@@ -244,14 +268,26 @@ const ProductDetail = () => {
                                     <span className="text-[10px] font-black uppercase tracking-widest text-indigo-500 mb-1">Prix Total</span>
                                     <span className="text-4xl md:text-5xl font-black tracking-tighter leading-none">{totalPrice.toLocaleString()} F</span>
                                 </div>
-                                <span className={`text-[10px] font-black uppercase px-3 py-1 rounded-full ${product.stockQty > 0 ? (isDark ? "bg-emerald-500/20 text-emerald-400" : "bg-emerald-100 text-emerald-600") : "bg-red-500/20 text-red-400"}`}>
-                                    {product.stockQty > 0 ? "En Stock" : "Rupture"}
+                                <span className={`text-[10px] font-black uppercase px-3 py-1 rounded-full ${
+                                    !isOutOfStock
+                                        ? (isDark ? "bg-emerald-500/20 text-emerald-400" : "bg-emerald-100 text-emerald-600")
+                                        : "bg-red-500/20 text-red-400"
+                                }`}>
+                                    {!isOutOfStock ? `En Stock (${availableStock})` : "Rupture de stock"}
                                 </span>
                             </div>
                             
                             <div className="flex flex-col sm:flex-row gap-4 pt-4">
-                                <Button onClick={() => addToCart(product.id, currentVariant?.id, quantity)} className="flex-1 py-5 text-sm uppercase tracking-widest shadow-2xl shadow-indigo-500/30">
-                                    Ajouter au panier
+                                <Button 
+                                    disabled={isOutOfStock}
+                                    onClick={() => addToCart(product.id, currentVariant?.id, quantity)} 
+                                    className={`flex-1 py-5 text-sm uppercase tracking-widest shadow-2xl transition-all ${
+                                        isOutOfStock 
+                                            ? 'opacity-40 cursor-not-allowed bg-gray-500' 
+                                            : 'shadow-indigo-500/30'
+                                    }`}
+                                >
+                                    {isOutOfStock ? "Rupture de stock" : "Ajouter au panier"}
                                 </Button>
                                 <button onClick={openWhatsApp} className={`p-5 rounded-2xl flex items-center justify-center transition-transform hover:scale-105 shadow-xl ${isDark ? 'bg-[#161926] text-green-400 border border-white/5' : 'bg-white text-green-500 border border-slate-100'}`}>
                                     <MessageCircle size={24} />

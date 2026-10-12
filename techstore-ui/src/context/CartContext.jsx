@@ -29,11 +29,17 @@ export const CartProvider = ({ children }) => {
     const addToCart = async (productId, variantId = null, quantity = 1) => {
         try {
             const res = await CartService.addToCart({ productId, variantId, quantity }, sessionId);
-            if (res.status === 'success') {
-                await refreshCart(); // On attend la synchro ✨
+            if (res && res.status === 'success') {
+                await refreshCart();
                 setIsOpen(true);
+                return { success: true };
             }
-        } catch (e) { alert("Plus de stock !"); }
+        } catch (e) {
+            const msg = e.response?.data?.message || "Stock insuffisant ou indisponible.";
+            console.warn("Erreur panier:", msg);
+            alert(msg);
+            return { success: false, error: msg };
+        }
     };
 
     // LOGIQUE DE QUANTITÉ CORRIGÉE ✨

@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
+
 /* --- CONFIGURATION DU THÈME (Tailwind v4) --- */
 @theme {
   /* Couleurs Apple */
@@ -33,11 +36,14 @@
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   }
 
-  /* Ajustement automatique pour le mode sombre si nécessaire */
+  /* Ajustement automatique pour le mode sombre */
+  html.dark,
+  html.dark body,
   .dark body {
     background-color: var(--color-admin-bg);
-    color: white;
+    color: #f1f5f9;
   }
+
 }
 
 /* --- STYLE DE SCROLLBAR APPLE NEON (CORRIGÉ) --- */
