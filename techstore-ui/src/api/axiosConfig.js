@@ -15,6 +15,11 @@ const isValidHeaderValue = (value) => {
 };
 
 baseApi.interceptors.request.use((config) => {
+    // Normalise l'URL pour ne pas écraser le préfixe /api/v1
+    if (config.url && config.url.startsWith('/') && !config.url.startsWith('//')) {
+        config.url = config.url.substring(1);
+    }
+
     const token = sessionStorage.getItem('techstore_token');
     
     // Validation stricte du token du protocole d'authentification
