@@ -12,22 +12,32 @@ const NotificationBell = () => {
     const dropdownRef = useRef(null);
     const isDark = theme === 'dark';
 
+    const errorCountRef = useRef(0);
+
     // Récupération des alertes (Stock bas, Nouvelles commandes)
     const fetchNotifications = async () => {
         try {
             const res = await AdminService.getUnreadNotifications();
             if (res.status === 'success') {
                 setNotifications(res.data || []);
+                errorCountRef.current = 0; // reset on success
             }
         } catch (e) {
-            console.error("Erreur synchro notifications", e);
+            errorCountRef.current += 1;
+            // Silence errors after 3 consecutive failures (server sleeping on Render)
+            if (errorCountRef.current <= 3) {
+                console.warn("Notification fetch failed", errorCountRef.current);
+            }
         }
     };
 
-    // Polling hyper-réactif (30s)
+    // Polling with backoff: 30s normally, 5min after repeated errors
     useEffect(() => {
         fetchNotifications();
-        const interval = setInterval(fetchNotifications, 30000);
+        const getInterval = () => errorCountRef.current >= 3 ? 300000 : 30000;
+        let interval = setInterval(() => {
+            interval = setInterval(fetchNotifications, getInterval());
+        }, getInterval());
         return () => clearInterval(interval);
     }, []);
 
