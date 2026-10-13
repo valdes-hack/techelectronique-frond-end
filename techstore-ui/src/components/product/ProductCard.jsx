@@ -189,7 +189,117 @@ const ProductCard = ({ product, viewMode = 'grid' }) => {
     }
 
     // ═════════════════════════════════════════════════════════
-    // 2. VUE GRANDE GRILLE (LARGE GRID / EDITORIAL)
+    // 2. VUE ÉDITORIALE (PLEINE LARGEUR HORIZONTALE AVEC DÉTAILS)
+    // ═════════════════════════════════════════════════════════
+    if (viewMode === 'editorial') {
+        return (
+            <Link
+                to={`/product/${product.slug}`}
+                className="group relative flex flex-col md:flex-row bg-white dark:bg-[#161926] rounded-[2.5rem] border border-gray-100 dark:border-white/5 overflow-hidden hover:shadow-2xl hover:shadow-indigo-500/10 transition-all duration-500 p-6 sm:p-8 gap-8 items-center"
+            >
+                {/* Grand Visuel */}
+                <div className="relative w-full md:w-80 aspect-square bg-gray-50 dark:bg-[#111421] rounded-3xl flex items-center justify-center p-8 overflow-hidden shrink-0">
+                    <img
+                        src={displayImage}
+                        alt={product.name}
+                        loading="lazy"
+                        decoding="async"
+                        className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-700 ease-out"
+                        onError={(e) => {
+                            e.target.onerror = null;
+                            e.target.src = "https://images.unsplash.com/photo-1526406915894-7bcd65f60845?w=600";
+                        }}
+                    />
+                    {discount && (
+                        <span className="absolute top-4 left-4 bg-red-500 text-white text-xs font-black px-3 py-1 rounded-xl shadow-lg">
+                            -{discount}%
+                        </span>
+                    )}
+                </div>
+
+                {/* Détails */}
+                <div className="flex-1 min-w-0 flex flex-col justify-between h-full py-2 w-full">
+                    <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                            <span className="text-xs font-black text-indigo-500 uppercase tracking-widest">
+                                {product.brand || 'TechStore Exclusive'}
+                            </span>
+                            <span className={`text-[10px] font-black uppercase px-3 py-1 rounded-full ${
+                                !isOutOfStock ? 'bg-emerald-500/10 text-emerald-500' : 'bg-red-500/10 text-red-500'
+                            }`}>
+                                {!isOutOfStock ? `Stock : ${availableStock} unités` : 'Rupture'}
+                            </span>
+                        </div>
+
+                        <h3 className="text-xl sm:text-2xl font-black text-apple-dark dark:text-white leading-tight group-hover:text-indigo-600 transition-colors">
+                            {product.name}
+                        </h3>
+
+                        {product.description && (
+                            <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 line-clamp-3 leading-relaxed">
+                                {product.description}
+                            </p>
+                        )}
+
+                        <div className="flex items-center gap-2 pt-1">
+                            <div className="flex items-center gap-0.5">
+                                {[...Array(5)].map((_, i) => (
+                                    <Star
+                                        key={i}
+                                        size={13}
+                                        className={i < Math.round(rating) ? 'text-yellow-400 fill-yellow-400' : 'text-gray-200 dark:text-gray-700 fill-current'}
+                                    />
+                                ))}
+                            </div>
+                            <span className="text-xs text-gray-400 font-bold ml-1">
+                                {rating.toFixed(1)} / 5 {reviewCount > 0 && `(${reviewCount} avis clients)`}
+                            </span>
+                        </div>
+                    </div>
+
+                    <div className="flex items-center justify-between pt-6 mt-6 border-t border-gray-100 dark:border-white/5">
+                        <div>
+                            {formattedOriginal && (
+                                <span className="text-xs text-gray-400 line-through font-bold block">
+                                    {formattedOriginal} F
+                                </span>
+                            )}
+                            <span className="text-2xl sm:text-3xl font-black text-apple-dark dark:text-white tracking-tight">
+                                {formattedPrice} <span className="text-xs font-bold text-gray-400">FCFA</span>
+                            </span>
+                        </div>
+
+                        <div className="flex items-center gap-3">
+                            <button
+                                onClick={handleWish}
+                                className="p-3.5 rounded-2xl bg-gray-50 dark:bg-white/5 hover:bg-gray-100 dark:hover:bg-white/10 transition-colors"
+                            >
+                                <Heart size={18} className={wished ? 'fill-red-500 text-red-500' : 'text-gray-400'} />
+                            </button>
+
+                            <button
+                                onClick={handleAddClick}
+                                disabled={isOutOfStock}
+                                className={`flex items-center gap-2.5 px-7 py-3.5 rounded-2xl text-xs font-black uppercase tracking-wider transition-all shadow-xl active:scale-95 ${
+                                    isOutOfStock
+                                        ? 'bg-gray-200 dark:bg-white/10 text-gray-400 cursor-not-allowed shadow-none'
+                                        : added
+                                            ? 'bg-emerald-500 text-white shadow-emerald-500/30'
+                                            : 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-indigo-500/30'
+                                }`}
+                            >
+                                {added ? <Check size={16} strokeWidth={3} /> : <ShoppingBag size={16} />}
+                                <span>{added ? 'Ajouté' : isOutOfStock ? 'Épuisé' : 'Ajouter au Panier'}</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </Link>
+        );
+    }
+
+    // ═════════════════════════════════════════════════════════
+    // 3. VUE GRANDE GRILLE (LARGE GRID / 2 COLONNES)
     // ═════════════════════════════════════════════════════════
     if (viewMode === 'large-grid') {
         return (

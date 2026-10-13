@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import AdminSidebar from './AdminSidebar';
 import NotificationBell from './NotificationBell'; 
-import { ListFilter, Menu } from 'lucide-react';
+import { ListFilter, Menu, Sun, Moon } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
 
 const AdminLayout = ({ children, filters }) => {
@@ -13,7 +13,7 @@ const AdminLayout = ({ children, filters }) => {
     const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
     const [isFilterOpen, setIsFilterOpen] = useState(true);
 
-    const { theme } = useTheme();
+    const { theme, toggleTheme } = useTheme();
     const isDark = theme === 'dark';
 
     // ---------------------------------------------------------
@@ -86,7 +86,21 @@ const AdminLayout = ({ children, filters }) => {
                         <h1 className="font-black italic tracking-tighter text-indigo-500 text-2xl select-none uppercase">AdminHub</h1>
                     </div>
 
-                    <div className="flex items-center space-x-4 md:space-x-8">
+                    <div className="flex items-center space-x-3 md:space-x-5">
+                        {/* 🌙 / ☀️ TOGGLE THÈME CLAIR / SOMBRE */}
+                        <button
+                            onClick={toggleTheme}
+                            className={`p-2.5 rounded-xl border transition-all hover:scale-105 active:scale-95 flex items-center justify-center ${
+                                isDark
+                                    ? 'bg-white/5 border-white/10 text-yellow-400 hover:bg-white/10'
+                                    : 'bg-slate-100 border-slate-200 text-indigo-600 hover:bg-slate-200'
+                            }`}
+                            title={`Passer en mode ${isDark ? 'Clair' : 'Sombre'}`}
+                            aria-label="Basculer le thème"
+                        >
+                            {isDark ? <Sun size={19} /> : <Moon size={19} />}
+                        </button>
+
                         {/* 🔔 HUB TEMPS RÉEL (Produits, Commandes, Fournisseurs) */}
                         <NotificationBell />
 

@@ -2,12 +2,24 @@ import React, { Suspense, lazy } from 'react';
 import { Routes, Route, Link } from 'react-router-dom';
 import { PrivateRoute, AdminRoute } from './ProtectedRoute';
 
-// ─── SKELETON LOADER UNIVERSEL ───────────────────────────────────────────────
+// ─── SKELETON LOADER UNIVERSEL (Style YouTube / Skeleton fluide, AUCUN rond qui tourne) ─────
 const PageSkeleton = () => (
-    <div className="min-h-screen flex items-center justify-center bg-white dark:bg-[#0b0e14]">
-        <div className="flex flex-col items-center gap-4">
-            <div className="w-12 h-12 rounded-full border-4 border-indigo-500 border-t-transparent animate-spin" />
-            <p className="text-xs font-black uppercase tracking-widest text-gray-400 animate-pulse">Chargement…</p>
+    <div className="min-h-screen bg-apple-white dark:bg-[#0b0e14] py-8 px-4 sm:px-6 max-w-7xl mx-auto space-y-8 animate-pulse">
+        {/* Top header placeholder */}
+        <div className="space-y-3">
+            <div className="h-8 bg-gray-200 dark:bg-white/5 rounded-2xl w-48" />
+            <div className="h-4 bg-gray-100 dark:bg-white/5 rounded-xl w-72" />
+        </div>
+
+        {/* Content grid placeholder */}
+        <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
+            {[...Array(8)].map((_, i) => (
+                <div key={i} className="bg-gray-100 dark:bg-[#161926] rounded-3xl p-4 space-y-4 border border-transparent dark:border-white/5">
+                    <div className="aspect-square bg-gray-200 dark:bg-white/5 rounded-2xl" />
+                    <div className="h-4 bg-gray-200 dark:bg-white/5 rounded-xl w-3/4" />
+                    <div className="h-4 bg-gray-200 dark:bg-white/5 rounded-xl w-1/2" />
+                </div>
+            ))}
         </div>
     </div>
 );
@@ -25,7 +37,7 @@ const TrackOrder    = lazy(() => import('../pages/public/TrackOrder'));
 const Profile  = lazy(() => import('../pages/client/Profile'));
 const MyOrders = lazy(() => import('../pages/client/MyOrders'));
 
-// ─── PAGES ADMIN (lazy – chunk séparé, chargé seulement si admin) ─────────────
+// ─── PAGES ADMIN (lazy) ──────────────────────────────────────────────────────
 const Dashboard      = lazy(() => import('../pages/admin/Dashboard'));
 const AdminProducts  = lazy(() => import('../pages/admin/Products'));
 const AdminCategories= lazy(() => import('../pages/admin/Categories'));

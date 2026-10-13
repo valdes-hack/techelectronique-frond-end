@@ -4,15 +4,17 @@ import baseApi from '../../api/axiosConfig';
 import { 
     Save, Loader, Settings as SettingsIcon, Image as ImageIcon, Video, 
     Plus, X, Upload, Building2, PhoneCall, Sparkles, CheckCircle2, 
-    AlertCircle, Eye, Globe, Mail, MapPin, Phone
+    AlertCircle, Eye, Globe, Mail, MapPin, Phone, Bell, Check
 } from 'lucide-react';
 import { useAppContext } from '../../context/AppContext';
 import { useTheme } from '../../context/ThemeContext';
+import { useToast } from '../../context/ToastContext';
 import { getFullImageUrl } from '../../utils/imageUtils';
 
 const Settings = () => {
     const { settings: currentSettings, reloadSettings } = useAppContext();
     const { theme } = useTheme();
+    const { notificationConfig, updateNotificationConfig, notifySuccess } = useToast();
     const isDark = theme === 'dark';
 
     const [activeTab, setActiveTab] = useState('general'); // 'general' | 'contact' | 'hero'
@@ -132,6 +134,7 @@ const Settings = () => {
         { id: 'general', label: 'Boutique & Identité', icon: Building2, desc: 'Nom, marque et logo' },
         { id: 'contact', label: 'Contact & Support', icon: PhoneCall, desc: 'Email, téléphone et adresse' },
         { id: 'hero', label: 'Médias d\'Accueil', icon: ImageIcon, desc: 'Bannières et vidéo hero' },
+        { id: 'notifications', label: 'Alertes & Actions', icon: Bell, desc: 'Activer/Désactiver les alertes d\'actions' },
     ];
 
     return (
@@ -175,7 +178,7 @@ const Settings = () => {
                 )}
 
                 {/* ── ONGLETS DE NAVIGATION ── */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                     {tabs.map(tab => {
                         const Icon = tab.icon;
                         const isActive = activeTab === tab.id;
@@ -526,6 +529,97 @@ const Settings = () => {
                                                 <Upload size={14} /> {uploadingFile ? 'Envoi...' : 'Uploader vidéo'}
                                             </button>
                                         </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* 4. ONGLET ALERTES & NOTIFICATIONS D'ACTIONS */}
+                            {activeTab === 'notifications' && (
+                                <div className="space-y-6 animate-in fade-in duration-300">
+                                    <div className="border-b border-gray-100 dark:border-white/5 pb-4">
+                                        <h3 className="text-lg font-black uppercase tracking-wider text-slate-900 dark:text-white flex items-center gap-2">
+                                            <Bell size={20} className="text-indigo-500" /> Notifications & Alertes d'Actions
+                                        </h3>
+                                        <p className="text-xs text-gray-500 mt-1">
+                                            Activez ou désactivez les notifications en temps réel pour chaque action (ajout, modification, suppression, ravitaillement, commandes).
+                                        </p>
+                                    </div>
+
+                                    {/* INTERRUPTEUR GÉNÉRAL */}
+                                    <div className={`p-5 rounded-2xl border flex items-center justify-between ${
+                                        notificationConfig.enabled
+                                            ? 'bg-indigo-600/10 border-indigo-500/30'
+                                            : isDark ? 'bg-white/5 border-white/5' : 'bg-gray-50 border-gray-200'
+                                    }`}>
+                                        <div>
+                                            <h4 className="font-black text-sm uppercase text-slate-900 dark:text-white">
+                                                Système global de notifications
+                                            </h4>
+                                            <p className="text-xs text-gray-400 mt-0.5">
+                                                Active ou désactive complètement toutes les bulles d'alerte.
+                                            </p>
+                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={() => updateNotificationConfig({ enabled: !notificationConfig.enabled })}
+                                            className={`w-14 h-8 rounded-full transition-colors relative p-1 cursor-pointer ${
+                                                notificationConfig.enabled ? 'bg-indigo-600' : 'bg-gray-400 dark:bg-white/20'
+                                            }`}
+                                        >
+                                            <div className={`w-6 h-6 rounded-full bg-white transition-transform ${
+                                                notificationConfig.enabled ? 'translate-x-6' : 'translate-x-0'
+                                            }`} />
+                                        </button>
+                                    </div>
+
+                                    {/* LISTE DES OPTIONS PAR ACTION */}
+                                    <div className="space-y-3 pt-2">
+                                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+                                            Alertes par type d'action
+                                        </label>
+
+                                        {[
+                                            { key: 'create', title: 'Ajouts (Créations)', desc: 'Nouveau produit, nouveau rayon, nouveau fournisseur ajouté' },
+                                            { key: 'update', title: 'Modifications', desc: 'Produit édité, prix ajusté, paramètres enregistrés' },
+                                            { key: 'delete', title: 'Suppressions', desc: 'Produit supprimé, rayon retiré, partenaire archivé' },
+                                            { key: 'supply', title: 'Ravitaillements de stock', desc: 'Entrée physique de stock et calcul du nouveau stock total' },
+                                            { key: 'order', title: 'Mise à jour des commandes', desc: 'Changement de statut (payé, expédié, livré)' },
+                                        ].map((item) => {
+                                            const isChecked = notificationConfig[item.key] !== false;
+                                            return (
+                                                <div 
+                                                    key={item.key}
+                                                    className={`p-4 rounded-2xl border flex items-center justify-between transition-all ${
+                                                        !notificationConfig.enabled 
+                                                            ? 'opacity-40 pointer-events-none' 
+                                                            : isChecked 
+                                                                ? isDark ? 'bg-white/5 border-white/10' : 'bg-slate-50 border-gray-200' 
+                                                                : isDark ? 'bg-black/20 border-white/5' : 'bg-white border-gray-100'
+                                                    }`}
+                                                >
+                                                    <div className="min-w-0 pr-4">
+                                                        <h5 className="font-bold text-xs uppercase tracking-tight text-slate-900 dark:text-white">
+                                                            {item.title}
+                                                        </h5>
+                                                        <p className="text-[11px] text-gray-400 mt-0.5 truncate">
+                                                            {item.desc}
+                                                        </p>
+                                                    </div>
+
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => updateNotificationConfig({ [item.key]: !isChecked })}
+                                                        className={`w-12 h-7 rounded-full transition-colors relative p-1 cursor-pointer shrink-0 ${
+                                                            isChecked ? 'bg-emerald-500' : 'bg-gray-300 dark:bg-white/10'
+                                                        }`}
+                                                    >
+                                                        <div className={`w-5 h-5 rounded-full bg-white transition-transform ${
+                                                            isChecked ? 'translate-x-5' : 'translate-x-0'
+                                                        }`} />
+                                                    </button>
+                                                </div>
+                                            );
+                                        })}
                                     </div>
                                 </div>
                             )}

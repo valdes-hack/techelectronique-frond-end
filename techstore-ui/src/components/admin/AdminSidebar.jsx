@@ -48,7 +48,7 @@ const AdminSidebar = ({ width, setWidth, isMobileOpen, setIsMobileOpen }) => {
                 />
             )}
 
-            <aside style={{ width: `${width}px` }} className={sidebarClasses}>
+            <aside style={{ width: `${width}px` }} className={`${sidebarClasses} flex flex-col`}>
                 
                 {/* Bouton Rétractation (Desktop) */}
                 <button 

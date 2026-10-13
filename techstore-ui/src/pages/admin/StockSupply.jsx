@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useTheme } from '../../context/ThemeContext';
+import { useToast } from '../../context/ToastContext';
 import AdminLayout from '../../components/admin/AdminLayout';
 import AdminService from '../../services/admin.service';
 import { 
@@ -14,6 +15,10 @@ const StockSupply = () => {
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
 
+    // --- NOTIFICATIONS & THÈME ---
+    const { theme, toggleTheme } = useTheme();
+    const { notifyAction, notifyError } = useToast();
+
     // --- FORMULAIRE ---
     const [formData, setFormData] = useState({
         productId: '',
@@ -22,8 +27,6 @@ const StockSupply = () => {
         quantity: '',
         purchasePrice: ''
     });
-
-    const { theme, toggleTheme } = useTheme();
 
     // --- CHARGEMENT DES DONNÉES ---
     const loadInitialData = async () => {
@@ -34,7 +37,7 @@ const StockSupply = () => {
                 AdminService.getSuppliers()
             ]);
 
-            // Correction : Le backend renvoie souvent un objet Pageable (data.content)
+            // Le backend renvoie un objet Pageable (data.content)
             const productList = resProds.data?.content || resProds.data || [];
             setProducts(productList);
             setSuppliers(resSupps.data || []);
@@ -58,15 +61,15 @@ const StockSupply = () => {
         setFormData({ 
             ...formData, 
             productId: prodId, 
-            variantId: '' // On réinitialise la variante à chaque nouveau produit
+            variantId: '', 
+            purchasePrice: prod ? prod.costPrice : '' 
         });
     };
 
     // --- SOUMISSION DU FORMULAIRE ---
     const handleSubmit = async (e) => {
         e.preventDefault();
-        
-        // Vérification cruciale : si le produit a des variantes, on force le choix
+
         if (selectedProduct?.variants?.length > 0 && !formData.variantId) {
             alert("⚠️ Veuillez sélectionner une variante spécifique (Couleur/Taille) pour ce produit.");
             return;
@@ -79,18 +82,16 @@ const StockSupply = () => {
             supplierId: parseInt(formData.supplierId),
             quantity: parseInt(formData.quantity),
             purchasePrice: parseFloat(formData.purchasePrice),
-            // Si pas de variante sélectionnée, on envoie null
             variantId: formData.variantId ? parseInt(formData.variantId) : null 
         };
 
         try {
             await AdminService.supplyStock(payload);
-            alert("✅ Ravitaillement réussi ! Le stock et le prix d'achat ont été mis à jour.");
-            // On vide juste la quantité et le prix pour permettre un nouvel enregistrement rapide
+            notifyAction('supply', selectedProduct?.name || 'Produit', `+${formData.quantity} unités ajoutées au stock`);
             setFormData({ ...formData, quantity: '', purchasePrice: '' });
         } catch (err) {
             console.error(err);
-            alert("❌ Erreur serveur : vérifiez les données ou votre connexion.");
+            notifyError("Erreur lors du ravitaillement. Vérifiez les données ou votre connexion.", "Erreur");
         } finally {
             setSubmitting(false);
         }
@@ -137,19 +138,19 @@ const StockSupply = () => {
                                 </select>
                             </div>
 
-                            {/* 1.5 Variante (Apparaît seulement si nécessaire) */}
+                            {/* 1.5 Variante */}
                             {selectedProduct?.variants?.length > 0 && (
-                                <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-500">
-                                    <label className="text-[10px] font-black uppercase tracking-widest text-amber-500 ml-2">Déclinaison spécifique (Obligatoire)</label>
+                                <div className="space-y-4 animate-in fade-in">
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-indigo-500 ml-2">Variante spécifique</label>
                                     <div className="relative">
-                                        <Layers className="absolute left-5 top-5 text-amber-500/50" size={20} />
+                                        <Layers className="absolute left-5 top-5 text-gray-500" size={20} />
                                         <select 
                                             required
-                                            className="w-full bg-black/30 border border-amber-500/20 p-5 pl-14 rounded-2xl text-white outline-none focus:border-amber-500 font-bold appearance-none"
+                                            className="w-full bg-black/30 border border-white/10 p-5 pl-14 rounded-2xl text-white outline-none focus:border-indigo-500 font-bold"
                                             value={formData.variantId}
                                             onChange={(e) => setFormData({...formData, variantId: e.target.value})}
                                         >
-                                            <option value="">Choisir la variante...</option>
+                                            <option value="">Sélectionner la variante...</option>
                                             {selectedProduct.variants.map(v => (
                                                 <option key={v.id} value={v.id}>
                                                     {v.skuVariant} — Stock actuel : {v.stockQty || 0}

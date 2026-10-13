@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useTheme } from '../../context/ThemeContext';
+import { useToast } from '../../context/ToastContext';
 import AdminLayout from '../../components/admin/AdminLayout';
 import AdminFilter from '../../components/admin/AdminFilter';
 import ProductService from '../../services/product.service';
@@ -17,8 +18,9 @@ const AdminProducts = () => {
     const [filteredList, setFilteredList] = useState([]);
     const [loading, setLoading] = useState(true);
     
-    // 2. ÉTAT DU THÈME
+    // 2. ÉTAT DU THÈME & NOTIFICATIONS
     const { theme, toggleTheme } = useTheme();
+    const { notifyAction, notifyError } = useToast();
     
     // 3. ÉTAT DES FILTRES
     const [filters, setFilters] = useState({
@@ -83,12 +85,14 @@ const AdminProducts = () => {
     const categoriesList = ["Toutes", ...new Set(products.map(p => p.categoryName).filter(c => c))];
 
     const handleDelete = async (id) => {
-        if (window.confirm("Bébé, confirmer la suppression de ce produit ? 🥺")) {
+        const productToDelete = products.find(p => p.id === id);
+        if (window.confirm("Confirmer la suppression de ce produit ?")) {
             try {
                 await AdminService.deleteProduct(id);
+                notifyAction('delete', productToDelete?.name || 'Produit', 'Retiré du catalogue');
                 loadData();
             } catch (err) {
-                alert("Erreur lors de la suppression");
+                notifyError("Erreur lors de la suppression du produit", "Erreur");
             }
         }
     };
@@ -193,7 +197,6 @@ const AdminProducts = () => {
                 </div>
             </div>
 
-            {/* FORMULAIRE (MODALE) */}
             {showForm && (
                 <ProductForm 
                     product={selectedProduct} 
@@ -202,19 +205,19 @@ const AdminProducts = () => {
                     onSave={async (payload, files) => {
                         try {
                             if (selectedProduct) {
-                                // MODIFICATION : On utilise le format multipart (JSON + Fichiers)
+                                // MODIFICATION : Multipart (JSON + Fichiers)
                                 await AdminService.updateProduct(selectedProduct.id, payload, files);
-                                alert("✅ Produit mis à jour avec succès !");
+                                notifyAction('update', payload.name || 'Produit', 'Informations et prix mis à jour');
                             } else {
                                 // CRÉATION : Multipart (JSON + Fichiers)
                                 await AdminService.createProduct(payload, files);
-                                alert("✅ Nouveau produit ajouté !");
+                                notifyAction('create', payload.name || 'Nouveau Produit', 'Ajouté au catalogue');
                             }
                             loadData();
                             setShowForm(false);
                         } catch (err) {
                             console.error(err);
-                            alert("❌ Erreur lors de l'enregistrement. Vérifiez vos données.");
+                            notifyError("Erreur lors de l'enregistrement. Vérifiez vos données.", "Erreur");
                         }
                     }} 
                 />
