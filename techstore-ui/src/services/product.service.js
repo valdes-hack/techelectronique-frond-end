@@ -106,6 +106,24 @@ postReview: async (reviewData) => {
 postGuestReview: async (reviewData, token) => {
     const res = await api.post(`/reviews/guest?token=${token}`, reviewData);
     return res.data;
+},
+
+// 6. Récupérer les produits en promotion (discountPrice > 0)
+getPromotions: async () => {
+    try {
+        const response = await api.get('products', {
+            params: { page: 0, size: 100 }
+        });
+        if (response.data && response.data.status === 'success') {
+            const list = response.data.data?.content || response.data.data || [];
+            const promoList = list.filter(p => p.discountPrice && Number(p.discountPrice) > 0 && Number(p.discountPrice) < Number(p.basePrice));
+            return { status: 'success', data: promoList };
+        }
+        return response.data;
+    } catch (error) {
+        console.error("Erreur getPromotions", error);
+        throw error;
+    }
 }
 
 };

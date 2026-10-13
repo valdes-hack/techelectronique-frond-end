@@ -4,7 +4,7 @@ import baseApi from '../../api/axiosConfig';
 import { 
     Save, Loader, Settings as SettingsIcon, Image as ImageIcon, Video, 
     Plus, X, Upload, Building2, PhoneCall, Sparkles, CheckCircle2, 
-    AlertCircle, Eye, Globe, Mail, MapPin, Phone, Bell, Check
+    AlertCircle, Eye, Globe, Mail, MapPin, Phone, Bell, Check, Flame, Percent
 } from 'lucide-react';
 import { useAppContext } from '../../context/AppContext';
 import { useTheme } from '../../context/ThemeContext';
@@ -17,7 +17,7 @@ const Settings = () => {
     const { notificationConfig, updateNotificationConfig, notifySuccess } = useToast();
     const isDark = theme === 'dark';
 
-    const [activeTab, setActiveTab] = useState('general'); // 'general' | 'contact' | 'hero'
+    const [activeTab, setActiveTab] = useState('general'); // 'general' | 'contact' | 'hero' | 'notifications' | 'promotions'
     const [formData, setFormData] = useState({
         siteName: '',
         contactEmail: '',
@@ -25,7 +25,34 @@ const Settings = () => {
         contactAddress: '',
         logoUrl: '',
     });
-    
+
+    // Paramètres locaux pour les promotions
+    const [promoSettings, setPromoSettings] = useState(() => {
+        try {
+            const saved = localStorage.getItem('techstore_promo_settings');
+            return saved ? JSON.parse(saved) : {
+                autoBadge: true,
+                bannerEnabled: true,
+                flashSaleTimerHours: 24,
+                minDiscountPercent: 5
+            };
+        } catch {
+            return { autoBadge: true, bannerEnabled: true, flashSaleTimerHours: 24, minDiscountPercent: 5 };
+        }
+    });
+
+    const updatePromoSettings = (newSettings) => {
+        setPromoSettings(prev => {
+            const updated = { ...prev, ...newSettings };
+            try {
+                localStorage.setItem('techstore_promo_settings', JSON.stringify(updated));
+            } catch (e) {
+                console.error(e);
+            }
+            return updated;
+        });
+    };
+
     // List of URLs for the hero slider & video
     const [heroImagesUrls, setHeroImagesUrls] = useState([]);
     const [heroVideoUrl, setHeroVideoUrl] = useState('');
@@ -134,6 +161,7 @@ const Settings = () => {
         { id: 'general', label: 'Boutique & Identité', icon: Building2, desc: 'Nom, marque et logo' },
         { id: 'contact', label: 'Contact & Support', icon: PhoneCall, desc: 'Email, téléphone et adresse' },
         { id: 'hero', label: 'Médias d\'Accueil', icon: ImageIcon, desc: 'Bannières et vidéo hero' },
+        { id: 'promotions', label: 'Promos & Remises', icon: Flame, desc: 'Comportement des offres et badges' },
         { id: 'notifications', label: 'Alertes & Actions', icon: Bell, desc: 'Activer/Désactiver les alertes d\'actions' },
     ];
 
@@ -178,7 +206,7 @@ const Settings = () => {
                 )}
 
                 {/* ── ONGLETS DE NAVIGATION ── */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3">
                     {tabs.map(tab => {
                         const Icon = tab.icon;
                         const isActive = activeTab === tab.id;
@@ -620,6 +648,92 @@ const Settings = () => {
                                                 </div>
                                             );
                                         })}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* 5. ONGLET PARAMÈTRES DES PROMOTIONS */}
+                            {activeTab === 'promotions' && (
+                                <div className="space-y-6 animate-in fade-in duration-300">
+                                    <div className="border-b border-gray-100 dark:border-white/5 pb-4">
+                                        <h3 className="text-lg font-black uppercase tracking-wider text-slate-900 dark:text-white flex items-center gap-2">
+                                            <Flame size={20} className="text-red-500 fill-red-500" /> Paramètres des Promotions & Ventes Flash
+                                        </h3>
+                                        <p className="text-xs text-gray-500 mt-1">
+                                            Personnalisez les badges de remise, le bandeau d'accueil et le seuil minimal de promotion.
+                                        </p>
+                                    </div>
+
+                                    {/* BADGE AUTOMATIQUE */}
+                                    <div className={`p-5 rounded-2xl border flex items-center justify-between ${
+                                        promoSettings.autoBadge
+                                            ? 'bg-red-500/10 border-red-500/30'
+                                            : isDark ? 'bg-white/5 border-white/5' : 'bg-gray-50 border-gray-200'
+                                    }`}>
+                                        <div>
+                                            <h4 className="font-black text-sm uppercase text-slate-900 dark:text-white">
+                                                Affichage automatique des Badges "-X%"
+                                            </h4>
+                                            <p className="text-xs text-gray-400 mt-0.5">
+                                                Affiche automatiquement un macaron rouge avec le pourcentage de remise calculé sur les fiches produits.
+                                            </p>
+                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={() => updatePromoSettings({ autoBadge: !promoSettings.autoBadge })}
+                                            className={`w-14 h-8 rounded-full transition-colors relative p-1 cursor-pointer ${
+                                                promoSettings.autoBadge ? 'bg-red-500' : 'bg-gray-400 dark:bg-white/20'
+                                            }`}
+                                        >
+                                            <div className={`w-6 h-6 rounded-full bg-white transition-transform ${
+                                                promoSettings.autoBadge ? 'translate-x-6' : 'translate-x-0'
+                                            }`} />
+                                        </button>
+                                    </div>
+
+                                    {/* BANNIÈRE PROMOTION SUR L'ACCUEIL */}
+                                    <div className={`p-5 rounded-2xl border flex items-center justify-between ${
+                                        promoSettings.bannerEnabled
+                                            ? 'bg-indigo-600/10 border-indigo-500/30'
+                                            : isDark ? 'bg-white/5 border-white/5' : 'bg-gray-50 border-gray-200'
+                                    }`}>
+                                        <div>
+                                            <h4 className="font-black text-sm uppercase text-slate-900 dark:text-white">
+                                                Section Ventes Flash sur la Page d'Accueil
+                                            </h4>
+                                            <p className="text-xs text-gray-400 mt-0.5">
+                                                Met en avant le carrousel des meilleures promotions dès la page d'accueil.
+                                            </p>
+                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={() => updatePromoSettings({ bannerEnabled: !promoSettings.bannerEnabled })}
+                                            className={`w-14 h-8 rounded-full transition-colors relative p-1 cursor-pointer ${
+                                                promoSettings.bannerEnabled ? 'bg-indigo-600' : 'bg-gray-400 dark:bg-white/20'
+                                            }`}
+                                        >
+                                            <div className={`w-6 h-6 rounded-full bg-white transition-transform ${
+                                                promoSettings.bannerEnabled ? 'translate-x-6' : 'translate-x-0'
+                                            }`} />
+                                        </button>
+                                    </div>
+
+                                    {/* SEUIL MINIMAL DE REMISE (%) */}
+                                    <div className="space-y-3 pt-2">
+                                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+                                            Pourcentage minimum pour considérer un article comme "En Promotion"
+                                        </label>
+                                        <div className="flex items-center gap-4">
+                                            <input
+                                                type="number"
+                                                min="1"
+                                                max="50"
+                                                value={promoSettings.minDiscountPercent || 5}
+                                                onChange={(e) => updatePromoSettings({ minDiscountPercent: Number(e.target.value) })}
+                                                className="w-32 bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-2xl p-4 text-sm font-black outline-none focus:border-indigo-500 text-slate-900 dark:text-white"
+                                            />
+                                            <span className="text-xs font-bold text-gray-400">% de réduction requise</span>
+                                        </div>
                                     </div>
                                 </div>
                             )}

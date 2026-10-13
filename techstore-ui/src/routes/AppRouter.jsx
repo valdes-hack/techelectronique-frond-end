@@ -29,6 +29,7 @@ const Home          = lazy(() => import('../pages/public/Home'));
 const Login         = lazy(() => import('../pages/auth/Login'));
 const Register      = lazy(() => import('../pages/auth/Register'));
 const Catalog       = lazy(() => import('../pages/public/Catalog'));
+const Promotions    = lazy(() => import('../pages/public/Promotions'));
 const ProductDetail = lazy(() => import('../pages/public/ProductDetail'));
 const CheckoutPage  = lazy(() => import('../pages/public/CheckoutPage'));
 const TrackOrder    = lazy(() => import('../pages/public/TrackOrder'));
@@ -40,6 +41,7 @@ const MyOrders = lazy(() => import('../pages/client/MyOrders'));
 // ─── PAGES ADMIN (lazy) ──────────────────────────────────────────────────────
 const Dashboard      = lazy(() => import('../pages/admin/Dashboard'));
 const AdminProducts  = lazy(() => import('../pages/admin/Products'));
+const AdminPromotions= lazy(() => import('../pages/admin/Promotions'));
 const AdminCategories= lazy(() => import('../pages/admin/Categories'));
 const AdminSuppliers = lazy(() => import('../pages/admin/Suppliers'));
 const StockSupply    = lazy(() => import('../pages/admin/StockSupply'));
@@ -58,6 +60,7 @@ const AppRouter = () => {
                 <Route path="/login"           element={<Login />} />
                 <Route path="/register"        element={<Register />} />
                 <Route path="/catalog"         element={<Catalog />} />
+                <Route path="/promotions"      element={<Promotions />} />
                 <Route path="/category/:slug"  element={<Catalog />} />
                 <Route path="/product/:slug"   element={<ProductDetail />} />
                 <Route path="/checkout"        element={<CheckoutPage />} />
@@ -71,6 +74,7 @@ const AppRouter = () => {
                 <Route path="/admin"                element={<AdminRoute><Dashboard /></AdminRoute>} />
                 <Route path="/admin/dashboard"      element={<AdminRoute><Dashboard /></AdminRoute>} />
                 <Route path="/admin/products"       element={<AdminRoute><AdminProducts /></AdminRoute>} />
+                <Route path="/admin/promotions"     element={<AdminRoute><AdminPromotions /></AdminRoute>} />
                 <Route path="/admin/stock"          element={<AdminRoute><StockSupply /></AdminRoute>} />
                 <Route path="/admin/categories"     element={<AdminRoute><AdminCategories /></AdminRoute>} />
                 <Route path="/admin/suppliers"      element={<AdminRoute><AdminSuppliers /></AdminRoute>} />

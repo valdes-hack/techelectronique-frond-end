@@ -72,6 +72,7 @@ const Navbar = () => {
     const navLinks = [
         { to: '/', label: 'Accueil' },
         { to: '/catalog', label: 'Boutique' },
+        { to: '/promotions', label: 'Promotions 🔥' },
     ];
 
     return (

@@ -89,6 +89,27 @@ const AdminService = {
         return response.data;
     },
 
+    /**
+     * Mettre à jour la promotion d'un produit (discountPrice)
+     */
+    updateProductDiscount: async (id, product, discountPrice) => {
+        const payload = {
+            name: product.name,
+            slug: product.slug,
+            sku: product.sku,
+            brand: product.brand,
+            basePrice: product.basePrice,
+            discountPrice: discountPrice !== null && discountPrice !== undefined ? parseFloat(discountPrice) : null,
+            costPrice: product.costPrice || 0,
+            categoryId: product.categoryId || product.category?.id,
+            defaultSupplierId: product.defaultSupplierId || product.supplier?.id || null,
+            description: product.description || '',
+            imageUrls: product.images?.map(img => img.url) || [],
+            variants: product.variants || []
+        };
+        return AdminService.updateProduct(id, payload, null);
+    },
+
     // ==========================================
     // 🏷️ GESTION DES CATÉGORIES (Multipart compatible)
     // ==========================================

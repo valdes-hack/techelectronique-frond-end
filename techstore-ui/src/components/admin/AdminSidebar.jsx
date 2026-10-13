@@ -2,7 +2,7 @@ import React from 'react';
 import { 
     LayoutDashboard, Box, Users, ShoppingCart, 
     BarChart3, Settings, Sun, Moon, Zap, History,
-    ChevronLeft, ChevronRight, X, Layers, Truck, PackagePlus, LogOut, Globe 
+    ChevronLeft, ChevronRight, X, Layers, Truck, PackagePlus, LogOut, Globe, Flame
 } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useTheme } from '../../context/ThemeContext';
@@ -22,6 +22,7 @@ const AdminSidebar = ({ width, setWidth, isMobileOpen, setIsMobileOpen }) => {
     const menuItems = [
         { icon: <LayoutDashboard size={22}/>, label: "Dashboard", path: "/admin" },
         { icon: <Box size={22}/>, label: "Produits", path: "/admin/products" },
+        { icon: <Flame size={22} className="text-red-500"/>, label: "Promotions", path: "/admin/promotions" },
         { icon: <PackagePlus size={22}/>, label: "Ravitaillement", path: "/admin/stock" },
         { icon: <Layers size={22}/>, label: "Catégories", path: "/admin/categories" },
         { icon: <Truck size={22}/>, label: "Fournisseurs", path: "/admin/suppliers" },
