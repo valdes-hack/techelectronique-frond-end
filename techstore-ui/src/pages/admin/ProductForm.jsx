@@ -19,7 +19,7 @@ const ProductForm = ({ product, onClose, onSave, theme }) => {
 
     const [formData, setFormData] = useState({
         id: null, name: '', slug: '', sku: '', brand: '',
-        basePrice: '', costPrice: '', categoryId: '',
+        basePrice: '', costPrice: '', discountPrice: '', categoryId: '',
         defaultSupplierId: '', description: '', variants: []
     });
 
@@ -47,6 +47,7 @@ const ProductForm = ({ product, onClose, onSave, theme }) => {
                 brand: product.brand || '',
                 basePrice: product.basePrice || '',
                 costPrice: product.costPrice || '',
+                discountPrice: product.discountPrice != null ? product.discountPrice : '',
                 categoryId: product.categoryId || product.category?.id || '',
                 defaultSupplierId: product.defaultSupplierId || '',
                 description: product.description || '',
@@ -142,6 +143,7 @@ const ProductForm = ({ product, onClose, onSave, theme }) => {
                 ...formData,
                 basePrice: parseFloat(formData.basePrice) || 0,
                 costPrice: parseFloat(formData.costPrice) || 0,
+                discountPrice: formData.discountPrice !== '' && formData.discountPrice !== null ? parseFloat(formData.discountPrice) : null,
                 categoryId: parseInt(formData.categoryId),
                 defaultSupplierId: formData.defaultSupplierId ? parseInt(formData.defaultSupplierId) : null,
                 imageUrls: imageUrls, // URLs à conserver/ajouter
@@ -201,8 +203,19 @@ const ProductForm = ({ product, onClose, onSave, theme }) => {
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                             <Input label="Prix Vente" type="number" required value={formData.basePrice} onChange={(e) => setFormData({...formData, basePrice: e.target.value})} theme={theme} />
+                            <div className="space-y-1">
+                                <div className="flex items-center justify-between">
+                                    <label className="text-[10px] font-black uppercase text-rose-500 tracking-wider">Prix Promo 🔥</label>
+                                    {formData.basePrice && formData.discountPrice && parseFloat(formData.discountPrice) < parseFloat(formData.basePrice) && (
+                                        <span className="text-[10px] font-black text-rose-500 bg-rose-500/10 px-1.5 py-0.5 rounded">
+                                            -{Math.round((1 - parseFloat(formData.discountPrice) / parseFloat(formData.basePrice)) * 100)}%
+                                        </span>
+                                    )}
+                                </div>
+                                <Input placeholder="Optionnel" type="number" value={formData.discountPrice} onChange={(e) => setFormData({...formData, discountPrice: e.target.value})} theme={theme} />
+                            </div>
                             <Input label="Prix Achat" type="number" value={formData.costPrice} onChange={(e) => setFormData({...formData, costPrice: e.target.value})} theme={theme} />
                         </div>
                         <textarea placeholder="Description du produit..." className={`w-full border p-5 rounded-[2rem] h-24 outline-none transition-all ${isDark ? 'bg-white/5 border-white/10 text-white focus:border-indigo-500' : 'bg-gray-100 border-transparent text-slate-900'}`} value={formData.description} onChange={(e) => setFormData({...formData, description: e.target.value})} />

@@ -6,7 +6,7 @@ import AdminService from '../../services/admin.service';
 import { 
     Tag, Percent, Sparkles, Search, Check, X, ArrowUpRight, 
     TrendingDown, AlertCircle, RefreshCw, Plus, Edit3, Trash2, 
-    Box, Flame, SlidersHorizontal
+    Box, Flame, SlidersHorizontal, ArrowLeft
 } from 'lucide-react';
 import { getFullImageUrl } from '../../utils/imageUtils';
 
@@ -24,6 +24,7 @@ const AdminPromotions = () => {
     // Modal pour éditer / ajouter une promotion
     const [selectedProduct, setSelectedProduct] = useState(null);
     const [showModal, setShowModal] = useState(false);
+    const [pickerSearch, setPickerSearch] = useState('');
     const [discountType, setDiscountType] = useState('PERCENT'); // 'PERCENT' | 'FIXED'
     const [discountValue, setDiscountValue] = useState('');
     const [saving, setSaving] = useState(false);
@@ -84,7 +85,7 @@ const AdminPromotions = () => {
         return ['ALL', ...new Set(products.map(p => p.categoryName).filter(Boolean))];
     }, [products]);
 
-    // Ouverture modal promo
+    // Ouverture modal pour configurer un produit spécifique
     const handleOpenModal = (product) => {
         setSelectedProduct(product);
         if (product.discountPrice && Number(product.discountPrice) > 0) {
@@ -98,6 +99,29 @@ const AdminPromotions = () => {
             setDiscountValue('15'); // 15% par défaut
         }
         setShowModal(true);
+    };
+
+    // Ouverture modal pour ajouter une promotion (avec sélecteur de produit)
+    const handleOpenNewPromoModal = () => {
+        setSelectedProduct(null);
+        setPickerSearch('');
+        setDiscountType('PERCENT');
+        setDiscountValue('15');
+        setShowModal(true);
+    };
+
+    const handleSelectProductForPromo = (product) => {
+        setSelectedProduct(product);
+        if (product.discountPrice && Number(product.discountPrice) > 0) {
+            const base = Number(product.basePrice);
+            const disc = Number(product.discountPrice);
+            const percent = Math.round((1 - disc / base) * 100);
+            setDiscountType('PERCENT');
+            setDiscountValue(percent.toString());
+        } else {
+            setDiscountType('PERCENT');
+            setDiscountValue('15');
+        }
     };
 
     // Calcul du nouveau prix remisé en temps réel
@@ -175,14 +199,24 @@ const AdminPromotions = () => {
                         </p>
                     </div>
 
-                    <button
-                        onClick={loadProducts}
-                        disabled={loading}
-                        className="self-start md:self-auto flex items-center gap-2 px-5 py-3 rounded-2xl bg-indigo-600/10 hover:bg-indigo-600/20 text-indigo-500 font-black text-xs uppercase tracking-wider transition-all"
-                    >
-                        <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
-                        <span>Actualiser</span>
-                    </button>
+                    <div className="flex items-center gap-3">
+                        <button
+                            onClick={handleOpenNewPromoModal}
+                            className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-gradient-to-r from-red-600 via-rose-600 to-orange-500 hover:brightness-110 text-white font-black text-xs uppercase tracking-wider shadow-lg shadow-red-500/25 transition-all active:scale-95"
+                        >
+                            <Plus size={16} />
+                            <span>Ajouter une Promotion</span>
+                        </button>
+                        
+                        <button
+                            onClick={loadProducts}
+                            disabled={loading}
+                            className="flex items-center gap-2 px-4 py-3 rounded-2xl bg-indigo-600/10 hover:bg-indigo-600/20 text-indigo-500 font-black text-xs uppercase tracking-wider transition-all"
+                        >
+                            <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
+                            <span className="hidden sm:inline">Actualiser</span>
+                        </button>
+                    </div>
                 </header>
 
                 {/* ── STATS CARDS ── */}
@@ -296,7 +330,13 @@ const AdminPromotions = () => {
                                     <tr>
                                         <td colSpan="7" className="p-12 text-center text-gray-400">
                                             <Tag size={36} className="mx-auto mb-2 opacity-30 text-indigo-500" />
-                                            <p className="font-bold uppercase tracking-wider text-xs">Aucun produit trouvé</p>
+                                            <p className="font-bold uppercase tracking-wider text-xs mb-3">Aucun produit trouvé</p>
+                                            <button
+                                                onClick={handleOpenNewPromoModal}
+                                                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-red-600 text-white font-black text-xs uppercase"
+                                            >
+                                                <Plus size={14} /> Mettre un produit en promotion
+                                            </button>
                                         </td>
                                     </tr>
                                 ) : (
@@ -388,25 +428,36 @@ const AdminPromotions = () => {
 
                                                 {/* Actions */}
                                                 <td className="p-5 text-right space-x-2">
-                                                    <button
-                                                        onClick={() => handleOpenModal(p)}
-                                                        className={`p-2.5 rounded-xl border transition-all text-indigo-400 hover:border-indigo-400 ${
-                                                            isDark ? 'border-white/5 bg-white/5' : 'border-slate-200 bg-slate-50'
-                                                        }`}
-                                                        title="Configurer la promotion"
-                                                    >
-                                                        <Edit3 size={15} />
-                                                    </button>
+                                                    {hasPromo ? (
+                                                        <>
+                                                            <button
+                                                                onClick={() => handleOpenModal(p)}
+                                                                className={`p-2.5 rounded-xl border transition-all text-indigo-400 hover:border-indigo-400 ${
+                                                                    isDark ? 'border-white/5 bg-white/5' : 'border-slate-200 bg-slate-50'
+                                                                }`}
+                                                                title="Modifier la promotion"
+                                                            >
+                                                                <Edit3 size={15} />
+                                                            </button>
 
-                                                    {hasPromo && (
+                                                            <button
+                                                                onClick={() => handleRemovePromo(p)}
+                                                                className={`p-2.5 rounded-xl border transition-all text-red-400 hover:border-red-400 ${
+                                                                    isDark ? 'border-white/5 bg-white/5' : 'border-slate-200 bg-slate-50'
+                                                                }`}
+                                                                title="Retirer la promotion"
+                                                            >
+                                                                <Trash2 size={15} />
+                                                            </button>
+                                                        </>
+                                                    ) : (
                                                         <button
-                                                            onClick={() => handleRemovePromo(p)}
-                                                            className={`p-2.5 rounded-xl border transition-all text-red-400 hover:border-red-400 ${
-                                                                isDark ? 'border-white/5 bg-white/5' : 'border-slate-200 bg-slate-50'
-                                                            }`}
-                                                            title="Supprimer la promotion"
+                                                            onClick={() => handleOpenModal(p)}
+                                                            className="px-3 py-1.5 rounded-xl border font-black text-[11px] uppercase tracking-wider flex items-center gap-1.5 transition-all text-red-500 border-red-500/30 hover:bg-red-500 hover:text-white shadow-sm inline-flex ml-auto"
+                                                            title="Mettre en promotion"
                                                         >
-                                                            <Trash2 size={15} />
+                                                            <Flame size={13} className="fill-red-500 group-hover:fill-white" />
+                                                            <span>+ Promo</span>
                                                         </button>
                                                     )}
                                                 </td>
@@ -422,7 +473,7 @@ const AdminPromotions = () => {
             </div>
 
             {/* ── MODAL DE GESTION DE PROMOTION ── */}
-            {showModal && selectedProduct && (
+            {showModal && (
                 <div className="fixed inset-0 z-[999] bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
                     <div className={`w-full max-w-lg rounded-[2.5rem] p-6 sm:p-8 border shadow-2xl animate-in zoom-in-95 duration-200 ${
                         isDark ? 'bg-[#111421] border-white/10 text-white' : 'bg-white border-slate-200 text-slate-900'
@@ -436,10 +487,10 @@ const AdminPromotions = () => {
                                 </div>
                                 <div>
                                     <h3 className="font-black italic text-lg uppercase tracking-tight">
-                                        Configurer la Promotion
+                                        {selectedProduct ? 'Configurer la Promotion' : 'Choisir un Produit'}
                                     </h3>
                                     <p className="text-[10px] text-gray-400 font-bold truncate max-w-xs">
-                                        {selectedProduct.name}
+                                        {selectedProduct ? selectedProduct.name : 'Sélectionnez un article du catalogue à solder'}
                                     </p>
                                 </div>
                             </div>
@@ -452,112 +503,225 @@ const AdminPromotions = () => {
                         </div>
 
                         {/* Contenu Formulaire Promo */}
-                        <div className="py-6 space-y-6">
-                            
-                            {/* Rappel Prix de base */}
-                            <div className={`p-4 rounded-2xl border flex items-center justify-between ${
-                                isDark ? 'bg-white/5 border-white/5' : 'bg-slate-50 border-slate-200'
-                            }`}>
-                                <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Prix de base actuel</span>
-                                <span className="text-xl font-black text-indigo-500">
-                                    {Number(selectedProduct.basePrice).toLocaleString()} FCFA
-                                </span>
-                            </div>
-
-                            {/* Choix du mode : Pourcentage ou Prix Direct */}
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">
-                                    Mode de calcul de la remise
-                                </label>
-                                <div className="grid grid-cols-2 gap-3">
-                                    <button
-                                        type="button"
-                                        onClick={() => setDiscountType('PERCENT')}
-                                        className={`p-3.5 rounded-2xl border font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all ${
-                                            discountType === 'PERCENT'
-                                                ? 'bg-indigo-600 text-white border-indigo-600 shadow-lg shadow-indigo-500/25'
-                                                : isDark ? 'bg-white/5 border-white/5 text-gray-400' : 'bg-slate-100 border-slate-200 text-slate-600'
-                                        }`}
-                                    >
-                                        <Percent size={15} /> Pourcentage (%)
-                                    </button>
-
-                                    <button
-                                        type="button"
-                                        onClick={() => {
-                                            setDiscountType('FIXED');
-                                            setDiscountValue(selectedProduct.discountPrice ? selectedProduct.discountPrice.toString() : '');
-                                        }}
-                                        className={`p-3.5 rounded-2xl border font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all ${
-                                            discountType === 'FIXED'
-                                                ? 'bg-indigo-600 text-white border-indigo-600 shadow-lg shadow-indigo-500/25'
-                                                : isDark ? 'bg-white/5 border-white/5 text-gray-400' : 'bg-slate-100 border-slate-200 text-slate-600'
-                                        }`}
-                                    >
-                                        <Tag size={15} /> Prix Remisé Fixe
-                                    </button>
-                                </div>
-                            </div>
-
-                            {/* Valeur de la réduction */}
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">
-                                    {discountType === 'PERCENT' ? 'Pourcentage de réduction à appliquer' : 'Nouveau prix de vente final (FCFA)'}
-                                </label>
+                        {!selectedProduct ? (
+                            /* ÉTAPE 1 : CHOISIR UN PRODUIT */
+                            <div className="py-6 space-y-4">
                                 <div className="relative">
+                                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
                                     <input
-                                        type="number"
-                                        min="1"
-                                        max={discountType === 'PERCENT' ? '99' : selectedProduct.basePrice}
-                                        value={discountValue}
-                                        onChange={(e) => setDiscountValue(e.target.value)}
-                                        placeholder={discountType === 'PERCENT' ? 'Ex: 20' : 'Ex: 150000'}
-                                        className="w-full bg-black/5 dark:bg-white/5 border border-transparent dark:border-white/10 rounded-2xl p-4 text-lg font-black outline-none focus:border-indigo-500 text-slate-900 dark:text-white"
+                                        type="text"
+                                        autoFocus
+                                        placeholder="Rechercher le produit à solder (nom, marque)..."
+                                        value={pickerSearch}
+                                        onChange={(e) => setPickerSearch(e.target.value)}
+                                        className="w-full bg-black/5 dark:bg-white/5 border border-transparent dark:border-white/10 rounded-2xl py-3.5 pl-11 pr-4 text-xs font-bold outline-none focus:border-red-500 text-slate-900 dark:text-white"
                                     />
-                                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-black text-gray-400">
-                                        {discountType === 'PERCENT' ? '%' : 'FCFA'}
-                                    </span>
+                                </div>
+
+                                <div className="max-h-[320px] overflow-y-auto custom-scrollbar space-y-2 pr-1">
+                                    {products
+                                        .filter(p => !pickerSearch || p.name?.toLowerCase().includes(pickerSearch.toLowerCase()) || p.brand?.toLowerCase().includes(pickerSearch.toLowerCase()) || p.sku?.toLowerCase().includes(pickerSearch.toLowerCase()))
+                                        .map(p => {
+                                            const hasPromo = p.discountPrice && Number(p.discountPrice) > 0 && Number(p.discountPrice) < Number(p.basePrice);
+                                            const firstImg = p.images?.[0]?.url || p.imageUrl;
+                                            return (
+                                                <div
+                                                    key={p.id}
+                                                    onClick={() => handleSelectProductForPromo(p)}
+                                                    className={`p-3 rounded-2xl border transition-all cursor-pointer flex items-center justify-between gap-3 ${
+                                                        isDark 
+                                                            ? 'bg-white/5 hover:bg-white/10 border-white/5 hover:border-red-500/50' 
+                                                            : 'bg-slate-50 hover:bg-red-50/50 border-slate-200 hover:border-red-300'
+                                                    }`}
+                                                >
+                                                    <div className="flex items-center gap-3 min-w-0">
+                                                        <div className="w-12 h-12 rounded-xl bg-black/5 dark:bg-white/5 border border-black/5 dark:border-white/10 p-1 flex items-center justify-center overflow-hidden shrink-0">
+                                                            <img
+                                                                src={getFullImageUrl(firstImg)}
+                                                                alt={p.name}
+                                                                className="max-h-full max-w-full object-contain"
+                                                                onError={(e) => {
+                                                                    e.target.onerror = null;
+                                                                    e.target.src = "https://images.unsplash.com/photo-1526406915894-7bcd65f60845?w=100";
+                                                                }}
+                                                            />
+                                                        </div>
+                                                        <div className="min-w-0">
+                                                            <p className="font-black text-xs uppercase truncate text-slate-900 dark:text-white">
+                                                                {p.name}
+                                                            </p>
+                                                            <p className="text-[10px] text-gray-400 font-bold">
+                                                                {Number(p.basePrice).toLocaleString()} FCFA • {p.brand || 'TechStore'}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="shrink-0 flex items-center gap-2">
+                                                        {hasPromo && (
+                                                            <span className="text-[9px] font-black uppercase px-2 py-0.5 rounded-full bg-red-500/10 text-red-500">
+                                                                En promo
+                                                            </span>
+                                                        )}
+                                                        <span className="px-3 py-1.5 rounded-xl bg-red-600 hover:bg-red-500 text-white font-black text-[10px] uppercase tracking-wider flex items-center gap-1 shadow-md shadow-red-500/20">
+                                                            <Check size={12} /> Choisir
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
                                 </div>
                             </div>
-
-                            {/* Résultat simulé en direct */}
-                            <div className="p-5 rounded-2xl bg-red-500/10 border border-red-500/20 space-y-2">
-                                <div className="flex items-center justify-between text-xs font-bold text-red-400 uppercase tracking-wider">
-                                    <span>Prix Promotionnel Final</span>
-                                    <span>-{calculatedDiscountPercent}%</span>
+                        ) : (
+                            /* ÉTAPE 2 : APPLIQUER LA RÉDUCTION AU PRODUIT SÉLECTIONNÉ */
+                            <div className="py-6 space-y-5">
+                                
+                                {/* Rappel Produit & Changement */}
+                                <div className={`p-3.5 rounded-2xl border flex items-center justify-between gap-3 ${
+                                    isDark ? 'bg-white/5 border-white/5' : 'bg-slate-50 border-slate-200'
+                                }`}>
+                                    <div className="flex items-center gap-3 min-w-0">
+                                        <div className="w-12 h-12 rounded-xl bg-black/5 dark:bg-white/5 p-1 flex items-center justify-center shrink-0 overflow-hidden">
+                                            <img
+                                                src={getFullImageUrl(selectedProduct.images?.[0]?.url || selectedProduct.imageUrl)}
+                                                alt={selectedProduct.name}
+                                                className="max-h-full max-w-full object-contain"
+                                            />
+                                        </div>
+                                        <div className="min-w-0">
+                                            <p className="text-xs font-black uppercase truncate text-slate-900 dark:text-white">
+                                                {selectedProduct.name}
+                                            </p>
+                                            <p className="text-[10px] font-bold text-indigo-400">
+                                                Prix standard : {Number(selectedProduct.basePrice).toLocaleString()} FCFA
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={() => setSelectedProduct(null)}
+                                        className="text-[10px] font-black uppercase px-3 py-1.5 rounded-xl text-gray-400 hover:text-white bg-black/10 dark:bg-white/10 shrink-0 transition-colors"
+                                    >
+                                        Changer
+                                    </button>
                                 </div>
-                                <div className="flex items-baseline justify-between">
-                                    <span className="text-3xl font-black text-red-500 tracking-tight">
-                                        {calculatedNewPrice.toLocaleString()} <small className="text-xs">FCFA</small>
-                                    </span>
-                                    <span className="text-xs font-bold text-gray-400 line-through">
-                                        {Number(selectedProduct.basePrice).toLocaleString()} FCFA
-                                    </span>
+
+                                {/* Choix du mode : Pourcentage ou Prix Direct */}
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">
+                                        Mode de calcul de la remise
+                                    </label>
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <button
+                                            type="button"
+                                            onClick={() => setDiscountType('PERCENT')}
+                                            className={`p-3 rounded-2xl border font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all ${
+                                                discountType === 'PERCENT'
+                                                    ? 'bg-red-600 text-white border-red-600 shadow-lg shadow-red-500/25'
+                                                    : isDark ? 'bg-white/5 border-white/5 text-gray-400' : 'bg-slate-100 border-slate-200 text-slate-600'
+                                            }`}
+                                        >
+                                            <Percent size={15} /> Pourcentage (%)
+                                        </button>
+
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                setDiscountType('FIXED');
+                                                setDiscountValue(selectedProduct.discountPrice ? selectedProduct.discountPrice.toString() : '');
+                                            }}
+                                            className={`p-3 rounded-2xl border font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all ${
+                                                discountType === 'FIXED'
+                                                    ? 'bg-red-600 text-white border-red-600 shadow-lg shadow-red-500/25'
+                                                    : isDark ? 'bg-white/5 border-white/5 text-gray-400' : 'bg-slate-100 border-slate-200 text-slate-600'
+                                            }`}
+                                        >
+                                            <Tag size={15} /> Prix Fixe (FCFA)
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {/* Boutons rapides de % si mode Pourcentage */}
+                                {discountType === 'PERCENT' && (
+                                    <div className="flex items-center gap-2 overflow-x-auto pb-1 custom-scrollbar">
+                                        {[5, 10, 15, 20, 25, 30, 40, 50].map((pct) => (
+                                            <button
+                                                key={pct}
+                                                type="button"
+                                                onClick={() => setDiscountValue(pct.toString())}
+                                                className={`px-3 py-1.5 rounded-xl text-xs font-black uppercase transition-all shrink-0 ${
+                                                    discountValue === pct.toString()
+                                                        ? 'bg-red-500 text-white shadow-md shadow-red-500/30'
+                                                        : isDark ? 'bg-white/5 hover:bg-white/10 text-gray-300' : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
+                                                }`}
+                                            >
+                                                -{pct}%
+                                            </button>
+                                        ))}
+                                    </div>
+                                )}
+
+                                {/* Valeur de la réduction */}
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">
+                                        {discountType === 'PERCENT' ? 'Taux de réduction' : 'Nouveau prix promotionnel final'}
+                                    </label>
+                                    <div className="relative">
+                                        <input
+                                            type="number"
+                                            min="1"
+                                            max={discountType === 'PERCENT' ? '99' : selectedProduct.basePrice}
+                                            value={discountValue}
+                                            onChange={(e) => setDiscountValue(e.target.value)}
+                                            placeholder={discountType === 'PERCENT' ? 'Ex: 20' : 'Ex: 150000'}
+                                            className="w-full bg-black/5 dark:bg-white/5 border border-transparent dark:border-white/10 rounded-2xl p-4 text-lg font-black outline-none focus:border-red-500 text-slate-900 dark:text-white"
+                                        />
+                                        <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-black text-gray-400">
+                                            {discountType === 'PERCENT' ? '%' : 'FCFA'}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                {/* Résultat simulé en direct */}
+                                <div className="p-4 rounded-2xl bg-gradient-to-r from-red-500/10 via-rose-500/10 to-orange-500/10 border border-red-500/20 space-y-2">
+                                    <div className="flex items-center justify-between text-xs font-bold text-red-400 uppercase tracking-wider">
+                                        <span>Prix Promotionnel Final</span>
+                                        <span>-{calculatedDiscountPercent}%</span>
+                                    </div>
+                                    <div className="flex items-baseline justify-between">
+                                        <span className="text-3xl font-black text-red-500 tracking-tight">
+                                            {calculatedNewPrice.toLocaleString()} <small className="text-xs">FCFA</small>
+                                        </span>
+                                        <span className="text-xs font-bold text-gray-400 line-through">
+                                            {Number(selectedProduct.basePrice).toLocaleString()} FCFA
+                                        </span>
+                                    </div>
+                                    <p className="text-[10px] font-bold text-emerald-400">
+                                        Économie client : {(Number(selectedProduct.basePrice) - calculatedNewPrice).toLocaleString()} FCFA
+                                    </p>
+                                </div>
+
+                                {/* Boutons d'action */}
+                                <div className="flex items-center justify-end gap-3 pt-3 border-t border-black/5 dark:border-white/5">
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowModal(false)}
+                                        className="px-5 py-3 rounded-2xl text-xs font-bold uppercase tracking-wider text-gray-400 hover:text-white"
+                                    >
+                                        Annuler
+                                    </button>
+
+                                    <button
+                                        type="button"
+                                        onClick={handleSavePromo}
+                                        disabled={saving || calculatedNewPrice <= 0 || calculatedNewPrice >= Number(selectedProduct.basePrice)}
+                                        className="px-7 py-3.5 rounded-2xl bg-gradient-to-r from-red-600 to-rose-600 hover:brightness-110 text-white font-black text-xs uppercase tracking-wider shadow-lg shadow-red-500/30 transition-all flex items-center gap-2 disabled:opacity-50"
+                                    >
+                                        {saving ? <RefreshCw className="animate-spin" size={14} /> : <Check size={14} />}
+                                        <span>{saving ? 'Application...' : 'Appliquer la Promotion'}</span>
+                                    </button>
                                 </div>
                             </div>
-
-                        </div>
-
-                        {/* Boutons d'action */}
-                        <div className="flex items-center justify-end gap-3 pt-4 border-t border-black/5 dark:border-white/5">
-                            <button
-                                type="button"
-                                onClick={() => setShowModal(false)}
-                                className="px-5 py-3 rounded-2xl text-xs font-bold uppercase tracking-wider text-gray-400 hover:text-white"
-                            >
-                                Annuler
-                            </button>
-
-                            <button
-                                type="button"
-                                onClick={handleSavePromo}
-                                disabled={saving || calculatedNewPrice <= 0 || calculatedNewPrice >= Number(selectedProduct.basePrice)}
-                                className="px-7 py-3.5 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-black text-xs uppercase tracking-wider shadow-lg shadow-indigo-500/30 transition-all flex items-center gap-2 disabled:opacity-50"
-                            >
-                                {saving ? <RefreshCw className="animate-spin" size={14} /> : <Check size={14} />}
-                                <span>{saving ? 'Application...' : 'Appliquer la Promotion'}</span>
-                            </button>
-                        </div>
+                        )}
 
                     </div>
                 </div>
