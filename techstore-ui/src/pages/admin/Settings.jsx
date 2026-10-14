@@ -271,7 +271,7 @@ const Settings = () => {
                                             name="siteName"
                                             value={formData.siteName}
                                             onChange={handleChange}
-                                            placeholder="Ex: TechStore Cameroun"
+                                            placeholder="Ex: PEOC (Petit Éleveur de l'Ouest Cameroun)"
                                             className="w-full bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-2xl p-4 text-sm font-bold outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 text-slate-900 dark:text-white transition-all"
                                         />
                                     </div>
@@ -288,7 +288,7 @@ const Settings = () => {
                                                     <img src={getFullImageUrl(formData.logoUrl)} alt="Logo" className="w-full h-full object-contain" />
                                                 ) : (
                                                     <span className="text-2xl font-black text-indigo-500">
-                                                        {(formData.siteName || 'T').charAt(0).toUpperCase()}
+                                                        {(formData.siteName || 'P').charAt(0).toUpperCase()}
                                                     </span>
                                                 )}
                                             </div>
@@ -357,7 +357,7 @@ const Settings = () => {
                                                 name="contactEmail"
                                                 value={formData.contactEmail}
                                                 onChange={handleChange}
-                                                placeholder="contact@techstore.cm"
+                                                placeholder="contact@peoc.cm"
                                                 className="w-full bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-2xl py-4 pl-11 pr-4 text-sm font-bold outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 text-slate-900 dark:text-white transition-all"
                                             />
                                         </div>
@@ -393,7 +393,7 @@ const Settings = () => {
                                                 name="contactAddress"
                                                 value={formData.contactAddress}
                                                 onChange={handleChange}
-                                                placeholder="Akwa, Douala - Face Direction MTN"
+                                                placeholder="Bafoussam, Ouest - Cameroun"
                                                 className="w-full bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-2xl py-4 pl-11 pr-4 text-sm font-bold outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 text-slate-900 dark:text-white transition-all"
                                             />
                                         </div>

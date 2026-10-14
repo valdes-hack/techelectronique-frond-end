@@ -37,7 +37,7 @@ const MyOrders = () => {
         <div className="max-w-4xl mx-auto px-6 py-20 min-h-screen animate-in fade-in duration-700">
             <header className="mb-16">
                 <h1 className="text-5xl font-black tracking-tighter text-slate-900">Vos Achats.</h1>
-                <p className="text-slate-400 font-medium mt-4">Retrouvez l'historique de vos commandes TechStore.</p>
+                <p className="text-slate-400 font-medium mt-4">Retrouvez l'historique de vos commandes PEOC.</p>
             </header>
 
             {orders.length === 0 ? (

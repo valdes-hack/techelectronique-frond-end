@@ -28,7 +28,7 @@ const CheckoutPage = () => {
 
     const [formData, setFormData] = useState({
         firstName: '', lastName: '', email: '', phone: '',
-        label: 'Livraison TechStore', street: '', city: 'Douala', region: 'Littoral'
+        label: 'Livraison PEOC', street: '', city: 'Douala', region: 'Littoral'
     });
 
     useEffect(() => {

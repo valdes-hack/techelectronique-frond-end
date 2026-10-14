@@ -95,7 +95,7 @@ const ProductDetail = () => {
         const variantDetails = currentVariant && currentVariant.attributes 
             ? ` (${Object.entries(parseJSON(currentVariant.attributes)).map(([k, v]) => `${k}: ${v}`).join(', ')})`
             : '';
-        const msg = encodeURIComponent(`Bonjour TechStore ! Je souhaite commander : ${product.name}${variantDetails} (${quantity} unité(s)).`);
+        const msg = encodeURIComponent(`Bonjour PEOC (Petit Éleveur de l'Ouest Cameroun) ! Je souhaite commander : ${product.name}${variantDetails} (${quantity} unité(s)).`);
         window.open(`https://wa.me/237686669222?text=${msg}`, '_blank');
     };
 
@@ -116,7 +116,7 @@ const ProductDetail = () => {
 
     if (loading) return (
         <div className={`min-h-screen flex items-center justify-center font-bold animate-pulse ${isDark ? 'bg-[#0b0e14] text-indigo-400' : 'bg-white text-indigo-600'}`}>
-            EXPÉRIENCE TECHSTORE...
+            EXPÉRIENCE PEOC...
         </div>
     );
     

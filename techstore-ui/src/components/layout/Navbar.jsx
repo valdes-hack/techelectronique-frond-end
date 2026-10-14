@@ -66,8 +66,9 @@ const Navbar = () => {
     if (location.pathname.startsWith('/admin')) return null;
 
     const isDark = theme === 'dark';
-    const siteName = settings?.siteName || 'TechStore';
-    const siteInitial = siteName.charAt(0).toUpperCase();
+    const siteName = settings?.siteName || 'PEOC';
+    const siteSubtitle = settings?.siteSubtitle || "Petit Éleveur de l'Ouest Cameroun";
+    const siteLogo = settings?.logoUrl || '/logo.png';
 
     const navLinks = [
         { to: '/', label: 'Accueil' },
@@ -86,13 +87,18 @@ const Navbar = () => {
                     <div className="flex items-center justify-between gap-3 md:gap-6">
 
                         {/* ── LOGO ── */}
-                        <Link to="/" className="flex items-center gap-2 shrink-0 group">
-                            <div className="w-8 h-8 md:w-9 md:h-9 bg-indigo-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-indigo-500/30 group-hover:scale-110 transition-transform">
-                                <span className="font-bold text-base md:text-lg">{siteInitial}</span>
+                        <Link to="/" className="flex items-center gap-2.5 shrink-0 group">
+                            <div className="w-9 h-9 md:w-10 md:h-10 rounded-xl overflow-hidden flex items-center justify-center bg-white dark:bg-white/5 border border-black/5 dark:border-white/10 shadow-md group-hover:scale-105 transition-transform p-0.5">
+                                <img src={siteLogo} alt="PEOC Logo" className="w-full h-full object-contain rounded-lg" onError={(e) => { e.target.style.display = 'none'; }} />
                             </div>
-                            <span className="text-base md:text-lg font-bold text-apple-dark dark:text-white uppercase tracking-wide hidden sm:block">
-                                {siteName}
-                            </span>
+                            <div className="flex flex-col">
+                                <span className="text-base md:text-lg font-black text-apple-dark dark:text-white uppercase tracking-tight leading-none">
+                                    {siteName}
+                                </span>
+                                <span className="text-[8px] md:text-[9px] font-bold text-indigo-500 uppercase tracking-wider hidden sm:block leading-none mt-1">
+                                    Petit Éleveur de l'Ouest
+                                </span>
+                            </div>
                         </Link>
 
                         {/* ── NAV CENTRALE (desktop) ── */}

@@ -75,7 +75,7 @@ const Register = () => {
 
                     <div className="md:col-span-2 pt-6">
                         <Button type="submit" className="w-full py-4 text-lg" loading={loading}>
-                            Rejoindre TechStore
+                            Rejoindre PEOC
                         </Button>
                     </div>
                 </form>

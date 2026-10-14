@@ -12,11 +12,12 @@ export const AppProvider = ({ children }) => {
     };
 
     const [settings, setSettings] = useState(cachedSettings() || {
-        siteName: 'TechStore',
-        contactEmail: 'contact@techstore.cm',
+        siteName: 'PEOC',
+        siteSubtitle: "Petit Éleveur de l'Ouest Cameroun",
+        contactEmail: 'contact@peoc.cm',
         contactPhone: '+237 600 000 000',
-        contactAddress: 'Douala, Cameroun',
-        logoUrl: '',
+        contactAddress: 'Ouest, Cameroun',
+        logoUrl: '/logo.png',
         heroImageUrl: ''
     });
 

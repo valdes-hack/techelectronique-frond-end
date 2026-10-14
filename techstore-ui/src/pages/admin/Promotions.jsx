@@ -368,7 +368,7 @@ const AdminPromotions = () => {
                                                                 {p.name}
                                                             </p>
                                                             <p className="text-[10px] text-gray-400 font-medium">
-                                                                Réf : #{p.sku || p.id} • {p.brand || 'TechStore'}
+                                                                Réf : #{p.sku || p.id} • {p.brand || 'PEOC'}
                                                             </p>
                                                         </div>
                                                     </div>
@@ -551,7 +551,7 @@ const AdminPromotions = () => {
                                                                 {p.name}
                                                             </p>
                                                             <p className="text-[10px] text-gray-400 font-bold">
-                                                                {Number(p.basePrice).toLocaleString()} FCFA • {p.brand || 'TechStore'}
+                                                                {Number(p.basePrice).toLocaleString()} FCFA • {p.brand || 'PEOC'}
                                                             </p>
                                                         </div>
                                                     </div>

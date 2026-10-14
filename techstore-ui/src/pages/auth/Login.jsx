@@ -52,8 +52,9 @@ const Login = () => {
         <div className="min-h-[80vh] flex items-center justify-center px-6">
             <div className="w-full max-w-md bg-white p-10 rounded-[2.5rem] shadow-2xl border border-apple-border/50">
                 <div className="text-center mb-10">
+                    <img src="/logo.png" alt="PEOC" className="w-14 h-14 mx-auto mb-3 object-contain rounded-2xl p-1 bg-gray-50 border border-gray-100 shadow-sm" onError={(e) => { e.target.style.display = 'none'; }} />
                     <h2 className="text-4xl font-black italic tracking-tighter text-apple-dark leading-none">Connectez-vous.</h2>
-                    <p className="text-apple-dark/50 mt-4 font-bold uppercase text-[10px] tracking-widest">TechStore par Valdes.</p>
+                    <p className="text-apple-dark/50 mt-3 font-bold uppercase text-[10px] tracking-widest">PEOC • Petit Éleveur de l'Ouest Cameroun</p>
                 </div>
 
                 {error && (

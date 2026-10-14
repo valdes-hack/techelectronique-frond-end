@@ -174,7 +174,7 @@ const TestimonialCard = ({ name, role, text, rating, avatar }) => (
 
 const Home = () => {
     const { settings } = useAppContext();
-    const siteName = settings?.siteName || "TechStore";
+    const siteName = settings?.siteName || "PEOC";
 
     const { scrollYProgress } = useScroll();
     const yHero = useTransform(scrollYProgress, [0, 0.4], [0, 120]);
@@ -213,8 +213,8 @@ const Home = () => {
         heroSlides.push({
             type: 'video',
             badge: "L'Expérience",
-            title: settings.siteName || "TechStore",
-            subtitle: "Plongez dans l'univers de la technologie.",
+            title: settings.siteName || "PEOC",
+            subtitle: "Petit Éleveur de l'Ouest Cameroun.",
             cta: "Découvrir",
             ctaLink: "/catalog",
             video: getFullImageUrl(settings.heroVideoUrl),
@@ -227,8 +227,8 @@ const Home = () => {
             heroSlides.push({
                 type: 'image',
                 badge: i === 0 ? "Sélection Officielle" : "Découverte",
-                title: settings.siteName || "TechStore",
-                subtitle: "Votre destination High-Tech de référence au Cameroun.",
+                title: settings.siteName || "PEOC",
+                subtitle: "Votre référence pour l'élevage et équipements au Cameroun.",
                 cta: "Découvrir",
                 ctaLink: "/catalog",
                 image: getFullImageUrl(url),
@@ -239,8 +239,8 @@ const Home = () => {
         heroSlides.push({
             type: 'image',
             badge: "Sélection Officielle",
-            title: settings.siteName || "TechStore",
-            subtitle: "Votre destination High-Tech de référence au Cameroun.",
+            title: settings.siteName || "PEOC",
+            subtitle: "Votre référence pour l'élevage et équipements au Cameroun.",
             cta: "Découvrir",
             ctaLink: "/catalog",
             image: getFullImageUrl(settings.heroImageUrl),
@@ -307,7 +307,7 @@ const Home = () => {
         { name: "Marie K.", role: "Designer UI/UX", rating: 5, text: "Commande reçue en moins de 24h à Douala. Produits authentiques, packaging impeccable. Je recommande sans hésiter !" },
         { name: "Jean-Paul N.", role: "Développeur Web", rating: 5, text: "Mon MacBook Pro est arrivé en parfait état. Le service client a été réactif et professionnel. Vraiment top." },
         { name: "Amina T.", role: "Photographe", rating: 4, text: "Super expérience ! L'interface du site est fluide et les produits correspondent exactement à la description. Satisfaite !" },
-        { name: "Eric M.", role: "Ingénieur IT", rating: 5, text: "TechStore est ma boutique de référence au Cameroun. Qualité irréprochable et prix compétitifs. Bravo à l'équipe !" },
+        { name: "Eric M.", role: "Éleveur Professionnel", rating: 5, text: "PEOC est ma référence au Cameroun. Matériels de qualité irréprochable et conseils fiables. Bravo à l'équipe !" },
     ];
 
     // Auto-scroll hero

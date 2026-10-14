@@ -68,7 +68,7 @@ const AdminOrders = () => {
 
     const openWhatsApp = (phone, orderNum) => {
         const cleanPhone = (phone || "").replace(/\D/g, '');
-        const message = encodeURIComponent(`Bonjour, je vous contacte depuis TechStore concernant votre commande #${orderNum}.`);
+        const message = encodeURIComponent(`Bonjour, je vous contacte depuis PEOC (Petit Éleveur de l'Ouest Cameroun) concernant votre commande #${orderNum}.`);
         window.open(`https://wa.me/${cleanPhone}?text=${message}`, '_blank');
     };
 

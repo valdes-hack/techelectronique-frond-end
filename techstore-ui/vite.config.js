@@ -45,9 +45,9 @@ export default defineConfig({
         clientsClaim: true,
       },
       manifest: {
-        name: 'TechElectronic - Boutique High-Tech',
-        short_name: 'TechStore',
-        description: 'Découvrez les meilleurs produits électroniques au meilleur prix.',
+        name: "PEOC (Petit Éleveur de l'Ouest Cameroun)",
+        short_name: 'PEOC',
+        description: "PEOC - Petit Éleveur de l'Ouest Cameroun. Boutique et commandes d'élevage, intrants et matériels.",
         theme_color: '#4f46e5',
         background_color: '#0b0e14',
         display: 'standalone',
@@ -55,7 +55,7 @@ export default defineConfig({
         scope: '/',
         start_url: '/',
         lang: 'fr',
-        categories: ['shopping', 'electronics'],
+        categories: ['shopping', 'business'],
         icons: [
           { src: '/icons/icon-16x16.png',           sizes: '16x16',   type: 'image/png' },
           { src: '/icons/icon-32x32.png',           sizes: '32x32',   type: 'image/png' },
