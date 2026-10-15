@@ -48,7 +48,7 @@ const StatsPage = () => {
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4 lg:gap-6 mb-8">
                     <StatCard icon={<DollarSign/>} title="Chiffre d'Affaires" value={`${stats.totalRevenue.toLocaleString()} F`} color="bg-emerald-500" />
                     <StatCard icon={<TrendingUp/>} title="Commandes" value={stats.totalOrders} color="bg-indigo-500" />
                     <StatCard icon={<Users/>} title="Clients" value={stats.totalClients} color="bg-blue-500" />

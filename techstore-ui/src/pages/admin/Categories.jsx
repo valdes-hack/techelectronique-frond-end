@@ -144,7 +144,7 @@ const Categories = () => {
                 </header>
 
                 {/* --- STATS DYNAMIQUES --- */}
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 w-full">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4 lg:gap-6 w-full">
                     <StatCard theme={theme} title="TOTAL" value={categories.length} sub="Arborescence" icon={<Layers size={20}/>} color="#818cf8"/>
                     <StatCard theme={theme} title="ONLINE" value={categories.filter(c=>c.is_active).length} sub="En ligne" icon={<FolderTree size={20}/>} color="#10b981"/>
                     <StatCard theme={theme} title="SOUS-RAYONS" value={categories.filter(c=>c.parentId).length} sub="Déclinaisons" icon={<Plus size={20}/>} color="#fbbf24"/>
@@ -267,18 +267,18 @@ const Categories = () => {
 
 // --- COMPOSANT STATCARD UNIFIÉ ---
 const StatCard = ({ title, value, sub, icon, color, theme }) => (
-    <div className={`p-8 rounded-[2.5rem] border flex flex-col justify-between transition-all shadow-xl ${
+    <div className={`p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl border flex flex-col justify-between transition-all shadow-lg ${
         theme === 'dark' ? 'bg-[#161926] border-white/5 shadow-black/20' : 'bg-white border-slate-100'
     }`}>
-        <div className="flex justify-between items-start">
-            <div>
-                <p className="text-[10px] font-black uppercase opacity-20 tracking-widest mb-2">{title}</p>
-                <div className={`text-4xl font-black italic tracking-tighter ${theme === 'dark' ? 'text-white' : 'text-slate-800'}`}>{value}</div>
+        <div className="flex justify-between items-start gap-2">
+            <div className="min-w-0 flex-1">
+                <p className="text-[9px] sm:text-[10px] font-black uppercase opacity-40 tracking-widest mb-1 truncate">{title}</p>
+                <div className={`text-base sm:text-2xl md:text-3xl font-black italic tracking-tight truncate leading-tight ${theme === 'dark' ? 'text-white' : 'text-slate-800'}`}>{value}</div>
             </div>
-            <div className="p-4 rounded-2xl bg-white/5" style={{color}}>{icon}</div>
+            <div className="p-2 sm:p-2.5 rounded-xl sm:rounded-2xl bg-white/5 shrink-0 [&>svg]:w-4 [&>svg]:h-4 sm:[&>svg]:w-5 sm:[&>svg]:h-5" style={{color}}>{icon}</div>
         </div>
-        <p className="text-[10px] font-bold opacity-30 mt-6 flex items-center uppercase">
-            <ChevronRight size={14} className="mr-1 text-indigo-500" /> {sub}
+        <p className="text-[9px] sm:text-[10px] font-bold opacity-40 mt-3 sm:mt-5 flex items-center uppercase truncate">
+            <ChevronRight size={12} className="mr-0.5 text-indigo-500 shrink-0" /> {sub}
         </p>
     </div>
 );

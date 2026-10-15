@@ -99,7 +99,7 @@ const AdminOrders = () => {
                 <header><h2 className={`text-2xl sm:text-4xl font-black italic tracking-tighter ${isDark ? 'text-white' : 'text-slate-800'}`}>Commandes<span className="text-indigo-500">.</span></h2></header>
 
                 {/* KPI CARDS */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-6">
+                <div className="grid grid-cols-2 xl:grid-cols-4 gap-2.5 sm:gap-4 lg:gap-6">
                     <StatCard theme={theme} title="REVENUS" value={orders.reduce((a,b)=>a+(b.totalAmount||0),0).toLocaleString()} unit="F" icon={<DollarSign/>} color="#10b981" sub="CA Global"/>
                     <StatCard theme={theme} title="EN ATTENTE" value={orders.filter(o => o.status === 'EN_ATTENTE').length} icon={<Clock/>} color="#fbbf24" sub="À traiter"/>
                     <StatCard theme={theme} title="EXPÉDITIONS" value={orders.filter(o => o.status === 'EXPEDIE').length} icon={<Truck/>} color="#818cf8" sub="En route"/>
@@ -282,15 +282,15 @@ const DetailItem = ({ icon, label, value }) => (
 const StatCard = ({ title, value, sub, icon, color, theme }) => {
     const isDark = theme === 'dark';
     return (
-        <div className={`p-4 sm:p-6 rounded-2xl sm:rounded-3xl border transition-all shadow-xl flex flex-col justify-between ${isDark ? 'bg-[#161926] border-white/5 shadow-black/40' : 'bg-white border-slate-200 shadow-slate-100'}`}>
-            <div className="flex justify-between items-start w-full">
-                <div>
-                    <p className={`text-[10px] font-black uppercase opacity-20 tracking-widest mb-1.5 ${isDark ? 'text-white' : 'text-slate-500'}`}>{title}</p>
-                    <div className={`text-2xl md:text-3xl font-black tracking-tighter truncate ${isDark ? 'text-white' : 'text-slate-800'}`}>{value}</div>
+        <div className={`p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl border transition-all shadow-lg flex flex-col justify-between ${isDark ? 'bg-[#161926] border-white/5 shadow-black/40' : 'bg-white border-slate-200 shadow-slate-100'}`}>
+            <div className="flex justify-between items-start w-full gap-2">
+                <div className="min-w-0 flex-1">
+                    <p className={`text-[9px] sm:text-[10px] font-black uppercase tracking-widest mb-1 truncate ${isDark ? 'opacity-40 text-white' : 'text-slate-500'}`}>{title}</p>
+                    <div className={`text-base sm:text-2xl md:text-3xl font-black tracking-tight truncate leading-tight ${isDark ? 'text-white' : 'text-slate-800'}`}>{value}</div>
                 </div>
-                <div className="flex-shrink-0 p-4 rounded-2xl bg-white/5 flex items-center justify-center shadow-inner" style={{color}}>{icon}</div>
+                <div className="flex-shrink-0 p-2 sm:p-3 rounded-xl sm:rounded-2xl bg-white/5 flex items-center justify-center shadow-inner [&>svg]:w-4 [&>svg]:h-4 sm:[&>svg]:w-5 sm:[&>svg]:h-5" style={{color}}>{icon}</div>
             </div>
-            <p className="text-[10px] font-bold opacity-30 mt-4 flex items-center uppercase tracking-tight"><ChevronRight size={14} className="mr-1 text-indigo-500" /> {sub}</p>
+            <p className="text-[9px] sm:text-[10px] font-bold opacity-40 mt-3 sm:mt-4 flex items-center uppercase tracking-tight truncate"><ChevronRight size={12} className="mr-0.5 text-indigo-500 shrink-0" /> {sub}</p>
         </div>
     );
 };

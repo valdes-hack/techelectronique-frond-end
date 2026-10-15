@@ -67,8 +67,8 @@ const Dashboard = () => {
                     </div>
                 </header>
 
-                {/* --- CARTES KPI --- */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
+                {/* --- CARTES KPI (2 PAR LIGNE SUR MOBILE) --- */}
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4 lg:gap-6">
                     <KpiCard 
                         theme={theme}
                         title="Revenus" 
@@ -233,18 +233,18 @@ const KpiCard = ({ title, value, icon, color, sub, onClick, theme }) => {
     return (
         <div 
             onClick={onClick}
-            className={`border p-4 sm:p-6 rounded-2xl sm:rounded-3xl shadow-lg flex flex-col justify-between group cursor-pointer transition-all active:scale-95 ${
+            className={`border p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl shadow-lg flex flex-col justify-between group cursor-pointer transition-all active:scale-95 ${
                 isDark ? 'bg-[#161926] border-white/5 hover:border-indigo-500/50' : 'bg-white border-slate-200 hover:border-indigo-400 shadow-slate-200'
             }`}
         >
             <div className="flex justify-between items-start">
-                <div className={`p-2.5 sm:p-3 rounded-2xl w-fit shadow-inner ${isDark ? 'bg-white/5' : 'bg-slate-50'}`} style={{color}}>{icon}</div>
-                <ArrowRight size={16} className={`${isDark ? 'text-gray-700' : 'text-slate-300'} group-hover:text-indigo-500 transition-colors`} />
+                <div className={`p-2 sm:p-2.5 rounded-xl sm:rounded-2xl w-fit shadow-inner [&>svg]:w-4 [&>svg]:h-4 sm:[&>svg]:w-5 sm:[&>svg]:h-5`} style={{color}}>{icon}</div>
+                <ArrowRight size={14} className={`hidden sm:block ${isDark ? 'text-gray-700' : 'text-slate-300'} group-hover:text-indigo-500 transition-colors`} />
             </div>
-            <div className="mt-4 sm:mt-6">
-                <p className={`text-[10px] font-black uppercase tracking-widest mb-1 ${isDark ? 'opacity-20 text-white' : 'text-slate-400'}`}>{title}</p>
-                <h4 className={`text-2xl sm:text-3xl font-black tracking-tighter ${isDark ? 'text-white' : 'text-slate-800'}`}>{value}</h4>
-                <p className={`text-[10px] font-bold mt-1 italic uppercase ${isDark ? 'text-gray-500' : 'text-indigo-500'}`}>{sub}</p>
+            <div className="mt-3 sm:mt-5 min-w-0">
+                <p className={`text-[9px] sm:text-[10px] font-black uppercase tracking-widest mb-1 truncate ${isDark ? 'opacity-40 text-white' : 'text-slate-400'}`}>{title}</p>
+                <h4 className={`text-base sm:text-2xl lg:text-3xl font-black tracking-tight truncate leading-tight ${isDark ? 'text-white' : 'text-slate-800'}`}>{value}</h4>
+                <p className={`text-[9px] sm:text-[10px] font-bold mt-1 italic uppercase truncate ${isDark ? 'text-gray-500' : 'text-indigo-500'}`}>{sub}</p>
             </div>
         </div>
     );

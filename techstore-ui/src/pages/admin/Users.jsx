@@ -132,7 +132,7 @@ const AdminUsers = () => {
                     </h2>
                 </header>
 
-                <div className="grid grid-cols-2 xl:grid-cols-4 gap-6">
+                <div className="grid grid-cols-2 xl:grid-cols-4 gap-2.5 sm:gap-4 lg:gap-6">
                     <StatCard theme={theme} title="DIRECTION" value={users.filter(u=>u.role==='ADMIN').length} sub="Administrateurs" icon={<ShieldAlert/>} color="#818cf8"/>
                     <StatCard theme={theme} title="RECRUES" value={users.filter(u=>u.role==='CLIENT').length} sub="Total Clients" icon={<UserCheck/>} color="#10b981"/>
                     <StatCard theme={theme} title="SANS VERIF" value={users.filter(u=>!u.verified).length} sub="À valider" icon={<Mail/>} color="#f43f5e"/>
@@ -217,22 +217,22 @@ const AdminUsers = () => {
 
 // COMPOSANT STATCARD INTÉGRÉ
 const StatCard = ({ title, value, sub, icon, color, unit="", theme }) => (
-    <div className={`p-6 rounded-[2.2rem] border transition-all shadow-xl flex flex-col justify-between ${
+    <div className={`p-3.5 sm:p-5 rounded-2xl sm:rounded-3xl border transition-all shadow-lg flex flex-col justify-between ${
         theme === 'dark' ? 'bg-[#161926] border-white/5 shadow-black/40' : 'bg-white border-gray-100 shadow-sm'
     }`}>
-        <div className="flex justify-between items-start w-full">
-            <div className="min-w-0">
-                <p className="text-[10px] font-black uppercase opacity-20 tracking-widest mb-1.5 truncate">{title}</p>
-                <div className={`text-2xl md:text-3xl font-black tracking-tighter truncate ${theme === 'dark' ? 'text-white' : 'text-slate-800'}`}>
-                    {value}<span className="text-sm ml-1 opacity-20">{unit}</span>
+        <div className="flex justify-between items-start w-full gap-2">
+            <div className="min-w-0 flex-1">
+                <p className="text-[9px] sm:text-[10px] font-black uppercase opacity-40 tracking-widest mb-1 truncate">{title}</p>
+                <div className={`text-base sm:text-2xl md:text-3xl font-black tracking-tight truncate leading-tight ${theme === 'dark' ? 'text-white' : 'text-slate-800'}`}>
+                    {value}<span className="text-xs ml-0.5 opacity-30">{unit}</span>
                 </div>
             </div>
-            <div className="flex-shrink-0 p-4 rounded-2xl bg-white/5 ml-4 flex items-center justify-center shadow-inner" style={{color}}>
+            <div className="flex-shrink-0 p-2 sm:p-2.5 rounded-xl sm:rounded-2xl bg-white/5 ml-2 flex items-center justify-center shadow-inner [&>svg]:w-4 [&>svg]:h-4 sm:[&>svg]:w-5 sm:[&>svg]:h-5" style={{color}}>
                 {icon}
             </div>
         </div>
-        <p className="text-[10px] font-bold opacity-30 mt-4 flex items-center uppercase tracking-tight">
-            <ChevronRight size={14} className="mr-1 text-indigo-500 flex-shrink-0" /> {sub}
+        <p className="text-[9px] sm:text-[10px] font-bold opacity-40 mt-3 sm:mt-4 flex items-center uppercase tracking-tight truncate">
+            <ChevronRight size={12} className="mr-0.5 text-indigo-500 flex-shrink-0" /> {sub}
         </p>
     </div>
 );
