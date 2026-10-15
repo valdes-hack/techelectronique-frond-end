@@ -54,7 +54,7 @@ const AdminOrders = () => {
     // ✨ CONFIGURATION IMPRESSION OPTIMALE ✨
     const handlePrint = useReactToPrint({
         content: () => invoiceRef.current,
-        documentTitle: `Facture_${selectedOrder?.orderNumber || 'TechStore'}`,
+        documentTitle: `Facture_${selectedOrder?.orderNumber || 'PEOC'}`,
     });
 
     const handleStatusChange = async (orderId, newStatus) => {
@@ -95,11 +95,11 @@ const AdminOrders = () => {
             theme={theme} 
             filters={<AdminFilter theme={theme} context="orders" categories={statusList} filters={filters} setFilters={setFilters} onReset={() => setFilters({searchTerm: "", selCat: "Tous", dispo: "Tous"})} />}
         >
-            <div className="flex flex-col gap-8 h-full pb-10">
-                <header><h2 className={`text-4xl font-black italic tracking-tighter ${isDark ? 'text-white' : 'text-slate-800'}`}>Commandes<span className="text-indigo-500">.</span></h2></header>
+            <div className="flex flex-col gap-6 sm:gap-8 h-full pb-10 p-2 sm:p-4">
+                <header><h2 className={`text-2xl sm:text-4xl font-black italic tracking-tighter ${isDark ? 'text-white' : 'text-slate-800'}`}>Commandes<span className="text-indigo-500">.</span></h2></header>
 
                 {/* KPI CARDS */}
-                <div className="grid grid-cols-2 xl:grid-cols-4 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-6">
                     <StatCard theme={theme} title="REVENUS" value={orders.reduce((a,b)=>a+(b.totalAmount||0),0).toLocaleString()} unit="F" icon={<DollarSign/>} color="#10b981" sub="CA Global"/>
                     <StatCard theme={theme} title="EN ATTENTE" value={orders.filter(o => o.status === 'EN_ATTENTE').length} icon={<Clock/>} color="#fbbf24" sub="À traiter"/>
                     <StatCard theme={theme} title="EXPÉDITIONS" value={orders.filter(o => o.status === 'EXPEDIE').length} icon={<Truck/>} color="#818cf8" sub="En route"/>
@@ -107,13 +107,13 @@ const AdminOrders = () => {
                 </div>
 
                 {/* TABLEAU PRINCIPAL */}
-                <div className={`w-full max-w-full rounded-[2.5rem] border flex flex-col ${isDark ? 'bg-[#161926] border-white/5 shadow-2xl' : 'bg-white border-slate-100 shadow-xl'}`}>
+                <div className={`w-full max-w-full rounded-2xl sm:rounded-3xl border flex flex-col ${isDark ? 'bg-[#161926] border-white/5 shadow-2xl' : 'bg-white border-slate-100 shadow-xl'}`}>
                     <div className="overflow-x-auto custom-scrollbar">
-                        <table className="w-full text-left min-w-[1000px] border-collapse">
+                        <table className="w-full text-left min-w-[700px] border-collapse">
                             <thead className={`sticky top-0 z-20 ${isDark ? 'bg-[#1a1e2e]' : 'bg-gray-50'} text-[11px] font-black uppercase tracking-widest text-slate-500`}>
                                 <tr>
-                                    <th className="p-6">RÉFÉRENCE</th>
-                                    <th className="p-6">CLIENT</th>
+                                    <th className="p-4 sm:p-6">RÉFÉRENCE</th>
+                                    <th className="p-4 sm:p-6">CLIENT</th>
                                     <th className="p-6 text-center">MONTANT</th>
                                     <th className="p-6 text-center">STATUT</th>
                                     <th className="p-6 text-right">ACTES</th>
@@ -123,14 +123,14 @@ const AdminOrders = () => {
                                 {filteredList.map((o) => (
                                     <tr key={o.id} className="hover:bg-indigo-600/5 transition-all group">
                                         <td className="p-6 font-mono text-xs text-indigo-400 font-bold">#{o.orderNumber}</td>
-                                        <td className="p-6">
+                                        <td className="p-4 sm:p-6">
                                             <div className="flex flex-col">
                                                 <span className={`font-black text-sm ${isDark ? 'text-white' : 'text-slate-800'}`}>{o.customerName}</span>
                                                 <span className="text-[10px] opacity-30 font-bold tracking-tighter">{o.customerPhone}</span>
                                             </div>
                                         </td>
                                         <td className={`p-6 text-center font-black ${isDark ? 'text-slate-200' : 'text-slate-900'}`}>{o.totalAmount?.toLocaleString()} F</td>
-                                        <td className="p-6 text-center">
+                                        <td className="p-4 sm:p-6 text-center">
                                             <select 
                                                 value={o.status}
                                                 onChange={(e) => handleStatusChange(o.id, e.target.value)}
@@ -141,7 +141,7 @@ const AdminOrders = () => {
                                                 ))}
                                             </select>
                                         </td>
-                                        <td className="p-6 text-right space-x-2 whitespace-nowrap">
+                                        <td className="p-4 sm:p-6 text-right space-x-1.5 sm:space-x-2 whitespace-nowrap">
                                             <button onClick={() => openWhatsApp(o.customerPhone, o.orderNumber)} className="p-2.5 rounded-xl border border-white/5 text-emerald-500 hover:bg-emerald-500 hover:text-white transition-all shadow-sm"><MessageCircle size={16}/></button>
                                             <button onClick={() => { setSelectedOrder(o); setShowDetails(true); }} className="p-2.5 rounded-xl border border-white/5 text-indigo-400 hover:bg-indigo-500 hover:text-white transition-all"><Eye size={16}/></button>
                                             <button onClick={() => { setSelectedOrder(o); setShowInvoice(true); }} className="p-2.5 rounded-xl border border-white/5 text-emerald-400 hover:bg-emerald-500 hover:text-white transition-all"><FileText size={16}/></button>
@@ -157,7 +157,7 @@ const AdminOrders = () => {
             {/* --- MODALE DÉTAILS --- */}
             {showDetails && selectedOrder && (
                 <div className="fixed inset-0 z-[400] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md animate-in fade-in duration-300">
-                    <div className={`w-full max-w-3xl rounded-[3rem] p-10 border shadow-2xl ${isDark ? 'bg-[#111421] border-white/10 text-white' : 'bg-white border-slate-200 text-slate-800'}`}>
+                    <div className={`w-full max-w-3xl rounded-2xl sm:rounded-3xl p-5 sm:p-10 border shadow-2xl max-h-[90vh] overflow-y-auto ${isDark ? 'bg-[#111421] border-white/10 text-white' : 'bg-white border-slate-200 text-slate-800'}`}>
                         <div className="flex justify-between items-center mb-10">
                             <div className="flex items-center gap-4">
                                 <div className="p-4 bg-indigo-500 rounded-2xl text-white"><ShoppingCart size={24}/></div>
@@ -187,9 +187,9 @@ const AdminOrders = () => {
             {/* --- MODALE FACTURE --- */}
             {showInvoice && selectedOrder && (
                 <div className="fixed inset-0 z-[500] flex items-center justify-center p-4 bg-black/95 backdrop-blur-md">
-                    <div className="w-full max-w-4xl max-h-[95vh] overflow-y-auto rounded-[3rem] bg-slate-200 shadow-2xl animate-in zoom-in-95 duration-300">
+                    <div className="w-full max-w-4xl max-h-[95vh] overflow-y-auto rounded-2xl sm:rounded-3xl bg-slate-200 shadow-2xl animate-in zoom-in-95 duration-300">
                         <div className="sticky top-0 z-50 flex justify-between items-center p-6 border-b bg-white/90 backdrop-blur-md">
-                            <span className="font-black uppercase text-xs text-slate-500 tracking-widest italic">TechStore Billing System</span>
+                            <span className="font-black uppercase text-xs text-slate-500 tracking-widest italic">PEOC Billing System</span>
                             <div className="flex gap-4">
                                 <button onClick={handlePrint} className="bg-indigo-600 text-white px-8 py-3 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-indigo-700 shadow-lg shadow-indigo-500/30">
                                     <Printer size={16} className="inline mr-2"/> Imprimer
@@ -197,12 +197,12 @@ const AdminOrders = () => {
                                 <button onClick={() => setShowInvoice(false)} className="p-3 bg-white rounded-full text-slate-400 hover:text-red-500 shadow-sm"><X size={20}/></button>
                             </div>
                         </div>
-                        <div className="p-10 flex justify-center">
-                             <div ref={invoiceRef} className="bg-white w-full max-w-[800px] p-20 shadow-2xl text-black font-sans min-h-[1100px]">
+                        <div className="p-3 sm:p-8 flex justify-center">
+                             <div ref={invoiceRef} className="bg-white w-full max-w-[800px] p-6 sm:p-12 md:p-16 shadow-2xl text-black font-sans min-h-[900px] rounded-xl sm:rounded-2xl">
                                 <div className="flex justify-between items-start mb-20">
                                     <div>
-                                        <h1 className="text-5xl font-black tracking-tighter italic text-indigo-600 mb-2">TechStore.</h1>
-                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.4em]">Premium Electronics Store</p>
+                                        <h1 className="text-5xl font-black tracking-tighter italic text-indigo-600 mb-2">PEOC.</h1>
+                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.4em]">Petit Éleveur de l'Ouest Cameroun</p>
                                     </div>
                                     <div className="text-right">
                                         <h2 className="text-2xl font-black uppercase tracking-tighter">FACTURE</h2>
@@ -282,7 +282,7 @@ const DetailItem = ({ icon, label, value }) => (
 const StatCard = ({ title, value, sub, icon, color, theme }) => {
     const isDark = theme === 'dark';
     return (
-        <div className={`p-6 rounded-[2.2rem] border transition-all shadow-xl flex flex-col justify-between ${isDark ? 'bg-[#161926] border-white/5 shadow-black/40' : 'bg-white border-slate-200 shadow-slate-100'}`}>
+        <div className={`p-4 sm:p-6 rounded-2xl sm:rounded-3xl border transition-all shadow-xl flex flex-col justify-between ${isDark ? 'bg-[#161926] border-white/5 shadow-black/40' : 'bg-white border-slate-200 shadow-slate-100'}`}>
             <div className="flex justify-between items-start w-full">
                 <div>
                     <p className={`text-[10px] font-black uppercase opacity-20 tracking-widest mb-1.5 ${isDark ? 'text-white' : 'text-slate-500'}`}>{title}</p>

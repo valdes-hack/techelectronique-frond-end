@@ -175,7 +175,7 @@ const Settings = () => {
                         <div className="flex items-center gap-2 text-indigo-500 text-xs font-black uppercase tracking-widest mb-1">
                             <Sparkles size={14} /> Centre de Configuration
                         </div>
-                        <h2 className="text-3xl sm:text-4xl font-black italic tracking-tighter uppercase text-slate-900 dark:text-white">
+                        <h2 className="text-2xl sm:text-4xl font-black italic tracking-tighter uppercase text-slate-900 dark:text-white">
                             Paramètres du Site<span className="text-indigo-500">.</span>
                         </h2>
                         <p className="text-xs sm:text-sm font-medium text-slate-500 dark:text-gray-400 mt-1">
@@ -186,7 +186,7 @@ const Settings = () => {
                     <button
                         onClick={handleSubmit}
                         disabled={loading || uploadingFile}
-                        className="bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white font-black px-6 py-3.5 rounded-2xl flex items-center justify-center gap-2 transition-all shadow-xl shadow-indigo-500/25 disabled:opacity-50 text-xs uppercase tracking-widest shrink-0"
+                        className="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white font-black px-6 py-3.5 rounded-2xl flex items-center justify-center gap-2 transition-all shadow-xl shadow-indigo-500/25 disabled:opacity-50 text-xs uppercase tracking-widest shrink-0"
                     >
                         {loading ? <Loader className="animate-spin" size={16} /> : <Save size={16} />}
                         <span>{loading ? 'Enregistrement...' : 'Sauvegarder tout'}</span>
@@ -205,8 +205,8 @@ const Settings = () => {
                     </div>
                 )}
 
-                {/* ── ONGLETS DE NAVIGATION ── */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3">
+                {/* ── ONGLETS DE NAVIGATION RESPONSIVES ── */}
+                <div className="flex overflow-x-auto no-scrollbar sm:grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-2.5 sm:gap-3 pb-2 -mx-2 px-2 sm:mx-0 sm:px-0">
                     {tabs.map(tab => {
                         const Icon = tab.icon;
                         const isActive = activeTab === tab.id;
@@ -214,24 +214,24 @@ const Settings = () => {
                             <button
                                 key={tab.id}
                                 onClick={() => setActiveTab(tab.id)}
-                                className={`flex items-start gap-4 p-4 rounded-2xl border text-left transition-all ${
+                                className={`flex items-center sm:items-start gap-3 sm:gap-4 p-3 sm:p-4 rounded-2xl border text-left transition-all shrink-0 sm:shrink min-w-[210px] sm:min-w-0 ${
                                     isActive
-                                        ? 'bg-indigo-600 text-white border-indigo-600 shadow-xl shadow-indigo-500/20 scale-[1.01]'
+                                        ? 'bg-indigo-600 text-white border-indigo-600 shadow-xl shadow-indigo-500/20'
                                         : isDark
                                             ? 'bg-[#161926] border-white/5 text-gray-400 hover:text-white hover:bg-white/5'
                                             : 'bg-white border-gray-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50 shadow-sm'
                                 }`}
                             >
-                                <div className={`p-2.5 rounded-xl shrink-0 ${
+                                <div className={`p-2 sm:p-2.5 rounded-xl shrink-0 ${
                                     isActive 
                                         ? 'bg-white/20 text-white' 
                                         : isDark ? 'bg-white/5 text-indigo-400' : 'bg-indigo-50 text-indigo-600'
                                 }`}>
-                                    <Icon size={20} />
+                                    <Icon size={18} />
                                 </div>
                                 <div className="min-w-0">
-                                    <h4 className="font-black text-sm uppercase tracking-wide truncate">{tab.label}</h4>
-                                    <p className={`text-[11px] font-medium truncate mt-0.5 ${
+                                    <h4 className="font-black text-xs sm:text-sm uppercase tracking-wide truncate">{tab.label}</h4>
+                                    <p className={`text-[10px] sm:text-[11px] font-medium truncate mt-0.5 ${
                                         isActive ? 'text-white/80' : 'text-gray-400'
                                     }`}>
                                         {tab.desc}
@@ -243,10 +243,10 @@ const Settings = () => {
                 </div>
 
                 {/* ── CONTENU DE L'ONGLET SÉLECTIONNÉ ── */}
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
                     
                     {/* COLONNE GAUCHE : FORMULAIRE */}
-                    <div className="lg:col-span-8 bg-white dark:bg-[#161926] rounded-3xl p-6 sm:p-8 border border-gray-200 dark:border-white/5 shadow-xl">
+                    <div className="lg:col-span-8 bg-white dark:bg-[#161926] rounded-2xl sm:rounded-3xl p-4 sm:p-6 lg:p-8 border border-gray-200 dark:border-white/5 shadow-xl">
                         <form onSubmit={handleSubmit} className="space-y-6">
                             
                             {/* 1. ONGLET IDENTITÉ */}
@@ -739,14 +739,14 @@ const Settings = () => {
                             )}
 
                             {/* BOUTON ENREGISTRER DANS LE FORMULAIRE */}
-                            <div className="pt-6 border-t border-gray-100 dark:border-white/5 flex items-center justify-between">
-                                <span className="text-[11px] text-gray-400 font-medium">
+                            <div className="pt-6 border-t border-gray-100 dark:border-white/5 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
+                                <span className="text-[11px] text-gray-400 font-medium text-center sm:text-left">
                                     Modifications enregistrées instantanément dans la base de données.
                                 </span>
                                 <button
                                     type="submit"
                                     disabled={loading || uploadingFile}
-                                    className="bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white font-black px-6 py-3 rounded-xl flex items-center gap-2 transition-all shadow-lg shadow-indigo-500/25 text-xs uppercase tracking-wider disabled:opacity-50"
+                                    className="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white font-black px-6 py-3.5 rounded-xl flex items-center justify-center gap-2 transition-all shadow-lg shadow-indigo-500/25 text-xs uppercase tracking-wider disabled:opacity-50"
                                 >
                                     {loading ? <Loader className="animate-spin" size={15} /> : <Save size={15} />}
                                     <span>{loading ? 'Enregistrement...' : 'Enregistrer'}</span>
@@ -757,7 +757,7 @@ const Settings = () => {
 
                     {/* COLONNE DROITE : APERÇU EN DIRECT (LIVE PREVIEW) */}
                     <div className="lg:col-span-4 space-y-6">
-                        <div className="bg-white dark:bg-[#161926] rounded-3xl p-6 border border-gray-200 dark:border-white/5 shadow-xl">
+                        <div className="bg-white dark:bg-[#161926] rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-gray-200 dark:border-white/5 shadow-xl">
                             <div className="flex items-center justify-between mb-4 pb-3 border-b border-gray-100 dark:border-white/5">
                                 <span className="text-[10px] font-black uppercase tracking-widest text-indigo-500 flex items-center gap-1.5">
                                     <Eye size={12} /> Aperçu Public
