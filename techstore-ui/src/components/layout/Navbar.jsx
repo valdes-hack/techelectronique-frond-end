@@ -66,7 +66,8 @@ const Navbar = () => {
     if (location.pathname.startsWith('/admin')) return null;
 
     const isDark = theme === 'dark';
-    const siteName = settings?.siteName || 'PEOC';
+    const rawSiteName = settings?.siteName || 'PEOC';
+    const siteName = (rawSiteName && !rawSiteName.toUpperCase().includes('ELECTRONIQUE') && !rawSiteName.toUpperCase().includes('TECHSTORE')) ? rawSiteName : 'PEOC';
     const siteSubtitle = settings?.siteSubtitle || "Petit Éleveur de l'Ouest Cameroun";
     const siteLogo = settings?.logoUrl || '/logo.png';
 

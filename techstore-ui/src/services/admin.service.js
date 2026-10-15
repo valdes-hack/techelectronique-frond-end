@@ -89,6 +89,11 @@ const AdminService = {
         return response.data;
     },
 
+    toggleProductStatus: async (id) => {
+        const response = await api.patch(`/admin/products/${id}/toggle-status`);
+        return response.data;
+    },
+
     /**
      * Mettre à jour la promotion d'un produit (discountPrice)
      */

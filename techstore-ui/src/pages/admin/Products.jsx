@@ -8,7 +8,7 @@ import AdminService from '../../services/admin.service';
 import ProductForm from './ProductForm';
 import {
     Plus, Edit2, Trash2, Box, AlertTriangle, 
-    Wallet, RefreshCw, ChevronRight, Truck
+    Wallet, RefreshCw, ChevronRight, Truck, Eye, EyeOff
 } from 'lucide-react';
 import { getFullImageUrl } from '../../utils/imageUtils';
 
@@ -75,7 +75,11 @@ const AdminProducts = () => {
             const maxP = filters.maxPrice === "" ? Infinity : parseFloat(filters.maxPrice);
             const priceMatch = price >= minP && price <= maxP;
             
-            const dispoMatch = filters.dispo === "Tous" || (filters.dispo === "En stock" ? p.stockQty > 0 : p.stockQty <= 0);
+            const dispoMatch = filters.dispo === "Tous" 
+                || (filters.dispo === "En stock" ? p.stockQty > 0 : false)
+                || (filters.dispo === "Rupture" ? p.stockQty <= 0 : false)
+                || (filters.dispo === "En ligne" ? p.isActive !== false : false)
+                || (filters.dispo === "Hors ligne" ? p.isActive === false : false);
             
             return nameMatch && categoryMatch && priceMatch && dispoMatch;
         });
@@ -83,6 +87,24 @@ const AdminProducts = () => {
     }, [products, filters]);
 
     const categoriesList = ["Toutes", ...new Set(products.map(p => p.categoryName).filter(c => c))];
+
+    const handleToggleStatus = async (product) => {
+        const isCurrentlyActive = product.isActive !== false;
+        const nextStatus = !isCurrentlyActive;
+        
+        // Mise à jour optimiste immédiate dans l'UI
+        setProducts(prev => prev.map(p => p.id === product.id ? { ...p, isActive: nextStatus } : p));
+        
+        try {
+            await AdminService.toggleProductStatus(product.id);
+            notifyAction('update', product.name, nextStatus ? 'Produit mis en ligne' : 'Produit retiré de la ligne (hors ligne)');
+        } catch (err) {
+            console.error(err);
+            // Rollback en cas d'erreur
+            setProducts(prev => prev.map(p => p.id === product.id ? { ...p, isActive: isCurrentlyActive } : p));
+            notifyError("Erreur lors de la modification de visibilité", "Erreur");
+        }
+    };
 
     const handleDelete = async (id) => {
         const productToDelete = products.find(p => p.id === id);
@@ -151,6 +173,7 @@ const AdminProducts = () => {
                                     <th className="p-6 text-center">CATÉGORIE</th>
                                     <th className="p-6 text-center">PRIX</th>
                                     <th className="p-6 text-center">STOCK</th>
+                                    <th className="p-6 text-center">STATUT (EN LIGNE)</th>
                                     <th className="p-6 text-right">ACTIONS</th>
                                 </tr>
                             </thead>
@@ -185,7 +208,34 @@ const AdminProducts = () => {
                                                 {p.stockQty || 0} UNITÉS
                                             </span>
                                         </td>
-                                        <td className="p-6 text-right space-x-2">
+                                        <td className="p-6 text-center">
+                                            <button 
+                                                type="button"
+                                                onClick={() => handleToggleStatus(p)}
+                                                title={p.isActive !== false ? "Cliquer pour masquer (retirer de la ligne)" : "Cliquer pour publier (mettre en ligne)"}
+                                                className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wider transition-all transform active:scale-95 shadow-sm border ${
+                                                    p.isActive !== false 
+                                                        ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/30 hover:bg-emerald-500/20' 
+                                                        : 'bg-slate-500/10 text-slate-400 border-slate-500/30 hover:bg-slate-500/20'
+                                                }`}
+                                            >
+                                                <span className={`w-2 h-2 rounded-full ${p.isActive !== false ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'}`} />
+                                                {p.isActive !== false ? 'En ligne' : 'Hors ligne'}
+                                            </button>
+                                        </td>
+                                        <td className="p-6 text-right space-x-2 whitespace-nowrap">
+                                            <button 
+                                                type="button"
+                                                onClick={() => handleToggleStatus(p)} 
+                                                title={p.isActive !== false ? "Retirer de la ligne" : "Mettre en ligne"}
+                                                className={`p-2.5 rounded-xl border transition-all ${
+                                                    p.isActive !== false 
+                                                        ? (isDark ? 'border-white/5 text-emerald-400 hover:border-emerald-400 hover:bg-emerald-500/10' : 'border-slate-200 text-emerald-600 hover:bg-emerald-50')
+                                                        : (isDark ? 'border-white/5 text-slate-400 hover:border-slate-400 hover:bg-white/5' : 'border-slate-200 text-slate-400 hover:bg-slate-50')
+                                                }`}
+                                            >
+                                                {p.isActive !== false ? <Eye size={16}/> : <EyeOff size={16}/>}
+                                            </button>
                                             <button onClick={() => { setSelectedProduct(p); setShowForm(true); }} className={`p-2.5 rounded-xl border transition-all ${isDark ? 'border-white/5 text-indigo-400 hover:border-indigo-400' : 'border-slate-200 text-indigo-600 hover:bg-indigo-50'}`}><Edit2 size={16}/></button>
                                             <button onClick={() => handleDelete(p.id)} className={`p-2.5 rounded-xl border transition-all ${isDark ? 'border-white/5 text-red-400 hover:border-red-400' : 'border-slate-200 text-red-600 hover:bg-red-50'}`}><Trash2 size={16}/></button>
                                         </td>

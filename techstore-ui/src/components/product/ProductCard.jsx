@@ -222,7 +222,7 @@ const ProductCard = ({ product, viewMode = 'grid' }) => {
                     <div className="space-y-3">
                         <div className="flex items-center justify-between">
                             <span className="text-xs font-black text-indigo-500 uppercase tracking-widest">
-                                {product.brand || 'TechStore Exclusive'}
+                                {product.brand || 'PEOC Élevage'}
                             </span>
                             <span className={`text-[10px] font-black uppercase px-3 py-1 rounded-full ${
                                 !isOutOfStock ? 'bg-emerald-500/10 text-emerald-500' : 'bg-red-500/10 text-red-500'

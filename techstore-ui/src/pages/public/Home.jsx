@@ -200,11 +200,11 @@ const Home = () => {
     const productsCount = useCounter(stats.products, 1800, statsInView);
     const categoriesCount = useCounter(stats.categories, 1200, statsInView);
 
-    // Image dynamiques pour le Bento Grid extraites des produits réels
-    const appleImg = getProductImage(allProducts.find(p => p.brand?.toLowerCase() === 'apple')) || "https://images.unsplash.com/photo-1491933382434-500287f9b54b?auto=format&fit=crop&w=1200&q=80";
-    const audioImg = getProductImage(allProducts.find(p => p.slug?.includes('airpods') || p.name?.toLowerCase().includes('airpods') || p.slug?.includes('audio') || p.name?.toLowerCase().includes('audio'))) || "https://images.unsplash.com/photo-1590658268037-6bf12165a8df?auto=format&fit=crop&w=600&q=80";
-    const laptopImg = getProductImage(allProducts.find(p => p.category?.slug === 'laptops' || p.slug?.includes('macbook') || p.slug?.includes('laptop'))) || "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?auto=format&fit=crop&w=600&q=80";
-    const gamingImg = getProductImage(allProducts.find(p => p.slug?.includes('playstation') || p.slug?.includes('gaming') || p.slug?.includes('ps5'))) || "https://images.unsplash.com/photo-1547394765-185e1e68f34e?auto=format&fit=crop&w=600&q=80";
+    // Image dynamiques pour le Bento Grid extraites des produits réels (Volailles, Couveuses, Nutrition, Élevage)
+    const poultryImg = getProductImage(allProducts.find(p => p.category?.slug?.includes('poussin') || p.slug?.includes('poussin') || p.name?.toLowerCase().includes('poussin') || p.name?.toLowerCase().includes('volaille') || p.name?.toLowerCase().includes('poulet'))) || "https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?auto=format&fit=crop&w=1200&q=80";
+    const incubatorImg = getProductImage(allProducts.find(p => p.slug?.includes('couveuse') || p.name?.toLowerCase().includes('couveuse') || p.slug?.includes('materiel') || p.name?.toLowerCase().includes('materiel'))) || "https://images.unsplash.com/photo-1516467508483-a7212febe31a?auto=format&fit=crop&w=600&q=80";
+    const feedImg = getProductImage(allProducts.find(p => p.slug?.includes('aliment') || p.name?.toLowerCase().includes('aliment') || p.slug?.includes('nutrition') || p.name?.toLowerCase().includes('nutrition'))) || "https://images.unsplash.com/photo-1500595046743-cd271d694d30?auto=format&fit=crop&w=600&q=80";
+    const healthImg = getProductImage(allProducts.find(p => p.slug?.includes('sante') || p.slug?.includes('veterinaire') || p.name?.toLowerCase().includes('soin') || p.name?.toLowerCase().includes('vitamine'))) || "https://images.unsplash.com/photo-1599443015574-be5fe8a05783?auto=format&fit=crop&w=600&q=80";
 
     // Slides hero — images récupérées dynamiquement via produits ou fallback Unsplash queries
     const heroSlides = [];
@@ -212,7 +212,7 @@ const Home = () => {
     if (settings?.heroVideoUrl) {
         heroSlides.push({
             type: 'video',
-            badge: "L'Expérience",
+            badge: "L'Expérience PEOC",
             title: settings.siteName || "PEOC",
             subtitle: "Petit Éleveur de l'Ouest Cameroun.",
             cta: "Découvrir",
@@ -251,15 +251,15 @@ const Home = () => {
     if (heroProducts.length > 0) {
         heroProducts.slice(0, 3).forEach((p, i) => {
             const pImg = getProductImage(p);
-            const fallbackImage = ["https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=2000&q=80",
-                                   "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=2000&q=80",
-                                   "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&w=2000&q=80"][i] || "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=2000&q=80";
+            const fallbackImage = ["https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?auto=format&fit=crop&w=2000&q=80",
+                                   "https://images.unsplash.com/photo-1516467508483-a7212febe31a?auto=format&fit=crop&w=2000&q=80",
+                                   "https://images.unsplash.com/photo-1500595046743-cd271d694d30?auto=format&fit=crop&w=2000&q=80"][i] || "https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?auto=format&fit=crop&w=2000&q=80";
 
             heroSlides.push({
                 type: 'image',
-                badge: "Nouveauté 2026",
+                badge: "Sélection PEOC 2026",
                 title: p.name,
-                subtitle: p.description ? (p.description.length > 100 ? p.description.slice(0, 100) + "..." : p.description) : "La technologie au summum de l'excellence.",
+                subtitle: p.description ? (p.description.length > 100 ? p.description.slice(0, 100) + "..." : p.description) : "Le meilleur pour votre élevage et cheptel au Cameroun.",
                 cta: "Découvrir",
                 ctaLink: `/product/${p.slug}`,
                 image: pImg || fallbackImage,
@@ -272,42 +272,42 @@ const Home = () => {
         heroSlides.push(
             {
                 type: 'image',
-                badge: "Collection Premium 2026",
-                title: "Technologie Réinventée",
-                subtitle: "Découvrez une expérience au-delà des limites du possible.",
+                badge: "PEOC Sélection 2026",
+                title: "Élevage Moderne & Performant",
+                subtitle: "Poussins de qualité, couveuses fiables et équipements d'élevage à Bafoussam et dans tout le Cameroun.",
                 cta: "Explorer",
                 ctaLink: "/catalog",
-                image: "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=2000&q=80",
+                image: "https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?auto=format&fit=crop&w=2000&q=80",
                 accent: "from-indigo-500 to-purple-600",
             },
             {
                 type: 'image',
-                badge: "Audio & Son",
-                title: "Immersion Totale",
-                subtitle: "Son haute fidélité, confort absolu, design iconique.",
-                cta: "Écouter",
-                ctaLink: "/catalog?q=audio",
-                image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=2000&q=80",
+                badge: "Matériel Haute Précision",
+                title: "Couveuses & Éclosoirs",
+                subtitle: "Maximisez vos taux d'éclosion avec nos couveuses automatiques testées et garanties.",
+                cta: "Découvrir",
+                ctaLink: "/catalog?q=couveuse",
+                image: "https://images.unsplash.com/photo-1516467508483-a7212febe31a?auto=format&fit=crop&w=2000&q=80",
                 accent: "from-blue-500 to-cyan-600",
             },
             {
                 type: 'image',
-                badge: "Mobilité Pro",
-                title: "Performance Mobile",
-                subtitle: "Smartphones et accessoires pour les professionnels exigeants.",
+                badge: "Nutrition & Santé",
+                title: "Aliments & Compléments",
+                subtitle: "Aliments de démarrage, croissance et finition pour des volailles vigoureuses et saines.",
                 cta: "Voir",
-                ctaLink: "/catalog?q=mobile",
-                image: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&w=2000&q=80",
+                ctaLink: "/catalog?q=aliment",
+                image: "https://images.unsplash.com/photo-1500595046743-cd271d694d30?auto=format&fit=crop&w=2000&q=80",
                 accent: "from-violet-500 to-pink-600",
             }
         );
     }
 
     const testimonials = [
-        { name: "Marie K.", role: "Designer UI/UX", rating: 5, text: "Commande reçue en moins de 24h à Douala. Produits authentiques, packaging impeccable. Je recommande sans hésiter !" },
-        { name: "Jean-Paul N.", role: "Développeur Web", rating: 5, text: "Mon MacBook Pro est arrivé en parfait état. Le service client a été réactif et professionnel. Vraiment top." },
-        { name: "Amina T.", role: "Photographe", rating: 4, text: "Super expérience ! L'interface du site est fluide et les produits correspondent exactement à la description. Satisfaite !" },
-        { name: "Eric M.", role: "Éleveur Professionnel", rating: 5, text: "PEOC est ma référence au Cameroun. Matériels de qualité irréprochable et conseils fiables. Bravo à l'équipe !" },
+        { name: "Marie K.", role: "Avicultrice à Bafoussam", rating: 5, text: "Commande de poussins et d'abreuvoirs reçue en moins de 24h. Les poussins sont vigoureux et zéro perte. Je recommande vivement PEOC !" },
+        { name: "Jean-Paul N.", role: "Éleveur à Dschang", rating: 5, text: "Ma couveuse automatique 128 œufs fonctionne à merveille avec un taux d'éclosion remarquable. Service client très réactif !" },
+        { name: "Amina T.", role: "Ferme Agro-Pastorale", rating: 5, text: "Aliments de première qualité et conseils avisés de l'équipe PEOC. Mes poulets ont atteint un poids idéal en temps record." },
+        { name: "Eric M.", role: "Éleveur Professionnel", rating: 5, text: "PEOC est la référence incontournable dans l'Ouest Cameroun pour l'élevage. Matériels robustes et livraison ponctuelle. Bravo !" },
     ];
 
     // Auto-scroll hero
@@ -497,7 +497,7 @@ const Home = () => {
                 <div className="max-w-7xl mx-auto w-full">
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-6 sm:gap-10">
                         {[
-                            { value: `${productsCount}+`, label: "Produits High-Tech", gradient: "from-indigo-500 to-purple-500" },
+                            { value: `${productsCount}+`, label: "Produits & Équipements", gradient: "from-indigo-500 to-purple-500" },
                             { value: categoriesCount, label: "Catégories", gradient: "from-blue-500 to-emerald-500" },
                             { value: "24h", label: "Livraison Express", gradient: "from-amber-500 to-orange-500" },
                             { value: "100%", label: "Garantie Qualité", gradient: "from-pink-500 to-red-500" },
@@ -519,8 +519,8 @@ const Home = () => {
             <section className="py-20 sm:py-24 px-5 sm:px-6 max-w-7xl mx-auto">
                 <SectionHeader
                     label="Collections"
-                    title="L'univers High-Tech"
-                    subtitle="Découvrez nos catégories phares"
+                    title="L'univers PEOC Élevage"
+                    subtitle="Découvrez nos matériels et sélections phares"
                     linkTo="/catalog"
                     linkText="Tout explorer"
                 />
@@ -528,21 +528,21 @@ const Home = () => {
 
                     {/* Grande carte */}
                     <Link
-                        to="/catalog?q=apple"
+                        to="/catalog?q=volaille"
                         className="sm:col-span-2 h-[380px] sm:h-[480px] rounded-[2rem] overflow-hidden relative group cursor-pointer bg-black"
                     >
                         <div className="absolute inset-0 z-10 p-8 sm:p-12 flex flex-col items-start text-white">
-                            <span className="text-[9px] font-black uppercase tracking-widest mb-2 opacity-60">Icône 2026</span>
-                            <h2 className="text-3xl sm:text-4xl md:text-5xl font-black italic tracking-tighter mb-3">Écosystème Apple</h2>
-                            <p className="text-sm sm:text-base opacity-70 max-w-xs">iPhone, Mac, iPad, AirPods — un univers connecté et cohérent.</p>
+                            <span className="text-[9px] font-black uppercase tracking-widest mb-2 opacity-60">Sélection Souches 2026</span>
+                            <h2 className="text-3xl sm:text-4xl md:text-5xl font-black italic tracking-tighter mb-3">Volailles & Poussins</h2>
+                            <p className="text-sm sm:text-base opacity-70 max-w-xs">Poussins d'un jour, Goliaths, poulets de chair et pondeuses vaccinées.</p>
                             <div className="mt-auto flex items-center gap-2 text-white/80 text-xs font-black uppercase tracking-widest group-hover:gap-3 transition-all">
                                 Explorer <ArrowRight size={14} />
                             </div>
                         </div>
                         <img
-                            src={appleImg}
+                            src={poultryImg}
                             className="absolute inset-0 w-full h-full object-cover opacity-50 group-hover:opacity-70 group-hover:scale-105 transition-all duration-700"
-                            alt="Apple"
+                            alt="Volailles et poussins"
                             loading="lazy"
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
@@ -550,36 +550,36 @@ const Home = () => {
 
                     {/* Petite carte 1 */}
                     <Link
-                        to="/catalog?q=audio"
+                        to="/catalog?q=couveuse"
                         className="h-[220px] sm:h-[224px] rounded-[2rem] overflow-hidden relative group cursor-pointer bg-[#f5f5f7] dark:bg-[#161926]"
                     >
                         <div className="absolute inset-0 z-10 p-7 flex flex-col text-apple-dark dark:text-white">
-                            <span className="text-[9px] font-black uppercase tracking-widest opacity-50 mb-1">Son & Musique</span>
-                            <h2 className="text-2xl font-black italic tracking-tighter">AirPods Pro</h2>
-                            <p className="text-xs opacity-50 mt-1">Réduction de bruit adaptative</p>
+                            <span className="text-[9px] font-black uppercase tracking-widest opacity-50 mb-1">Matériel & Éclosion</span>
+                            <h2 className="text-2xl font-black italic tracking-tighter">Couveuses Auto</h2>
+                            <p className="text-xs opacity-50 mt-1">Haut taux d'éclosion & contrôle digital</p>
                         </div>
                         <img
-                            src={audioImg}
+                            src={incubatorImg}
                             className="absolute bottom-0 right-0 h-[65%] w-auto object-contain p-4 group-hover:scale-110 transition-transform duration-700"
-                            alt="AirPods"
+                            alt="Couveuses automatiques"
                             loading="lazy"
                         />
                     </Link>
 
                     {/* Petite carte 2 */}
                     <Link
-                        to="/catalog?q=laptop"
+                        to="/catalog?q=aliment"
                         className="h-[220px] sm:h-[224px] rounded-[2rem] overflow-hidden relative group cursor-pointer bg-[#111] dark:bg-[#0d1117]"
                     >
                         <div className="absolute inset-0 z-10 p-7 flex flex-col text-white">
-                            <span className="text-[9px] font-black uppercase tracking-widest opacity-50 mb-1">Productivité</span>
-                            <h2 className="text-2xl font-black italic tracking-tighter">MacBook Pro</h2>
-                            <p className="text-xs opacity-50 mt-1">Puce M4 — Puissance ultime</p>
+                            <span className="text-[9px] font-black uppercase tracking-widest opacity-50 mb-1">Nutrition Animale</span>
+                            <h2 className="text-2xl font-black italic tracking-tighter">Aliments & Granulés</h2>
+                            <p className="text-xs opacity-50 mt-1">Démarrage, croissance et finition</p>
                         </div>
                         <img
-                            src={laptopImg}
+                            src={feedImg}
                             className="absolute bottom-0 right-0 h-[60%] w-auto object-contain p-4 opacity-60 group-hover:opacity-80 group-hover:scale-110 transition-all duration-700"
-                            alt="MacBook"
+                            alt="Aliments et nutrition"
                             loading="lazy"
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
@@ -587,18 +587,18 @@ const Home = () => {
 
                     {/* Petite carte 3 */}
                     <Link
-                        to="/catalog?q=gaming"
-                        className="h-[220px] sm:h-[224px] rounded-[2rem] overflow-hidden relative group cursor-pointer bg-gradient-to-br from-violet-600 to-indigo-700"
+                        to="/catalog?q=sante"
+                        className="h-[220px] sm:h-[224px] rounded-[2rem] overflow-hidden relative group cursor-pointer bg-gradient-to-br from-emerald-600 to-teal-700"
                     >
                         <div className="absolute inset-0 z-10 p-7 flex flex-col text-white">
-                            <span className="text-[9px] font-black uppercase tracking-widest opacity-70 mb-1">Gaming</span>
-                            <h2 className="text-2xl font-black italic tracking-tighter">Haute Performance</h2>
-                            <p className="text-xs opacity-70 mt-1">Setup gamer de niveau pro</p>
+                            <span className="text-[9px] font-black uppercase tracking-widest opacity-70 mb-1">Santé & Hygiène</span>
+                            <h2 className="text-2xl font-black italic tracking-tighter">Soins Vétérinaires</h2>
+                            <p className="text-xs opacity-70 mt-1">Vitamines, vaccins & désinfectants</p>
                         </div>
                         <img
-                            src={gamingImg}
+                            src={healthImg}
                             className="absolute bottom-0 right-0 h-[65%] w-auto object-contain p-4 opacity-40 group-hover:opacity-60 group-hover:scale-110 transition-all duration-700"
-                            alt="Gaming"
+                            alt="Soins et vétérinaires"
                             loading="lazy"
                         />
                     </Link>
@@ -762,15 +762,15 @@ const Home = () => {
                         <span className="text-[10px] font-black uppercase tracking-widest text-indigo-500 mb-3 block">Nos Engagements</span>
                         <h2 className="text-3xl sm:text-4xl md:text-5xl font-black italic tracking-tighter text-apple-dark dark:text-white">Pourquoi {siteName} ?</h2>
                         <p className="text-apple-dark/50 dark:text-white/50 mt-3 text-sm sm:text-base max-w-2xl mx-auto">
-                            Nous vous offrons la meilleure expérience d'achat High-Tech au Cameroun
+                            Nous vous offrons la meilleure expérience d'achat et d'accompagnement agro-pastoral au Cameroun
                         </p>
                     </div>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8">
                         {[
-                            { icon: Truck, color: "indigo", title: "Livraison Rapide", text: "Partout au Cameroun, suivi en temps réel inclus." },
-                            { icon: ShieldCheck, color: "emerald", title: "Garantie Officielle", text: "Tous nos produits certifiés par les constructeurs." },
-                            { icon: Headphones, color: "purple", title: "Support 7j/7", text: "Experts tech disponibles pour vous accompagner." },
-                            { icon: Award, color: "amber", title: "100% Authentique", text: "Produits vérifiés et validés avant expédition." },
+                            { icon: Truck, color: "indigo", title: "Livraison Rapide", text: "Partout au Cameroun, transport sécurisé pour cheptel et matériel." },
+                            { icon: ShieldCheck, color: "emerald", title: "Garantie & Suivi", text: "Matériel testé, poussins sains et accompagnement technique." },
+                            { icon: Headphones, color: "purple", title: "Support 7j/7", text: "Conseils d'éleveurs chevronnés disponibles pour vous guider." },
+                            { icon: Award, color: "amber", title: "100% Qualité", text: "Souches vigoureuses et équipements certifiés durables." },
                         ].map(({ icon: Icon, color, title, text }, i) => (
                             <motion.div
                                 key={i}
@@ -886,10 +886,10 @@ const Home = () => {
                 >
                     <span className="text-[10px] font-black uppercase tracking-widest text-indigo-500 mb-4 block">Rejoignez-nous</span>
                     <h2 className="text-4xl sm:text-5xl md:text-7xl font-black italic tracking-tighter text-apple-dark dark:text-white leading-tight mb-6">
-                        Prêt à découvrir<br />le futur du tech ?
+                        Prêt à booster<br />votre élevage ?
                     </h2>
                     <p className="text-apple-dark/50 dark:text-white/50 text-base sm:text-lg max-w-xl mx-auto mb-10">
-                        Des milliers de clients satisfaits à Douala et partout au Cameroun. Votre expérience High-Tech commence ici.
+                        Des milliers d'éleveurs satisfaits à Bafoussam, à l'Ouest et partout au Cameroun. Votre réussite agro-pastorale commence ici.
                     </p>
                     <div className="flex flex-wrap justify-center gap-4">
                         <Link
