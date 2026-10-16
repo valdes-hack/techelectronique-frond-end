@@ -1,44 +1,48 @@
 import React, { useState } from 'react';
-import { X, Upload, Check } from 'lucide-react';
+import { X, Check } from 'lucide-react';
 import Button from '../../components/common/Button';
 import Input from '../../components/common/Input';
 import AdminService from '../../services/admin.service';
+import IconEmojiPicker from '../../components/admin/IconEmojiPicker';
 
-const CategoryForm = ({ category, categories, onClose, onSave, theme }) => {
+const CategoryForm = ({ category, onClose, onSave, theme }) => {
     const [name, setName] = useState(category?.name || '');
     const [slug, setSlug] = useState(category?.slug || '');
-    const [parentId, setParentId] = useState(category?.parentId || '');
-    const [file, setFile] = useState(null);
+    const [iconUrl, setIconUrl] = useState(category?.iconUrl || '🐔');
     const [loading, setLoading] = useState(false);
+
+    // Génération automatique du slug à partir du nom si le slug n'a pas été personnalisé
+    const handleNameChange = (val) => {
+        setName(val);
+        if (!category) {
+            const autoSlug = val
+                .toLowerCase()
+                .trim()
+                .normalize("NFD")
+                .replace(/[\u0300-\u036f]/g, "") // Enlève les accents
+                .replace(/[^a-z0-9]+/g, "-")      // Remplace les caractères spéciaux par des tirets
+                .replace(/^-+|-+$/g, "");
+            setSlug(autoSlug);
+        }
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
 
         try {
-            const formData = new FormData();
-            
-            // On prépare l'objet selon le schéma p. 58
             const categoryData = {
-                name: name,
-                slug: slug,
-                parentId: parentId === "" ? null : parseInt(parentId)
+                name: name.trim(),
+                slug: slug.trim(),
+                iconUrl: iconUrl || '🐔',
+                parentId: null // Pas de catégorie parente, toutes les catégories sont directes
             };
-
-            // ✨ CLÉS SWAGGER (Page 3 et 7) : "category" et "file" ✨
-            formData.append('category', new Blob([JSON.stringify(categoryData)], {
-                type: 'application/json'
-            }));
-
-            if (file) {
-                formData.append('file', file);
-            }
 
             let res;
             if (category) {
-                res = await AdminService.updateCategory(category.id, formData);
+                res = await AdminService.updateCategory(category.id, categoryData);
             } else {
-                res = await AdminService.createCategory(formData);
+                res = await AdminService.createCategory(categoryData);
             }
 
             if (res.status === 'success' || res.code === 200 || res.code === 201) {
@@ -52,35 +56,80 @@ const CategoryForm = ({ category, categories, onClose, onSave, theme }) => {
         }
     };
 
+    const isDark = theme === 'dark';
+
     return (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
-            <div className={`w-full max-w-lg rounded-[3rem] p-10 shadow-2xl animate-in zoom-in-95 duration-300 ${theme === 'dark' ? 'bg-[#111421] text-white border border-white/5' : 'bg-white'}`}>
-                <div className="flex justify-between items-center mb-8">
-                    <h3 className="text-2xl font-black italic tracking-tighter uppercase">Configuration Rayon</h3>
-                    <button onClick={onClose} className="p-2 bg-white/5 rounded-full hover:bg-white/10 transition-all"><X size={20}/></button>
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md overflow-y-auto">
+            <div className={`w-full max-w-xl rounded-[2.5rem] p-8 sm:p-10 shadow-2xl animate-in zoom-in-95 duration-200 my-8 ${isDark ? 'bg-[#111421] text-white border border-white/10' : 'bg-white text-slate-800'}`}>
+                
+                {/* Header */}
+                <div className="flex justify-between items-center mb-6 border-b pb-4 border-white/10">
+                    <div>
+                        <h3 className="text-2xl font-black italic tracking-tighter uppercase text-indigo-400">
+                            {category ? 'Modifier le Rayon' : 'Nouveau Rayon'}
+                        </h3>
+                        <p className="text-xs text-slate-400 font-medium mt-0.5">
+                            Gestion des rayons et catégories de l'élevage
+                        </p>
+                    </div>
+                    <button 
+                        onClick={onClose} 
+                        className={`p-2.5 rounded-2xl transition-all ${isDark ? 'bg-white/5 hover:bg-white/10 text-slate-300' : 'bg-slate-100 hover:bg-slate-200 text-slate-600'}`}
+                    >
+                        <X size={20} />
+                    </button>
                 </div>
                 
                 <form onSubmit={handleSubmit} className="space-y-6 text-left">
-                    <Input label="NOM DU RAYON" value={name} onChange={e=>setName(e.target.value)} required theme={theme} />
-                    <Input label="URL SLUG" value={slug} onChange={e=>setSlug(e.target.value)} required theme={theme} />
                     
-                    <div className="space-y-2">
-                        <label className="text-[10px] font-black uppercase ml-4 opacity-40 italic text-indigo-500">Rayon Parent (Optionnel)</label>
-                        <select value={parentId} onChange={e=>setParentId(e.target.value)} className={`w-full p-4 rounded-2xl border-none outline-none font-bold text-sm ${theme === 'dark' ? 'bg-white/5 text-white' : 'bg-slate-100 text-slate-800'}`}>
-                            <option value="">-- Aucun (Rayon Principal) --</option>
-                            {categories.filter(c => c.id !== category?.id).map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                        </select>
+                    {/* Nom du rayon */}
+                    <Input 
+                        label="NOM DU RAYON (EX: VOLAILLES FERMIÈRES, OEUFS, INTRANTS...)" 
+                        value={name} 
+                        onChange={e => handleNameChange(e.target.value)} 
+                        placeholder="Ex: Poussins d'un jour, Porcs charcutiers..."
+                        required 
+                        theme={theme} 
+                    />
+
+                    {/* Slug */}
+                    <Input 
+                        label="URL SLUG (IDENTIFIANT UNIQUE DANS L'URL)" 
+                        value={slug} 
+                        onChange={e => setSlug(e.target.value)} 
+                        placeholder="Ex: poussins-un-jour"
+                        required 
+                        theme={theme} 
+                    />
+
+                    {/* Sélecteur d'icône / Emoji (Sans téléversement, avec onglets et collage libre) */}
+                    <div>
+                        <label className="text-[10px] font-black uppercase tracking-wider text-indigo-400 block mb-2">
+                            CHOISIR L'ICÔNE DU RAYON (BOXICON OU EMOJI)
+                        </label>
+                        <IconEmojiPicker 
+                            value={iconUrl} 
+                            onChange={setIconUrl} 
+                            theme={theme} 
+                        />
                     </div>
 
-                    <label className={`flex flex-col items-center p-6 border-2 border-dashed border-white/10 rounded-[2rem] cursor-pointer hover:border-indigo-500/50 transition-all ${file ? 'border-indigo-500 bg-indigo-500/5' : ''}`}>
-                        <Upload className={`opacity-20 mb-2 ${file ? 'text-indigo-500 opacity-100' : ''}`}/>
-                        <span className="text-[10px] font-black uppercase opacity-40">{file ? file.name : "Sélectionner une icône"}</span>
-                        <input type="file" className="hidden" onChange={e=>setFile(e.target.files[0])} />
-                    </label>
-
-                    <div className="flex space-x-4">
-                        <button type="button" onClick={onClose} className={`w-1/4 py-5 rounded-2xl font-bold uppercase text-[10px] ${theme === 'dark' ? 'bg-white/5 text-slate-400' : 'bg-slate-100 text-slate-500'}`}>Annuler</button>
-                        <Button loading={loading} type="submit" className="w-3/4 py-5 text-lg font-black uppercase tracking-widest shadow-2xl shadow-indigo-500/20">Enregistrer</Button>
+                    {/* Actions */}
+                    <div className="flex items-center space-x-4 pt-2">
+                        <button 
+                            type="button" 
+                            onClick={onClose} 
+                            className={`w-1/3 py-4 rounded-2xl font-bold uppercase text-xs tracking-wider transition-all ${isDark ? 'bg-white/5 hover:bg-white/10 text-slate-400' : 'bg-slate-100 hover:bg-slate-200 text-slate-600'}`}
+                        >
+                            Annuler
+                        </button>
+                        <Button 
+                            loading={loading} 
+                            type="submit" 
+                            className="w-2/3 py-4 text-base font-black uppercase tracking-widest bg-indigo-600 hover:bg-indigo-500 text-white shadow-xl shadow-indigo-600/30 rounded-2xl"
+                        >
+                            {category ? 'Enregistrer les modifications' : 'Créer le rayon'}
+                        </Button>
                     </div>
                 </form>
             </div>

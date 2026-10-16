@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
 import {
     ChevronRight, Zap, ShieldCheck, Truck, Headphones, Star,
-    Award, ArrowRight, TrendingUp, ChevronLeft
+    Award, ArrowRight, TrendingUp, ChevronLeft, Flame, Percent, Sparkles
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import ProductService from '../../services/product.service';
@@ -196,19 +196,27 @@ const Home = () => {
         return () => clearTimeout(id);
     }, [heroSlides.length, currentHeroSlide]);
 
+    const [homeCategories, setHomeCategories] = useState([]);
+
     // Fetch data
     useEffect(() => {
         const fetchAll = async () => {
             try {
                 setLoading(true);
-                const [prods] = await Promise.allSettled([
-                    ProductService.getAll(0, 16),
+                const [prods, cats] = await Promise.allSettled([
+                    ProductService.getAll(0, 24),
+                    ProductService.getCategories()
                 ]);
 
                 if (prods.status === 'fulfilled') {
                     const all = prods.value?.data?.content || prods.value?.data || [];
                     setAllProducts(all);
                     setTrendingProducts(all.slice(0, 6));
+                }
+
+                if (cats.status === 'fulfilled') {
+                    const cList = cats.value?.data || (Array.isArray(cats.value) ? cats.value : []);
+                    setHomeCategories(cList);
                 }
             } catch (err) {
                 console.error("Erreur chargement home:", err);
@@ -218,6 +226,8 @@ const Home = () => {
         };
         fetchAll();
     }, []);
+
+    const promoProducts = allProducts.filter(p => p.discountPrice && Number(p.discountPrice) > 0 && Number(p.discountPrice) < Number(p.basePrice));
 
     const slide = heroSlides[currentHeroSlide] || heroSlides[0];
 
@@ -321,6 +331,78 @@ const Home = () => {
                     </div>
                 </motion.div>
             </section>
+
+            {/* ══════════════════════════════════════
+                ✨  BARRE DYNAMIQUE DES RAYONS (BOXICONS & EMOJIS)
+            ══════════════════════════════════════ */}
+            {homeCategories.length > 0 && (
+                <section className="py-8 px-5 sm:px-6 max-w-7xl mx-auto border-b border-gray-100 dark:border-white/5">
+                    <div className="flex items-center gap-2 overflow-x-auto pb-2 custom-scrollbar">
+                        {homeCategories.map((cat) => {
+                            const icon = cat.iconUrl || '📦';
+                            const isBoxicon = icon.startsWith('bx');
+                            const isUrl = icon.startsWith('http') || icon.startsWith('/uploads');
+
+                            return (
+                                <Link
+                                    key={cat.id}
+                                    to={`/category/${cat.slug}`}
+                                    className="flex items-center gap-3 px-5 py-3 rounded-2xl bg-gray-50 dark:bg-[#161926] hover:bg-indigo-500/10 border border-gray-100 dark:border-white/5 transition-all shrink-0 hover:scale-105 group"
+                                >
+                                    <div className="w-8 h-8 rounded-xl bg-white dark:bg-[#111421] shadow-sm flex items-center justify-center shrink-0">
+                                        {isBoxicon ? (
+                                            <i className={`${icon} text-lg text-indigo-500 group-hover:scale-125 transition-transform`} />
+                                        ) : isUrl ? (
+                                            <img src={getFullImageUrl(icon)} className="w-6 h-6 object-contain" alt="" />
+                                        ) : (
+                                            <span className="text-xl select-none group-hover:scale-125 transition-transform">{icon}</span>
+                                        )}
+                                    </div>
+                                    <span className="font-bold text-xs uppercase tracking-wider text-apple-dark dark:text-white group-hover:text-indigo-500 transition-colors whitespace-nowrap">
+                                        {cat.name}
+                                    </span>
+                                </Link>
+                            );
+                        })}
+                    </div>
+                </section>
+            )}
+
+            {/* ══════════════════════════════════════
+                🔥  VENTES FLASH & PROMOTIONS (EN DIRECT)
+            ══════════════════════════════════════ */}
+            {promoProducts.length > 0 && (
+                <section className="py-16 sm:py-20 px-5 sm:px-6 max-w-7xl mx-auto">
+                    <div className="p-8 sm:p-12 rounded-[2.5rem] bg-gradient-to-br from-red-600 via-rose-600 to-orange-500 text-white shadow-2xl shadow-red-500/20 relative overflow-hidden mb-12">
+                        <div className="absolute top-0 right-0 w-96 h-96 bg-white/10 rounded-full blur-3xl pointer-events-none" />
+                        <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+                            <div>
+                                <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/20 backdrop-blur-md text-xs font-black uppercase tracking-widest mb-3">
+                                    <Flame size={14} className="fill-white" /> Ventes Flash & Offres Spéciales
+                                </div>
+                                <h2 className="text-3xl sm:text-4xl md:text-5xl font-black italic tracking-tighter">
+                                    Promotions en cours
+                                </h2>
+                                <p className="text-sm text-white/80 mt-2 max-w-xl">
+                                    Profitez de remises exceptionnelles sur nos volailles, poussins et équipements d'élevage. Offres limitées !
+                                </p>
+                            </div>
+                            <Link
+                                to="/catalog"
+                                className="px-8 py-4 rounded-2xl bg-white text-red-600 font-black text-xs uppercase tracking-widest hover:scale-105 transition-all shadow-xl whitespace-nowrap shrink-0"
+                            >
+                                Voir toutes les offres
+                            </Link>
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+                        {promoProducts.slice(0, 8).map((prod, idx) => (
+                            <ProductCard key={prod.id} prod={prod} index={idx} />
+                        ))}
+                    </div>
+                </section>
+            )}
 
             {/* ══════════════════════════════════════
                 2️⃣  CATÉGORIES — BENTO GRID

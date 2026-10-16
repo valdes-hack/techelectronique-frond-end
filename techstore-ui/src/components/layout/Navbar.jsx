@@ -146,7 +146,17 @@ const Navbar = () => {
                                                     onClick={() => setIsProductsOpen(false)}
                                                     className="flex items-center gap-3 p-3 rounded-2xl hover:bg-indigo-500/10 text-sm font-bold text-apple-dark/80 dark:text-white/80 transition-all group/item"
                                                 >
-                                                    <Package size={15} className="text-indigo-500 opacity-50 group-hover/item:opacity-100 shrink-0" />
+                                                    {cat.iconUrl ? (
+                                                        cat.iconUrl.startsWith('bx') ? (
+                                                            <i className={`${cat.iconUrl} text-lg text-indigo-500 shrink-0`} />
+                                                        ) : cat.iconUrl.startsWith('http') || cat.iconUrl.startsWith('/') ? (
+                                                            <img src={cat.iconUrl} className="w-5 h-5 object-cover rounded-md shrink-0" alt="" />
+                                                        ) : (
+                                                            <span className="text-lg shrink-0 select-none">{cat.iconUrl}</span>
+                                                        )
+                                                    ) : (
+                                                        <Package size={15} className="text-indigo-500 opacity-50 group-hover/item:opacity-100 shrink-0" />
+                                                    )}
                                                     <span className="truncate">{cat.name}</span>
                                                 </Link>
                                             ))}
@@ -352,8 +362,18 @@ const Navbar = () => {
                                                                     : 'text-slate-700 hover:bg-indigo-50 hover:text-indigo-600'
                                                             }`}
                                                         >
-                                                            <Package size={14} className="text-indigo-500 shrink-0" />
-                                                            {cat.name}
+                                                            {cat.iconUrl ? (
+                                                                cat.iconUrl.startsWith('bx') ? (
+                                                                    <i className={`${cat.iconUrl} text-base text-indigo-500 shrink-0`} />
+                                                                ) : cat.iconUrl.startsWith('http') || cat.iconUrl.startsWith('/') ? (
+                                                                    <img src={cat.iconUrl} className="w-5 h-5 object-cover rounded-md shrink-0" alt="" />
+                                                                ) : (
+                                                                    <span className="text-base shrink-0 select-none">{cat.iconUrl}</span>
+                                                                )
+                                                            ) : (
+                                                                <Package size={14} className="text-indigo-500 shrink-0" />
+                                                            )}
+                                                            <span className="truncate">{cat.name}</span>
                                                         </Link>
                                                     ))}
                                                 </div>

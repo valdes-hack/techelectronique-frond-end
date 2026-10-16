@@ -124,22 +124,35 @@ const AdminService = {
         return response.data;
     },
 
-    createCategory: async (formData) => {
-        const response = await api.post('/admin/categories', formData, {
-            headers: { 'Content-Type': 'multipart/form-data' }
-        });
+    createCategory: async (categoryData) => {
+        if (categoryData instanceof FormData) {
+            const response = await api.post('/admin/categories', categoryData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+            return response.data;
+        }
+        const response = await api.post('/admin/categories', categoryData);
         return response.data;
     },
 
-    updateCategory: async (id, formData) => {
-        const response = await api.put(`/admin/categories/${id}`, formData, {
-            headers: { 'Content-Type': 'multipart/form-data' }
-        });
+    updateCategory: async (id, categoryData) => {
+        if (categoryData instanceof FormData) {
+            const response = await api.put(`/admin/categories/${id}`, categoryData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+            return response.data;
+        }
+        const response = await api.put(`/admin/categories/${id}`, categoryData);
         return response.data;
     },
 
     deleteCategory: async (id) => {
         const response = await api.delete(`/admin/categories/${id}`);
+        return response.data;
+    },
+
+    purgeCategories: async () => {
+        const response = await api.delete('/admin/categories/purge-all');
         return response.data;
     },
 
