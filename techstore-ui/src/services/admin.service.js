@@ -89,6 +89,16 @@ const AdminService = {
         return response.data;
     },
 
+    hardDeleteProduct: async (id) => {
+        const response = await api.delete(`/admin/products/${id}/hard`);
+        return response.data;
+    },
+
+    purgeProducts: async () => {
+        const response = await api.delete('/admin/products/purge-all');
+        return response.data;
+    },
+
     toggleProductStatus: async (id) => {
         const response = await api.patch(`/admin/products/${id}/toggle-status`);
         return response.data;

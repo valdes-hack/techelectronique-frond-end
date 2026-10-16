@@ -108,13 +108,49 @@ const AdminProducts = () => {
 
     const handleDelete = async (id) => {
         const productToDelete = products.find(p => p.id === id);
-        if (window.confirm("Confirmer la suppression de ce produit ?")) {
+        if (window.confirm(`Confirmer la suppression définitive de "${productToDelete?.name || 'ce produit'}" ?`)) {
             try {
-                await AdminService.deleteProduct(id);
-                notifyAction('delete', productToDelete?.name || 'Produit', 'Retiré du catalogue');
+                try {
+                    await AdminService.hardDeleteProduct(id);
+                } catch {
+                    await AdminService.deleteProduct(id);
+                }
+                notifyAction('delete', productToDelete?.name || 'Produit', 'Supprimé du catalogue');
                 loadData();
             } catch (err) {
                 notifyError("Erreur lors de la suppression du produit", "Erreur");
+            }
+        }
+    };
+
+    const handlePurgeAll = async () => {
+        if (products.length === 0) {
+            alert("Le catalogue est déjà vide.");
+            return;
+        }
+        if (window.confirm(`⚠️ ATTENTION : Voulez-vous supprimer DÉFINITIVEMENT tous les ${products.length} produits du catalogue ?\nCette action est irréversible.`)) {
+            setLoading(true);
+            try {
+                await AdminService.purgeProducts();
+                await loadData();
+                notifyAction('delete', 'Catalogue', 'Tous les produits ont été supprimés');
+            } catch (e) {
+                console.error("Erreur purge globale :", e);
+                try {
+                    for (const p of products) {
+                        try {
+                            await AdminService.hardDeleteProduct(p.id);
+                        } catch {
+                            await AdminService.deleteProduct(p.id);
+                        }
+                    }
+                    await loadData();
+                    notifyAction('delete', 'Catalogue', 'Produits supprimés');
+                } catch (err2) {
+                    notifyError("Erreur lors de la suppression des produits", "Erreur");
+                }
+            } finally {
+                setLoading(false);
             }
         }
     };
@@ -142,15 +178,31 @@ const AdminProducts = () => {
             <div className="flex flex-col gap-8 h-full">
                 {/* HEADER */}
                 <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 px-2">
-                    <h2 className={`text-4xl font-black italic tracking-tighter ${isDark ? 'text-white' : 'text-slate-800'}`}>
-                        Produits<span className="text-indigo-500">.</span>
-                    </h2>
-                    <button 
-                        onClick={() => { setSelectedProduct(null); setShowForm(true); }} 
-                        className="bg-[#10b981] text-[#0b0e14] px-8 py-3 rounded-2xl font-black hover:scale-105 transition-all shadow-lg text-xs uppercase whitespace-nowrap"
-                    >
-                        + Ajouter au catalogue
-                    </button>
+                    <div>
+                        <h2 className={`text-4xl font-black italic tracking-tighter ${isDark ? 'text-white' : 'text-slate-800'}`}>
+                            Produits<span className="text-indigo-500">.</span>
+                        </h2>
+                        <p className="text-xs text-gray-500 mt-1">Gérez l'inventaire, le stock et les prix du catalogue PEOC.</p>
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
+                        {products.length > 0 && (
+                            <button
+                                onClick={handlePurgeAll}
+                                className="px-5 py-3 rounded-2xl font-black text-xs uppercase tracking-wider transition-all border border-rose-500/30 text-rose-500 hover:bg-rose-500/10 active:scale-95 flex items-center gap-2"
+                                title="Supprimer tous les produits existants"
+                            >
+                                <Trash2 size={16} />
+                                <span>Vider le catalogue</span>
+                            </button>
+                        )}
+                        <button 
+                            onClick={() => { setSelectedProduct(null); setShowForm(true); }} 
+                            className="bg-[#10b981] text-[#0b0e14] px-8 py-3 rounded-2xl font-black hover:scale-105 transition-all shadow-lg text-xs uppercase whitespace-nowrap"
+                        >
+                            + Ajouter au catalogue
+                        </button>
+                    </div>
                 </header>
 
                 {/* STATS RESPONSIVE */}

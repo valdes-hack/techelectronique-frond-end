@@ -121,10 +121,10 @@ const Home = () => {
     const [currentHeroSlide, setCurrentHeroSlide] = useState(0);
     const [loading, setLoading] = useState(true);
 
-    const poultryImg = getProductImage(allProducts.find(p => p.name?.toLowerCase().includes('poulet') || p.name?.toLowerCase().includes('volaille'))) || "https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?auto=format&fit=crop&w=1200&q=80";
-    const incubatorImg = getProductImage(allProducts.find(p => p.name?.toLowerCase().includes('couveuse'))) || "https://images.unsplash.com/photo-1516467508483-a7212febe31a?auto=format&fit=crop&w=600&q=80";
-    const feedImg = getProductImage(allProducts.find(p => p.name?.toLowerCase().includes('aliment'))) || "https://images.unsplash.com/photo-1500595046743-cd271d694d30?auto=format&fit=crop&w=600&q=80";
-    const healthImg = getProductImage(allProducts.find(p => p.name?.toLowerCase().includes('soin') || p.name?.toLowerCase().includes('vitamine'))) || "https://images.unsplash.com/photo-1599443015574-be5fe8a05783?auto=format&fit=crop&w=600&q=80";
+    const poultryImg = settings?.bentoPoultryImageUrl ? getFullImageUrl(settings.bentoPoultryImageUrl) : (getProductImage(allProducts.find(p => p.name?.toLowerCase().includes('poulet') || p.name?.toLowerCase().includes('volaille'))) || "https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?auto=format&fit=crop&w=1200&q=80");
+    const incubatorImg = settings?.bentoIncubatorImageUrl ? getFullImageUrl(settings.bentoIncubatorImageUrl) : (getProductImage(allProducts.find(p => p.name?.toLowerCase().includes('couveuse'))) || "https://images.unsplash.com/photo-1582722872445-44dc5f7e3c8f?auto=format&fit=crop&w=800&q=80");
+    const feedImg = settings?.bentoFeedImageUrl ? getFullImageUrl(settings.bentoFeedImageUrl) : (getProductImage(allProducts.find(p => p.name?.toLowerCase().includes('aliment'))) || "https://images.unsplash.com/photo-1574943320219-553eb213f72d?auto=format&fit=crop&w=800&q=80");
+    const healthImg = settings?.bentoHealthImageUrl ? getFullImageUrl(settings.bentoHealthImageUrl) : (getProductImage(allProducts.find(p => p.name?.toLowerCase().includes('soin') || p.name?.toLowerCase().includes('vitamine'))) || "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?auto=format&fit=crop&w=800&q=80");
 
     // Hero slides
     const heroSlides = [];

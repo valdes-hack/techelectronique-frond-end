@@ -4,7 +4,8 @@ import baseApi from '../../api/axiosConfig';
 import { 
     Save, Loader, Settings as SettingsIcon, Image as ImageIcon, Video, 
     Plus, X, Upload, Building2, PhoneCall, Sparkles, CheckCircle2, 
-    AlertCircle, Eye, Globe, Mail, MapPin, Phone, Bell, Check, Flame, Percent
+    AlertCircle, Eye, Globe, Mail, MapPin, Phone, Bell, Check, Flame, Percent,
+    LayoutGrid, RotateCcw
 } from 'lucide-react';
 import { useAppContext } from '../../context/AppContext';
 import { useTheme } from '../../context/ThemeContext';
@@ -17,13 +18,17 @@ const Settings = () => {
     const { notificationConfig, updateNotificationConfig, notifySuccess } = useToast();
     const isDark = theme === 'dark';
 
-    const [activeTab, setActiveTab] = useState('general'); // 'general' | 'contact' | 'hero' | 'notifications' | 'promotions'
+    const [activeTab, setActiveTab] = useState('general'); // 'general' | 'contact' | 'hero' | 'bento' | 'promotions' | 'notifications'
     const [formData, setFormData] = useState({
         siteName: '',
         contactEmail: '',
         contactPhone: '',
         contactAddress: '',
         logoUrl: '',
+        bentoPoultryImageUrl: '',
+        bentoIncubatorImageUrl: '',
+        bentoFeedImageUrl: '',
+        bentoHealthImageUrl: '',
     });
 
     // Paramètres locaux pour les promotions
@@ -67,15 +72,23 @@ const Settings = () => {
     const imageInputRef = useRef(null);
     const logoInputRef = useRef(null);
     const videoInputRef = useRef(null);
+    const bentoPoultryRef = useRef(null);
+    const bentoIncubatorRef = useRef(null);
+    const bentoFeedRef = useRef(null);
+    const bentoHealthRef = useRef(null);
 
     useEffect(() => {
         if (currentSettings) {
             setFormData({
-                siteName: currentSettings.siteName || 'TechStore',
-                contactEmail: currentSettings.contactEmail || 'contact@techstore.cm',
-                contactPhone: currentSettings.contactPhone || '+237 600 000 000',
-                contactAddress: currentSettings.contactAddress || 'Douala, Cameroun',
+                siteName: currentSettings.siteName || 'PEOC (Petit Éleveur de l\'Ouest Cameroun)',
+                contactEmail: currentSettings.contactEmail || 'contact@peoc.cm',
+                contactPhone: currentSettings.contactPhone || '+237 686 669 222',
+                contactAddress: currentSettings.contactAddress || 'Bafoussam, Ouest - Cameroun',
                 logoUrl: currentSettings.logoUrl || '',
+                bentoPoultryImageUrl: currentSettings.bentoPoultryImageUrl || 'https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?w=1200&q=80',
+                bentoIncubatorImageUrl: currentSettings.bentoIncubatorImageUrl || 'https://images.unsplash.com/photo-1582722872445-44dc5f7e3c8f?w=800&q=80',
+                bentoFeedImageUrl: currentSettings.bentoFeedImageUrl || 'https://images.unsplash.com/photo-1574943320219-553eb213f72d?w=800&q=80',
+                bentoHealthImageUrl: currentSettings.bentoHealthImageUrl || 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=800&q=80',
             });
             setHeroImagesUrls(currentSettings.heroImagesUrls || []);
             setHeroVideoUrl(currentSettings.heroVideoUrl || '');
@@ -126,6 +139,18 @@ const Settings = () => {
             } else if (type === 'video') {
                 setHeroVideoUrl(url);
                 showToast('success', 'Vidéo d\'accueil mise à jour !');
+            } else if (type === 'bentoPoultry') {
+                setFormData(prev => ({ ...prev, bentoPoultryImageUrl: url }));
+                showToast('success', 'Visuel "Volailles & Poussins" mis à jour !');
+            } else if (type === 'bentoIncubator') {
+                setFormData(prev => ({ ...prev, bentoIncubatorImageUrl: url }));
+                showToast('success', 'Visuel "Couveuses Auto" mis à jour !');
+            } else if (type === 'bentoFeed') {
+                setFormData(prev => ({ ...prev, bentoFeedImageUrl: url }));
+                showToast('success', 'Visuel "Aliments & Granulés" mis à jour !');
+            } else if (type === 'bentoHealth') {
+                setFormData(prev => ({ ...prev, bentoHealthImageUrl: url }));
+                showToast('success', 'Visuel "Soins Vétérinaires" mis à jour !');
             }
         } catch (error) {
             console.error(error);
@@ -161,6 +186,7 @@ const Settings = () => {
         { id: 'general', label: 'Boutique & Identité', icon: Building2, desc: 'Nom, marque et logo' },
         { id: 'contact', label: 'Contact & Support', icon: PhoneCall, desc: 'Email, téléphone et adresse' },
         { id: 'hero', label: 'Médias d\'Accueil', icon: ImageIcon, desc: 'Bannières et vidéo hero' },
+        { id: 'bento', label: '4 Cartes Bento Accueil', icon: LayoutGrid, desc: 'Les 4 visuels clés sous la bannière' },
         { id: 'promotions', label: 'Promos & Remises', icon: Flame, desc: 'Comportement des offres et badges' },
         { id: 'notifications', label: 'Alertes & Actions', icon: Bell, desc: 'Activer/Désactiver les alertes d\'actions' },
     ];
@@ -206,7 +232,7 @@ const Settings = () => {
                 )}
 
                 {/* ── ONGLETS DE NAVIGATION RESPONSIVES ── */}
-                <div className="flex overflow-x-auto no-scrollbar sm:grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-2.5 sm:gap-3 pb-2 -mx-2 px-2 sm:mx-0 sm:px-0">
+                <div className="flex overflow-x-auto no-scrollbar sm:grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-2.5 sm:gap-3 pb-2 -mx-2 px-2 sm:mx-0 sm:px-0">
                     {tabs.map(tab => {
                         const Icon = tab.icon;
                         const isActive = activeTab === tab.id;
@@ -556,6 +582,286 @@ const Settings = () => {
                                             >
                                                 <Upload size={14} /> {uploadingFile ? 'Envoi...' : 'Uploader vidéo'}
                                             </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* 3. BIS. ONGLET LES 4 CARTES BENTO DE L'ACCUEIL */}
+                            {activeTab === 'bento' && (
+                                <div className="space-y-8 animate-in fade-in duration-300">
+                                    <div className="border-b border-gray-100 dark:border-white/5 pb-4">
+                                        <div className="flex items-center gap-2 text-indigo-500 text-xs font-black uppercase tracking-widest mb-1">
+                                            <LayoutGrid size={16} /> Vitrine Bento Grid
+                                        </div>
+                                        <h3 className="text-lg font-black uppercase tracking-wider text-slate-900 dark:text-white">
+                                            Les 4 Cartes Sous-Bannière Accueil
+                                        </h3>
+                                        <p className="text-xs text-gray-500 mt-1">
+                                            Personnalisez les 4 visuels phares affichés sur la page d'accueil juste sous la bannière principale.
+                                        </p>
+                                    </div>
+
+                                    {/* SCHÉMA VISUEL DE DISPOSITION */}
+                                    <div className="p-4 sm:p-5 rounded-2xl bg-indigo-50/50 dark:bg-indigo-950/20 border border-indigo-200/50 dark:border-indigo-500/20">
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400 block mb-3">
+                                            📐 Disposition sur la Page d'Accueil :
+                                        </span>
+                                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-[11px] font-bold text-center">
+                                            <div className="sm:col-span-2 p-3 rounded-xl bg-indigo-600 text-white flex flex-col justify-center items-center h-20 shadow-sm">
+                                                <span className="uppercase text-[10px] opacity-75">Carte 1 (Grand Format)</span>
+                                                <span className="text-xs font-black">Volailles & Poussins</span>
+                                            </div>
+                                            <div className="p-3 rounded-xl bg-amber-500 text-white flex flex-col justify-center items-center h-20 shadow-sm">
+                                                <span className="uppercase text-[10px] opacity-75">Carte 2 (Haut Droite)</span>
+                                                <span className="text-xs font-black">Couveuses Auto</span>
+                                            </div>
+                                            <div className="sm:col-span-2 grid grid-cols-2 gap-2">
+                                                <div className="p-3 rounded-xl bg-emerald-600 text-white flex flex-col justify-center items-center h-16 shadow-sm">
+                                                    <span className="uppercase text-[10px] opacity-75">Carte 3 (Bas Milieu)</span>
+                                                    <span className="text-xs font-black">Aliments & Granulés</span>
+                                                </div>
+                                                <div className="p-3 rounded-xl bg-teal-600 text-white flex flex-col justify-center items-center h-16 shadow-sm">
+                                                    <span className="uppercase text-[10px] opacity-75">Carte 4 (Bas Droite)</span>
+                                                    <span className="text-xs font-black">Soins Vétérinaires</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* ══ CARTE 1 : VOLAILLES & POUSSINS ══ */}
+                                    <div className="p-5 sm:p-6 rounded-2xl border border-gray-200 dark:border-white/10 bg-gray-50/50 dark:bg-white/5 space-y-4">
+                                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-gray-200 dark:border-white/5 pb-3">
+                                            <div>
+                                                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-indigo-600/10 text-indigo-600 dark:text-indigo-400 text-[10px] font-black uppercase tracking-wider mb-1">
+                                                    Carte 1 — Grand Format Gauche
+                                                </span>
+                                                <h4 className="font-black text-sm uppercase text-slate-900 dark:text-white">
+                                                    Volailles & Poussins
+                                                </h4>
+                                                <p className="text-xs text-gray-400">Occupe 2 colonnes sur grand écran avec un affichage immersif.</p>
+                                            </div>
+                                            <button
+                                                type="button"
+                                                onClick={() => setFormData(prev => ({ ...prev, bentoPoultryImageUrl: 'https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?w=1200&q=80' }))}
+                                                className="text-[10px] font-bold text-gray-500 hover:text-indigo-500 flex items-center gap-1 self-start sm:self-auto"
+                                            >
+                                                <RotateCcw size={12} /> Image par défaut
+                                            </button>
+                                        </div>
+
+                                        <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
+                                            <div className="md:col-span-5 aspect-[16/9] rounded-xl overflow-hidden border border-gray-200 dark:border-white/10 bg-black/40 relative">
+                                                <img 
+                                                    src={getFullImageUrl(formData.bentoPoultryImageUrl || 'https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?w=1200&q=80')} 
+                                                    alt="Volailles" 
+                                                    className="w-full h-full object-cover" 
+                                                />
+                                                <span className="absolute bottom-2 left-2 px-2 py-0.5 rounded bg-black/70 text-[9px] font-black text-white uppercase">Aperçu direct</span>
+                                            </div>
+                                            <div className="md:col-span-7 space-y-3">
+                                                <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 block">Lien URL ou Téléversement</label>
+                                                <input
+                                                    type="text"
+                                                    name="bentoPoultryImageUrl"
+                                                    value={formData.bentoPoultryImageUrl || ''}
+                                                    onChange={handleChange}
+                                                    placeholder="https://.../poulet.jpg"
+                                                    className="w-full bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl p-3 text-xs font-bold outline-none focus:border-indigo-500 text-slate-900 dark:text-white"
+                                                />
+                                                <input
+                                                    type="file"
+                                                    accept="image/*"
+                                                    ref={bentoPoultryRef}
+                                                    className="hidden"
+                                                    onChange={(e) => handleFileUpload(e, 'bentoPoultry')}
+                                                />
+                                                <button
+                                                    type="button"
+                                                    onClick={() => bentoPoultryRef.current?.click()}
+                                                    disabled={uploadingFile}
+                                                    className="w-full bg-indigo-50 hover:bg-indigo-100 dark:bg-white/5 dark:hover:bg-white/10 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-white/10 py-2.5 px-4 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all"
+                                                >
+                                                    <Upload size={14} /> Téléverser une image depuis mon ordinateur
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* ══ CARTE 2 : COUVEUSES AUTO ══ */}
+                                    <div className="p-5 sm:p-6 rounded-2xl border border-gray-200 dark:border-white/10 bg-gray-50/50 dark:bg-white/5 space-y-4">
+                                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-gray-200 dark:border-white/5 pb-3">
+                                            <div>
+                                                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 text-[10px] font-black uppercase tracking-wider mb-1">
+                                                    Carte 2 — Haut Droite
+                                                </span>
+                                                <h4 className="font-black text-sm uppercase text-slate-900 dark:text-white">
+                                                    Couveuses Auto & Éclosion
+                                                </h4>
+                                                <p className="text-xs text-gray-400">Positionnée en haut à droite du Bento Grid.</p>
+                                            </div>
+                                            <button
+                                                type="button"
+                                                onClick={() => setFormData(prev => ({ ...prev, bentoIncubatorImageUrl: 'https://images.unsplash.com/photo-1582722872445-44dc5f7e3c8f?w=800&q=80' }))}
+                                                className="text-[10px] font-bold text-gray-500 hover:text-indigo-500 flex items-center gap-1 self-start sm:self-auto"
+                                            >
+                                                <RotateCcw size={12} /> Image par défaut
+                                            </button>
+                                        </div>
+
+                                        <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
+                                            <div className="md:col-span-5 aspect-[16/9] rounded-xl overflow-hidden border border-gray-200 dark:border-white/10 bg-black/40 relative">
+                                                <img 
+                                                    src={getFullImageUrl(formData.bentoIncubatorImageUrl || 'https://images.unsplash.com/photo-1582722872445-44dc5f7e3c8f?w=800&q=80')} 
+                                                    alt="Couveuses" 
+                                                    className="w-full h-full object-cover" 
+                                                />
+                                                <span className="absolute bottom-2 left-2 px-2 py-0.5 rounded bg-black/70 text-[9px] font-black text-white uppercase">Aperçu direct</span>
+                                            </div>
+                                            <div className="md:col-span-7 space-y-3">
+                                                <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 block">Lien URL ou Téléversement</label>
+                                                <input
+                                                    type="text"
+                                                    name="bentoIncubatorImageUrl"
+                                                    value={formData.bentoIncubatorImageUrl || ''}
+                                                    onChange={handleChange}
+                                                    placeholder="https://.../couveuse.jpg"
+                                                    className="w-full bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl p-3 text-xs font-bold outline-none focus:border-indigo-500 text-slate-900 dark:text-white"
+                                                />
+                                                <input
+                                                    type="file"
+                                                    accept="image/*"
+                                                    ref={bentoIncubatorRef}
+                                                    className="hidden"
+                                                    onChange={(e) => handleFileUpload(e, 'bentoIncubator')}
+                                                />
+                                                <button
+                                                    type="button"
+                                                    onClick={() => bentoIncubatorRef.current?.click()}
+                                                    disabled={uploadingFile}
+                                                    className="w-full bg-amber-50 hover:bg-amber-100 dark:bg-white/5 dark:hover:bg-white/10 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-white/10 py-2.5 px-4 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all"
+                                                >
+                                                    <Upload size={14} /> Téléverser une image depuis mon ordinateur
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* ══ CARTE 3 : ALIMENTS & GRANULÉS ══ */}
+                                    <div className="p-5 sm:p-6 rounded-2xl border border-gray-200 dark:border-white/10 bg-gray-50/50 dark:bg-white/5 space-y-4">
+                                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-gray-200 dark:border-white/5 pb-3">
+                                            <div>
+                                                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-600/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-black uppercase tracking-wider mb-1">
+                                                    Carte 3 — Bas Milieu
+                                                </span>
+                                                <h4 className="font-black text-sm uppercase text-slate-900 dark:text-white">
+                                                    Aliments & Granulés
+                                                </h4>
+                                                <p className="text-xs text-gray-400">Positionnée au milieu inférieur du Bento Grid.</p>
+                                            </div>
+                                            <button
+                                                type="button"
+                                                onClick={() => setFormData(prev => ({ ...prev, bentoFeedImageUrl: 'https://images.unsplash.com/photo-1574943320219-553eb213f72d?w=800&q=80' }))}
+                                                className="text-[10px] font-bold text-gray-500 hover:text-indigo-500 flex items-center gap-1 self-start sm:self-auto"
+                                            >
+                                                <RotateCcw size={12} /> Image par défaut
+                                            </button>
+                                        </div>
+
+                                        <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
+                                            <div className="md:col-span-5 aspect-[16/9] rounded-xl overflow-hidden border border-gray-200 dark:border-white/10 bg-black/40 relative">
+                                                <img 
+                                                    src={getFullImageUrl(formData.bentoFeedImageUrl || 'https://images.unsplash.com/photo-1574943320219-553eb213f72d?w=800&q=80')} 
+                                                    alt="Aliments" 
+                                                    className="w-full h-full object-cover" 
+                                                />
+                                                <span className="absolute bottom-2 left-2 px-2 py-0.5 rounded bg-black/70 text-[9px] font-black text-white uppercase">Aperçu direct</span>
+                                            </div>
+                                            <div className="md:col-span-7 space-y-3">
+                                                <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 block">Lien URL ou Téléversement</label>
+                                                <input
+                                                    type="text"
+                                                    name="bentoFeedImageUrl"
+                                                    value={formData.bentoFeedImageUrl || ''}
+                                                    onChange={handleChange}
+                                                    placeholder="https://.../aliment.jpg"
+                                                    className="w-full bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl p-3 text-xs font-bold outline-none focus:border-indigo-500 text-slate-900 dark:text-white"
+                                                />
+                                                <input
+                                                    type="file"
+                                                    accept="image/*"
+                                                    ref={bentoFeedRef}
+                                                    className="hidden"
+                                                    onChange={(e) => handleFileUpload(e, 'bentoFeed')}
+                                                />
+                                                <button
+                                                    type="button"
+                                                    onClick={() => bentoFeedRef.current?.click()}
+                                                    disabled={uploadingFile}
+                                                    className="w-full bg-emerald-50 hover:bg-emerald-100 dark:bg-white/5 dark:hover:bg-white/10 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-white/10 py-2.5 px-4 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all"
+                                                >
+                                                    <Upload size={14} /> Téléverser une image depuis mon ordinateur
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* ══ CARTE 4 : SOINS VÉTÉRINAIRES ══ */}
+                                    <div className="p-5 sm:p-6 rounded-2xl border border-gray-200 dark:border-white/10 bg-gray-50/50 dark:bg-white/5 space-y-4">
+                                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-gray-200 dark:border-white/5 pb-3">
+                                            <div>
+                                                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-teal-600/10 text-teal-600 dark:text-teal-400 text-[10px] font-black uppercase tracking-wider mb-1">
+                                                    Carte 4 — Bas Droite
+                                                </span>
+                                                <h4 className="font-black text-sm uppercase text-slate-900 dark:text-white">
+                                                    Soins Vétérinaires & Hygiène
+                                                </h4>
+                                                <p className="text-xs text-gray-400">Positionnée en bas à droite du Bento Grid.</p>
+                                            </div>
+                                            <button
+                                                type="button"
+                                                onClick={() => setFormData(prev => ({ ...prev, bentoHealthImageUrl: 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=800&q=80' }))}
+                                                className="text-[10px] font-bold text-gray-500 hover:text-indigo-500 flex items-center gap-1 self-start sm:self-auto"
+                                            >
+                                                <RotateCcw size={12} /> Image par défaut
+                                            </button>
+                                        </div>
+
+                                        <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
+                                            <div className="md:col-span-5 aspect-[16/9] rounded-xl overflow-hidden border border-gray-200 dark:border-white/10 bg-black/40 relative">
+                                                <img 
+                                                    src={getFullImageUrl(formData.bentoHealthImageUrl || 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=800&q=80')} 
+                                                    alt="Soins" 
+                                                    className="w-full h-full object-cover" 
+                                                />
+                                                <span className="absolute bottom-2 left-2 px-2 py-0.5 rounded bg-black/70 text-[9px] font-black text-white uppercase">Aperçu direct</span>
+                                            </div>
+                                            <div className="md:col-span-7 space-y-3">
+                                                <label className="text-[10px] font-black uppercase tracking-widest text-gray-400 block">Lien URL ou Téléversement</label>
+                                                <input
+                                                    type="text"
+                                                    name="bentoHealthImageUrl"
+                                                    value={formData.bentoHealthImageUrl || ''}
+                                                    onChange={handleChange}
+                                                    placeholder="https://.../soins.jpg"
+                                                    className="w-full bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl p-3 text-xs font-bold outline-none focus:border-indigo-500 text-slate-900 dark:text-white"
+                                                />
+                                                <input
+                                                    type="file"
+                                                    accept="image/*"
+                                                    ref={bentoHealthRef}
+                                                    className="hidden"
+                                                    onChange={(e) => handleFileUpload(e, 'bentoHealth')}
+                                                />
+                                                <button
+                                                    type="button"
+                                                    onClick={() => bentoHealthRef.current?.click()}
+                                                    disabled={uploadingFile}
+                                                    className="w-full bg-teal-50 hover:bg-teal-100 dark:bg-white/5 dark:hover:bg-white/10 text-teal-600 dark:text-teal-400 border border-teal-200 dark:border-white/10 py-2.5 px-4 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all"
+                                                >
+                                                    <Upload size={14} /> Téléverser une image depuis mon ordinateur
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
