@@ -73,7 +73,7 @@ const ProductCard = ({ product, viewMode = 'grid' }) => {
                         className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500"
                         onError={(e) => {
                             e.target.onerror = null;
-                            e.target.src = "https://images.unsplash.com/photo-1526406915894-7bcd65f60845?w=600";
+                            e.target.src = "https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?auto=format&fit=crop&w=600&q=80";
                         }}
                     />
                     {/* Badges */}
@@ -207,7 +207,7 @@ const ProductCard = ({ product, viewMode = 'grid' }) => {
                         className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-700 ease-out"
                         onError={(e) => {
                             e.target.onerror = null;
-                            e.target.src = "https://images.unsplash.com/photo-1526406915894-7bcd65f60845?w=600";
+                            e.target.src = "https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?auto=format&fit=crop&w=600&q=80";
                         }}
                     />
                     {discount && (
@@ -340,7 +340,7 @@ const ProductCard = ({ product, viewMode = 'grid' }) => {
                         className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-700 ease-out"
                         onError={(e) => {
                             e.target.onerror = null;
-                            e.target.src = "https://images.unsplash.com/photo-1526406915894-7bcd65f60845?w=600";
+                            e.target.src = "https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?auto=format&fit=crop&w=600&q=80";
                         }}
                     />
                 </div>
@@ -456,7 +456,7 @@ const ProductCard = ({ product, viewMode = 'grid' }) => {
                     className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-700 ease-out"
                     onError={(e) => {
                         e.target.onerror = null;
-                        e.target.src = "https://images.unsplash.com/photo-1526406915894-7bcd65f60845?w=600";
+                        e.target.src = "https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?auto=format&fit=crop&w=600&q=80";
                     }}
                 />
                 {/* Stock Tag si Rupture */}

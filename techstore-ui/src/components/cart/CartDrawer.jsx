@@ -82,7 +82,7 @@ const CartDrawer = () => {
                                 cart.items.map((item) => {
                                     const imgSource = item.imageUrl 
                                         ? getFullImageUrl(item.imageUrl) 
-                                        : 'https://images.unsplash.com/photo-1526406915894-7bcd65f60845?w=200';
+                                        : 'https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?auto=format&fit=crop&w=200&q=80';
 
                                     return (
                                         <div 
@@ -103,7 +103,7 @@ const CartDrawer = () => {
                                                     className="max-h-full max-w-full object-contain"
                                                     onError={(e) => {
                                                         e.target.onerror = null;
-                                                        e.target.src = 'https://images.unsplash.com/photo-1526406915894-7bcd65f60845?w=200';
+                                                        e.target.src = 'https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?auto=format&fit=crop&w=200&q=80';
                                                     }}
                                                 />
                                             </div>

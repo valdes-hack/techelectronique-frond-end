@@ -17,7 +17,7 @@ const Catalog = () => {
     const [products, setProducts] = useState(() => {
         try {
             const cached = sessionStorage.getItem('techstore_catalog_cache');
-            return cached ? JSON.parse(cached) : [];
+            return cached ? JSON.parse(cached).filter(p => p.isActive !== false) : [];
         } catch {
             return [];
         }
@@ -63,7 +63,7 @@ const Catalog = () => {
 
             if (res && res.status === 'success') {
                 const list = res.data?.content || res.data || [];
-                const validList = Array.isArray(list) ? list : [];
+                const validList = Array.isArray(list) ? list.filter(p => p.isActive !== false) : [];
                 setProducts(validList);
                 try {
                     sessionStorage.setItem('techstore_catalog_cache', JSON.stringify(validList));
@@ -103,6 +103,7 @@ const Catalog = () => {
     const filteredProducts = useMemo(() => {
         return products
             .filter(p => {
+                if (p.isActive === false) return false;
                 const price = p.discountPrice > 0 ? p.discountPrice : (p.basePrice || 0);
                 const nameMatch = p.name?.toLowerCase().includes(localQuery.toLowerCase());
                 const brandMatch = p.brand?.toLowerCase().includes(localQuery.toLowerCase());

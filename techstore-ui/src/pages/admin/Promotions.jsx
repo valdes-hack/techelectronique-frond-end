@@ -359,7 +359,7 @@ const AdminPromotions = () => {
                                                                 className="max-h-full max-w-full object-contain"
                                                                 onError={(e) => {
                                                                     e.target.onerror = null;
-                                                                    e.target.src = "https://images.unsplash.com/photo-1526406915894-7bcd65f60845?w=100";
+                                                                    e.target.src = "https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?auto=format&fit=crop&w=100&q=80";
                                                                 }}
                                                             />
                                                         </div>
@@ -542,7 +542,7 @@ const AdminPromotions = () => {
                                                                 className="max-h-full max-w-full object-contain"
                                                                 onError={(e) => {
                                                                     e.target.onerror = null;
-                                                                    e.target.src = "https://images.unsplash.com/photo-1526406915894-7bcd65f60845?w=100";
+                                                                    e.target.src = "https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?auto=format&fit=crop&w=100&q=80";
                                                                 }}
                                                             />
                                                         </div>
