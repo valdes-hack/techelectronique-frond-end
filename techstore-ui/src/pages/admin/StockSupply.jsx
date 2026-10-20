@@ -1,14 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { useTheme } from '../../context/ThemeContext';
 import { useToast } from '../../context/ToastContext';
+import { useStockConfig } from '../../context/StockConfigContext';
 import AdminLayout from '../../components/admin/AdminLayout';
 import AdminService from '../../services/admin.service';
 import { 
     PackagePlus, Truck, 
-    Database, Banknote, RefreshCw, Layers, ChevronRight 
+    Database, Banknote, RefreshCw, Layers, ChevronRight,
+    Lock, AlertCircle, Settings as SettingsIcon
 } from 'lucide-react';
 
 const StockSupply = () => {
+    const { stockConfig, updateStockConfig } = useStockConfig();
     const [products, setProducts] = useState([]);
     const [suppliers, setSuppliers] = useState([]);
     const [selectedProduct, setSelectedProduct] = useState(null);
@@ -97,10 +100,64 @@ const StockSupply = () => {
         }
     };
 
+    // VÉRIFICATION RÉACTIVE : SI LE RAVITAILLEMENT EST DÉSACTIVÉ DANS LES PARAMÈTRES
+    if (!stockConfig.manageStockViaSupply) {
+        return (
+            <AdminLayout theme={theme} filters={null}>
+                <div className="w-full flex flex-col items-center justify-center min-h-[70vh] p-6 text-center animate-in fade-in zoom-in-95 duration-300">
+                    <div className="max-w-lg w-full bg-[#161926] border border-rose-500/20 rounded-[2.5rem] p-8 sm:p-10 shadow-2xl relative overflow-hidden">
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-rose-500/10 rounded-full blur-3xl pointer-events-none" />
+                        
+                        <div className="w-20 h-20 mx-auto rounded-3xl bg-rose-500/10 border border-rose-500/30 flex items-center justify-center text-rose-400 mb-6 shadow-inner">
+                            <Lock size={36} className="animate-pulse" />
+                        </div>
+
+                        <span className="px-3.5 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-rose-500/20 text-rose-400 border border-rose-500/30">
+                            Onglet Verrouillé
+                        </span>
+
+                        <h2 className="text-2xl sm:text-3xl font-black italic tracking-tight text-white mt-4 uppercase">
+                            Ravitaillement Bloqué<span className="text-rose-500">.</span>
+                        </h2>
+
+                        <p className="text-xs text-slate-400 mt-3 leading-relaxed">
+                            La gestion du stock par ravitaillement a été désactivée dans vos paramètres.
+                            Votre boutique est actuellement configurée pour gérer les stocks directement lors de la création ou modification des fiches produits.
+                        </p>
+
+                        <div className="mt-8 flex flex-col sm:flex-row gap-3 justify-center">
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    updateStockConfig({ manageStockViaSupply: true });
+                                    notifyAction('update', 'Stock', 'Module Ravitaillement réactivé avec succès !');
+                                }}
+                                className="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs uppercase px-6 py-3.5 rounded-2xl transition-all shadow-lg shadow-emerald-500/20 active:scale-95 flex items-center justify-center gap-2"
+                            >
+                                <RefreshCw size={15} />
+                                <span>Débloquer maintenant</span>
+                            </button>
+                            <a
+                                href="/admin/settings"
+                                className="bg-white/5 hover:bg-white/10 text-white font-black text-xs uppercase px-6 py-3.5 rounded-2xl border border-white/10 transition-all flex items-center justify-center gap-2"
+                            >
+                                <SettingsIcon size={15} />
+                                <span>Paramètres du stock</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </AdminLayout>
+        );
+    }
+
     if (loading) return (
-        <div className="h-screen flex items-center justify-center bg-[#0b0e14]">
-            <RefreshCw className="animate-spin text-indigo-500" size={32} />
-        </div>
+        <AdminLayout theme={theme} filters={null}>
+            <div className="flex flex-col items-center justify-center h-[70vh]">
+                <RefreshCw className="animate-spin text-indigo-500 mb-4" size={32} />
+                <span className="text-xs font-bold text-slate-400">Chargement des approvisionnements...</span>
+            </div>
+        </AdminLayout>
     );
 
     return (

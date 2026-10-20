@@ -2,15 +2,18 @@ import React from 'react';
 import { 
     LayoutDashboard, Box, Users, ShoppingCart, 
     BarChart3, Settings, Sun, Moon, Zap, History,
-    ChevronLeft, ChevronRight, X, Layers, Truck, PackagePlus, LogOut, Globe, Flame
+    ChevronLeft, ChevronRight, X, Layers, Truck, PackagePlus, LogOut, Globe, Flame,
+    Lock
 } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useTheme } from '../../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
+import { useStockConfig } from '../../context/StockConfigContext';
 
 const AdminSidebar = ({ width, setWidth, isMobileOpen, setIsMobileOpen }) => {
     const { theme, toggleTheme } = useTheme();
     const { logout } = useAuth();
+    const { stockConfig } = useStockConfig();
     const location = useLocation();
     const navigate = useNavigate();
     const isCollapsed = width < 140;
@@ -23,7 +26,12 @@ const AdminSidebar = ({ width, setWidth, isMobileOpen, setIsMobileOpen }) => {
         { icon: <LayoutDashboard size={22}/>, label: "Dashboard", path: "/admin" },
         { icon: <Box size={22}/>, label: "Produits", path: "/admin/products" },
         { icon: <Flame size={22} className="text-red-500"/>, label: "Promotions", path: "/admin/promotions" },
-        { icon: <PackagePlus size={22}/>, label: "Ravitaillement", path: "/admin/stock" },
+        { 
+            icon: <PackagePlus size={22}/>, 
+            label: "Ravitaillement", 
+            path: "/admin/stock",
+            isBlocked: !stockConfig.manageStockViaSupply
+        },
         { icon: <Layers size={22}/>, label: "Catégories", path: "/admin/categories" },
         { icon: <Truck size={22}/>, label: "Fournisseurs", path: "/admin/suppliers" },
         { icon: <Users size={22}/>, label: "Utilisateurs", path: "/admin/users" },
@@ -81,23 +89,47 @@ const AdminSidebar = ({ width, setWidth, isMobileOpen, setIsMobileOpen }) => {
 
                 {/* NAVIGATION */}
                 <nav className="flex-1 px-3 mt-4 space-y-2 overflow-y-auto custom-scrollbar">
-                    {menuItems.map((item) => (
-                        <Link 
-                            key={item.path} 
-                            to={item.path}
-                            onClick={() => setIsMobileOpen(false)}
-                            className={`flex items-center rounded-2xl p-3.5 transition-all ${
-                                location.pathname === item.path 
-                                ? 'bg-[#6366f1] text-white shadow-lg shadow-indigo-500/30' 
-                                : theme === 'dark' ? 'text-gray-500 hover:text-gray-300 hover:bg-white/5' : 'text-slate-500 hover:bg-gray-100'
-                            } ${isCollapsed && !isMobileOpen ? 'lg:justify-center' : 'space-x-4'}`}
-                        >
-                            {item.icon}
-                            {(!isCollapsed || isMobileOpen) && (
-                                <span className="text-sm font-bold tracking-tight">{item.label}</span>
-                            )}
-                        </Link>
-                    ))}
+                    {menuItems.map((item) => {
+                        const isBlocked = item.isBlocked;
+                        const isCurrent = location.pathname === item.path;
+
+                        return (
+                            <Link 
+                                key={item.path} 
+                                to={item.path}
+                                onClick={() => setIsMobileOpen(false)}
+                                title={isBlocked ? "Onglet verrouillé (Désactivé dans Paramètres > Gestion des stocks)" : item.label}
+                                className={`flex items-center rounded-2xl p-3.5 transition-all relative group ${
+                                    isBlocked
+                                        ? 'opacity-40 hover:opacity-80 bg-rose-500/5 text-rose-400 border border-dashed border-rose-500/30'
+                                        : isCurrent 
+                                            ? 'bg-[#6366f1] text-white shadow-lg shadow-indigo-500/30' 
+                                            : theme === 'dark' ? 'text-gray-500 hover:text-gray-300 hover:bg-white/5' : 'text-slate-500 hover:bg-gray-100'
+                                } ${isCollapsed && !isMobileOpen ? 'lg:justify-center' : 'space-x-4'}`}
+                            >
+                                <div className="relative">
+                                    {item.icon}
+                                    {isBlocked && (
+                                        <span className="absolute -top-1 -right-1 bg-rose-500 text-white rounded-full p-0.5 shadow-sm animate-pulse">
+                                            <Lock size={10} />
+                                        </span>
+                                    )}
+                                </div>
+                                {(!isCollapsed || isMobileOpen) && (
+                                    <div className="flex items-center justify-between flex-1 min-w-0">
+                                        <span className={`text-sm font-bold tracking-tight truncate ${isBlocked ? 'line-through decoration-rose-500/40 text-rose-400' : ''}`}>
+                                            {item.label}
+                                        </span>
+                                        {isBlocked && (
+                                            <span className="text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded bg-rose-500/20 text-rose-400 border border-rose-500/30 ml-2 shrink-0">
+                                                Bloqué
+                                            </span>
+                                        )}
+                                    </div>
+                                )}
+                            </Link>
+                        );
+                    })}
                 </nav>
 
                 {/* FOOTER SIDEBAR */}

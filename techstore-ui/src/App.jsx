@@ -10,6 +10,7 @@ import CartDrawer from './components/cart/CartDrawer';
 import TopProgressBar from './components/common/TopProgressBar';
 import { ThemeProvider } from './context/ThemeContext';
 import { AppProvider } from './context/AppContext';
+import { StockConfigProvider } from './context/StockConfigContext';
 import { useLocation } from 'react-router-dom';
 
 const AppContent = () => {
@@ -33,15 +34,17 @@ function App() {
   return (
     <ThemeProvider>
       <AppProvider>
-        <BrowserRouter>
-          <AuthProvider>
-            <CartProvider>
-              <ToastProvider>
-                <AppContent />
-              </ToastProvider>
-            </CartProvider>
-          </AuthProvider>
-        </BrowserRouter>
+        <StockConfigProvider>
+          <BrowserRouter>
+            <AuthProvider>
+              <CartProvider>
+                <ToastProvider>
+                  <AppContent />
+                </ToastProvider>
+              </CartProvider>
+            </AuthProvider>
+          </BrowserRouter>
+        </StockConfigProvider>
       </AppProvider>
     </ThemeProvider>
   );

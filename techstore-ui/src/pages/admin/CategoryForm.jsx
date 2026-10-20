@@ -45,9 +45,9 @@ const CategoryForm = ({ category, onClose, onSave, theme }) => {
                 res = await AdminService.createCategory(categoryData);
             }
 
-            if (res.status === 'success' || res.code === 200 || res.code === 201) {
-                onSave(); 
-            }
+            // Récupération de la catégorie créée ou mise à jour pour réactivité immédiate
+            const savedCategory = res?.data || res || { ...categoryData, id: category?.id || Date.now() };
+            onSave(savedCategory);
         } catch (err) {
             console.error("Erreur API :", err.response?.data);
             alert("Erreur : " + (err.response?.data?.message || "Vérifiez les champs"));

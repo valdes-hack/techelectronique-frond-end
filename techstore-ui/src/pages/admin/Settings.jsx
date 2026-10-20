@@ -5,20 +5,22 @@ import {
     Save, Loader, Settings as SettingsIcon, Image as ImageIcon, Video, 
     Plus, X, Upload, Building2, PhoneCall, Sparkles, CheckCircle2, 
     AlertCircle, Eye, Globe, Mail, MapPin, Phone, Bell, Check, Flame, Percent,
-    LayoutGrid, RotateCcw
+    LayoutGrid, RotateCcw, PackagePlus, Lock, Unlock
 } from 'lucide-react';
 import { useAppContext } from '../../context/AppContext';
 import { useTheme } from '../../context/ThemeContext';
 import { useToast } from '../../context/ToastContext';
+import { useStockConfig } from '../../context/StockConfigContext';
 import { getFullImageUrl } from '../../utils/imageUtils';
 
 const Settings = () => {
     const { settings: currentSettings, reloadSettings } = useAppContext();
     const { theme } = useTheme();
     const { notificationConfig, updateNotificationConfig, notifySuccess } = useToast();
+    const { stockConfig, updateStockConfig } = useStockConfig();
     const isDark = theme === 'dark';
 
-    const [activeTab, setActiveTab] = useState('general'); // 'general' | 'contact' | 'hero' | 'bento' | 'promotions' | 'notifications'
+    const [activeTab, setActiveTab] = useState('general'); // 'general' | 'stock' | 'contact' | 'hero' | 'bento' | 'promotions' | 'notifications'
     const [formData, setFormData] = useState({
         siteName: '',
         contactEmail: '',
@@ -184,6 +186,7 @@ const Settings = () => {
 
     const tabs = [
         { id: 'general', label: 'Boutique & Identité', icon: Building2, desc: 'Nom, marque et logo' },
+        { id: 'stock', label: 'Gestion des Stocks', icon: PackagePlus, desc: 'Ravitaillement vs Saisie directe' },
         { id: 'contact', label: 'Contact & Support', icon: PhoneCall, desc: 'Email, téléphone et adresse' },
         { id: 'hero', label: 'Médias d\'Accueil', icon: ImageIcon, desc: 'Bannières et vidéo hero' },
         { id: 'bento', label: '4 Cartes Bento Accueil', icon: LayoutGrid, desc: 'Les 4 visuels clés sous la bannière' },
@@ -232,7 +235,7 @@ const Settings = () => {
                 )}
 
                 {/* ── ONGLETS DE NAVIGATION RESPONSIVES ── */}
-                <div className="flex overflow-x-auto no-scrollbar sm:grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-2.5 sm:gap-3 pb-2 -mx-2 px-2 sm:mx-0 sm:px-0">
+                <div className="flex overflow-x-auto no-scrollbar sm:grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-7 gap-2.5 sm:gap-3 pb-2 -mx-2 px-2 sm:mx-0 sm:px-0">
                     {tabs.map(tab => {
                         const Icon = tab.icon;
                         const isActive = activeTab === tab.id;
@@ -355,6 +358,184 @@ const Settings = () => {
                                                 </div>
                                             </div>
                                         </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* ONGLET GESTION DES STOCKS (APPROVISIONNEMENT VS SAISIE DIRECTE) */}
+                            {activeTab === 'stock' && (
+                                <div className="space-y-6 animate-in fade-in duration-300">
+                                    <div className="border-b border-gray-100 dark:border-white/5 pb-4">
+                                        <div className="flex items-center gap-2 text-indigo-500 text-xs font-black uppercase tracking-widest mb-1">
+                                            <PackagePlus size={16} /> Flux & Canaux d'Inventaire
+                                        </div>
+                                        <h3 className="text-lg font-black uppercase tracking-wider text-slate-900 dark:text-white flex items-center gap-2">
+                                            Modes de Gestion du Stock
+                                        </h3>
+                                        <p className="text-xs text-gray-500 mt-1">
+                                            Définissez les canaux autorisés pour faire entrer du stock dans le système. Choisissez la gestion par ravitaillement, par la fiche produit, ou les deux.
+                                        </p>
+                                    </div>
+
+                                    {/* BANDEAU INDICATEUR DU WORKFLOW ACTIF */}
+                                    <div className={`p-5 rounded-2xl border flex items-center justify-between transition-all ${
+                                        stockConfig.manageStockViaSupply && stockConfig.manageStockDirectly
+                                            ? 'bg-emerald-500/10 border-emerald-500/30'
+                                            : stockConfig.manageStockViaSupply
+                                                ? 'bg-indigo-500/10 border-indigo-500/30'
+                                                : 'bg-amber-500/10 border-amber-500/30'
+                                    }`}>
+                                        <div>
+                                            <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 block mb-0.5">
+                                                Configuration Active (Temps Réel)
+                                            </span>
+                                            <h4 className="font-black text-sm uppercase text-slate-900 dark:text-white flex items-center gap-2">
+                                                {stockConfig.manageStockViaSupply && stockConfig.manageStockDirectly && (
+                                                    <>
+                                                        <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+                                                        Mode Hybride Flexible (Ravitaillement + Saisie Directe)
+                                                    </>
+                                                )}
+                                                {stockConfig.manageStockViaSupply && !stockConfig.manageStockDirectly && (
+                                                    <>
+                                                        <span className="w-2.5 h-2.5 rounded-full bg-indigo-500 animate-pulse" />
+                                                        Mode Ravitaillement Strict (Stock via Bons Fournisseurs Uniquement)
+                                                    </>
+                                                )}
+                                                {!stockConfig.manageStockViaSupply && stockConfig.manageStockDirectly && (
+                                                    <>
+                                                        <span className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse" />
+                                                        Mode Saisie Directe Produit (Ravitaillement Bloqué)
+                                                    </>
+                                                )}
+                                            </h4>
+                                            <p className="text-xs text-gray-400 mt-1">
+                                                {stockConfig.manageStockViaSupply && stockConfig.manageStockDirectly &&
+                                                    "Vous pouvez saisir le stock directement à la création de produit ET effectuer des réceptions par bons de ravitaillement."}
+                                                {stockConfig.manageStockViaSupply && !stockConfig.manageStockDirectly &&
+                                                    "La saisie de stock dans la fiche produit est verrouillée. Tout stock doit obligatoirement être réceptionné via le module Ravitaillement."}
+                                                {!stockConfig.manageStockViaSupply && stockConfig.manageStockDirectly &&
+                                                    "L'onglet Ravitaillement est verrouillé dans la barre latérale. Le stock se gère directement dans chaque fiche produit."}
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    {/* INTERRUPTEUR 1 : GÉRER LE STOCK DANS LE RAVITAILLEMENT */}
+                                    <div className={`p-5 rounded-2xl border flex items-center justify-between transition-all ${
+                                        stockConfig.manageStockViaSupply
+                                            ? 'bg-indigo-600/10 border-indigo-500/30'
+                                            : isDark ? 'bg-rose-500/5 border-rose-500/20' : 'bg-rose-50 border-rose-200'
+                                    }`}>
+                                        <div className="pr-4">
+                                            <div className="flex items-center gap-2">
+                                                <h4 className="font-black text-sm uppercase text-slate-900 dark:text-white">
+                                                    1. Gérer le stock dans le ravitaillement (Approvisionnement)
+                                                </h4>
+                                                {stockConfig.manageStockViaSupply ? (
+                                                    <span className="px-2 py-0.5 rounded text-[9px] font-black uppercase bg-emerald-500/20 text-emerald-400">
+                                                        Actif
+                                                    </span>
+                                                ) : (
+                                                    <span className="px-2 py-0.5 rounded text-[9px] font-black uppercase bg-rose-500/20 text-rose-400 flex items-center gap-1">
+                                                        <Lock size={10} /> Onglet Bloqué
+                                                    </span>
+                                                )}
+                                            </div>
+                                            <p className="text-xs text-gray-400 mt-1">
+                                                Permet d'utiliser l'onglet <strong>Ravitaillement</strong> (/admin/stock) pour enregistrer les arrivages de marchandises avec fournisseurs et coûts.
+                                            </p>
+                                            {!stockConfig.manageStockViaSupply && (
+                                                <p className="text-[11px] font-bold text-rose-400 mt-1.5 flex items-center gap-1">
+                                                    ⚠️ Action-Réaction : L'onglet Ravitaillement est verrouillé et inaccessible dans la barre latérale.
+                                                </p>
+                                            )}
+                                        </div>
+
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                if (stockConfig.manageStockViaSupply && !stockConfig.manageStockDirectly) {
+                                                    showToast('error', 'Action impossible : au moins une méthode de gestion du stock doit rester activée.');
+                                                    return;
+                                                }
+                                                const next = !stockConfig.manageStockViaSupply;
+                                                updateStockConfig({ manageStockViaSupply: next });
+                                                showToast(
+                                                    next ? 'success' : 'error',
+                                                    next ? 'Onglet Ravitaillement débloqué et accessible !' : 'Onglet Ravitaillement bloqué automatiquement (Action-Réaction) !'
+                                                );
+                                            }}
+                                            className={`w-14 h-8 rounded-full transition-colors relative p-1 cursor-pointer shrink-0 ${
+                                                stockConfig.manageStockViaSupply ? 'bg-indigo-600' : 'bg-gray-400 dark:bg-white/20'
+                                            }`}
+                                        >
+                                            <div className={`w-6 h-6 rounded-full bg-white transition-transform shadow-md ${
+                                                stockConfig.manageStockViaSupply ? 'translate-x-6' : 'translate-x-0'
+                                            }`} />
+                                        </button>
+                                    </div>
+
+                                    {/* INTERRUPTEUR 2 : GÉRER LE STOCK LORS DE L'AJOUT D'UN PRODUIT */}
+                                    <div className={`p-5 rounded-2xl border flex items-center justify-between transition-all ${
+                                        stockConfig.manageStockDirectly
+                                            ? 'bg-emerald-500/10 border-emerald-500/30'
+                                            : isDark ? 'bg-amber-500/5 border-amber-500/20' : 'bg-amber-50 border-amber-200'
+                                    }`}>
+                                        <div className="pr-4">
+                                            <div className="flex items-center gap-2">
+                                                <h4 className="font-black text-sm uppercase text-slate-900 dark:text-white">
+                                                    2. Gérer le stock lors de l'ajout / édition d'un produit
+                                                </h4>
+                                                {stockConfig.manageStockDirectly ? (
+                                                    <span className="px-2 py-0.5 rounded text-[9px] font-black uppercase bg-emerald-500/20 text-emerald-400">
+                                                        Actif
+                                                    </span>
+                                                ) : (
+                                                    <span className="px-2 py-0.5 rounded text-[9px] font-black uppercase bg-amber-500/20 text-amber-500 flex items-center gap-1">
+                                                        <Lock size={10} /> Saisie Verrouillée
+                                                    </span>
+                                                )}
+                                            </div>
+                                            <p className="text-xs text-gray-400 mt-1">
+                                                Permet de saisir directement les quantités en stock dans le formulaire de création de produit et dans le tableau des déclinaisons.
+                                            </p>
+                                            {!stockConfig.manageStockDirectly && (
+                                                <p className="text-[11px] font-bold text-amber-500 mt-1.5 flex items-center gap-1">
+                                                    ⚠️ Action-Réaction : Les champs de saisie du stock sont verrouillés dans le formulaire produit.
+                                                </p>
+                                            )}
+                                        </div>
+
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                if (stockConfig.manageStockDirectly && !stockConfig.manageStockViaSupply) {
+                                                    showToast('error', 'Action impossible : au moins une méthode de gestion du stock doit rester activée.');
+                                                    return;
+                                                }
+                                                const next = !stockConfig.manageStockDirectly;
+                                                updateStockConfig({ manageStockDirectly: next });
+                                                showToast(
+                                                    next ? 'success' : 'error',
+                                                    next ? 'Saisie directe du stock activée dans les fiches produits !' : 'Saisie directe du stock verrouillée (géré via Ravitaillement) !'
+                                                );
+                                            }}
+                                            className={`w-14 h-8 rounded-full transition-colors relative p-1 cursor-pointer shrink-0 ${
+                                                stockConfig.manageStockDirectly ? 'bg-emerald-600' : 'bg-gray-400 dark:bg-white/20'
+                                            }`}
+                                        >
+                                            <div className={`w-6 h-6 rounded-full bg-white transition-transform shadow-md ${
+                                                stockConfig.manageStockDirectly ? 'translate-x-6' : 'translate-x-0'
+                                            }`} />
+                                        </button>
+                                    </div>
+
+                                    {/* INFO TEMPS RÉEL */}
+                                    <div className={`p-4 rounded-2xl border text-xs leading-relaxed ${isDark ? 'bg-white/5 border-white/5 text-slate-400' : 'bg-slate-50 border-slate-200 text-slate-600'}`}>
+                                        <p className="font-bold text-slate-300 dark:text-white flex items-center gap-1.5 mb-1">
+                                            ⚡ Action - Réaction (Temps Réel) :
+                                        </p>
+                                        Chaque basculement d'interrupteur prend effet instantanément dans toute l'application. Si vous désactivez le ravitaillement, l'onglet se bloque automatiquement dans la barre latérale sans nécessiter d'actualisation de la page.
                                     </div>
                                 </div>
                             )}

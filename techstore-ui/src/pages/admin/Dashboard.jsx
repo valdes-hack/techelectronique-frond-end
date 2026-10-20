@@ -41,12 +41,12 @@ const Dashboard = () => {
     }, []);
 
     if (loading) return (
-        <div className={`h-screen flex items-center justify-center ${isDark ? 'bg-[#0b0e14]' : 'bg-[#f4f7fe]'}`}>
-            <div className="text-center">
+        <AdminLayout theme={theme} filters={null}>
+            <div className="flex flex-col items-center justify-center h-[70vh]">
                 <RefreshCw className="animate-spin text-indigo-500 mb-4 mx-auto" size={40} />
-                <p className="text-indigo-500 italic font-black text-xl tracking-widest uppercase">Analyse en cours...</p>
+                <p className="text-indigo-500 italic font-black text-lg tracking-widest uppercase">Chargement du tableau de bord...</p>
             </div>
-        </div>
+        </AdminLayout>
     );
 
     return (

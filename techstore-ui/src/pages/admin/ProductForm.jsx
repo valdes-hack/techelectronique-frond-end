@@ -1,45 +1,12 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { 
     X, Save, Image as ImageIcon, Trash2, FileUp, Loader2, Plus, 
-    Sparkles, Sliders, Layers, RefreshCw, Check, Tag, ChevronDown, 
-    ChevronUp, Copy, AlertCircle, HardDrive, Cpu, Feather, ArrowRight
+    Layers, Tag, ChevronDown, ChevronUp, AlertCircle, Lock
 } from 'lucide-react';
 import AdminService from '../../services/admin.service';
 import Input from '../../components/common/Input';
 import { getFullImageUrl } from '../../utils/imageUtils';
-
-// Suggestions prédéfinies d'options selon le secteur (Élevage / Tech / Mode)
-const OPTION_PRESETS = [
-    {
-        category: "🐔 Élevage & Nutrition (PEOC)",
-        presets: [
-            { name: "Conditionnement", values: ["5 kg", "25 kg", "50 kg", "Sac", "Alvéole de 30"] },
-            { name: "Âge / Stade", values: ["1 jour", "21 jours", "45 jours", "Démarrage", "Croissance", "Finition"] },
-            { name: "Race / Souche", values: ["Cobb 500", "Goliath", "Porc Piétrain", "Large White"] },
-            { name: "Calibre", values: ["Moyen", "Gros", "Extra-Gros (XL)"] }
-        ]
-    },
-    {
-        category: "📱 High-Tech & Électronique",
-        presets: [
-            { name: "Couleur", values: ["Noir", "Blanc", "Titane", "Bleu nuit", "Gris sidéral"] },
-            { name: "Stockage", values: ["64 Go", "128 Go", "256 Go", "512 Go", "1 To"] },
-            { name: "RAM", values: ["4 Go", "8 Go", "16 Go", "32 Go"] }
-        ]
-    },
-    {
-        category: "👟 Chaussures & Vêtements",
-        presets: [
-            { name: "Pointure", values: ["38", "39", "40", "41", "42", "43", "44", "45"] },
-            { name: "Taille", values: ["S", "M", "L", "XL", "XXL"] }
-        ]
-    }
-];
-
-const SPEC_PRESETS = [
-    "Origine", "Conditionnement", "Poids net", "Composition", 
-    "Conseil d'utilisation", "Conservation", "Garantie", "Date de production"
-];
+import { useStockConfig } from '../../context/StockConfigContext';
 
 const slugify = (text) => {
     return String(text || '')
@@ -51,8 +18,14 @@ const slugify = (text) => {
         .replace(/^-+|-+$/g, '');
 };
 
+const SPEC_PRESETS = [
+    "Origine", "Conditionnement", "Poids net", "Composition", 
+    "Conseil d'utilisation", "Conservation", "Garantie", "Date de production"
+];
+
 const ProductForm = ({ product, onClose, onSave, theme }) => {
     const isDark = theme === 'dark';
+    const { stockConfig } = useStockConfig();
     const [submitting, setSubmitting] = useState(false);
     const [categories, setCategories] = useState([]);
     const [suppliers, setSuppliers] = useState([]);
@@ -76,12 +49,14 @@ const ProductForm = ({ product, onClose, onSave, theme }) => {
     const [specifications, setSpecifications] = useState([]);
     const [showSpecsSection, setShowSpecsSection] = useState(false);
 
-    // --- OPTIONS DYNAMIQUES (AXES DE VARIATION) ---
-    // Structure: [{ id: 1, name: 'Conditionnement', values: ['5 kg', '25 kg'], inputVal: '' }]
-    const [options, setOptions] = useState([]);
-    const [showPresetMenu, setShowPresetMenu] = useState(false);
-    const [bulkStockVal, setBulkStockVal] = useState('');
-    const [bulkPriceVal, setBulkPriceVal] = useState('');
+    // --- ÉTAT DU FORMULAIRE DE NOUVELLE VARIABLE ---
+    const [varInput, setVarInput] = useState({
+        name: '',
+        value: '',
+        unit: '',
+        price: '',
+        stockQty: ''
+    });
 
     // 1. Initialisation au montage ou modification
     useEffect(() => {
@@ -103,24 +78,14 @@ const ProductForm = ({ product, onClose, onSave, theme }) => {
             setSpecifications(parsedSpecs);
             if (parsedSpecs.length > 0) setShowSpecsSection(true);
 
-            // Extraction et reconstruction dynamique des options à partir des variantes existantes
-            const existingVariants = product.variants || [];
-            const reconstructedOptionsMap = {};
-            const parsedVariants = existingVariants.map(v => {
+            // Extraction des variantes existantes
+            const parsedVariants = (product.variants || []).map(v => {
                 let attrs = {};
                 try {
                     attrs = typeof v.attributes === 'string' ? JSON.parse(v.attributes) : (v.attributes || {});
                 } catch (e) {
                     console.error("Erreur parsing variante attributes", e);
                 }
-
-                // Récupération des options pour reconstruire les axes
-                Object.entries(attrs).forEach(([key, val]) => {
-                    if (key && val) {
-                        if (!reconstructedOptionsMap[key]) reconstructedOptionsMap[key] = new Set();
-                        reconstructedOptionsMap[key].add(String(val));
-                    }
-                });
 
                 return {
                     id: v.id || null,
@@ -130,16 +95,6 @@ const ProductForm = ({ product, onClose, onSave, theme }) => {
                     attributes: attrs
                 };
             });
-
-            // Conversion de reconstructedOptionsMap vers l'état options
-            const reconstructedOptions = Object.entries(reconstructedOptionsMap).map(([name, valuesSet], idx) => ({
-                id: Date.now() + idx,
-                name,
-                values: Array.from(valuesSet),
-                inputVal: ''
-            }));
-
-            setOptions(reconstructedOptions);
 
             setFormData({
                 id: product.id,
@@ -162,8 +117,6 @@ const ProductForm = ({ product, onClose, onSave, theme }) => {
             setImageUrls(existing);
             setPreviews(existing.map(url => getFullImageUrl(url)));
         } else {
-            // Nouveau produit : par défaut pas de variantes
-            setOptions([]);
             setSpecifications([]);
         }
         
@@ -180,121 +133,55 @@ const ProductForm = ({ product, onClose, onSave, theme }) => {
         loadInitialData();
     }, [product]);
 
-    // --- GESTION DES OPTIONS DYNAMIQUES & MATRICE CARTÉSIENNE ---
-
-    // Ajouter un nouvel axe d'option vide
-    const addOption = (name = '', defaultValues = []) => {
-        setOptions(prev => [
-            ...prev,
-            { id: Date.now() + Math.random(), name, values: defaultValues, inputVal: '' }
-        ]);
-        setShowPresetMenu(false);
-    };
-
-    // Mettre à jour le nom d'une option
-    const updateOptionName = (optionId, newName) => {
-        setOptions(prev => prev.map(opt => opt.id === optionId ? { ...opt, name: newName } : opt));
-    };
-
-    // Mettre à jour la saisie temporaire d'un tag pour une option
-    const updateOptionInputVal = (optionId, val) => {
-        setOptions(prev => prev.map(opt => opt.id === optionId ? { ...opt, inputVal: val } : opt));
-    };
-
-    // Ajouter une valeur tag à une option
-    const addValueToOption = (optionId) => {
-        setOptions(prev => prev.map(opt => {
-            if (opt.id === optionId) {
-                const trimmed = (opt.inputVal || '').trim();
-                if (!trimmed || opt.values.includes(trimmed)) return { ...opt, inputVal: '' };
-                return {
-                    ...opt,
-                    values: [...opt.values, trimmed],
-                    inputVal: ''
-                };
-            }
-            return opt;
-        }));
-    };
-
-    // Supprimer une valeur tag d'une option
-    const removeValueFromOption = (optionId, valueIndex) => {
-        setOptions(prev => prev.map(opt => {
-            if (opt.id === optionId) {
-                return {
-                    ...opt,
-                    values: opt.values.filter((_, idx) => idx !== valueIndex)
-                };
-            }
-            return opt;
-        }));
-    };
-
-    // Supprimer un axe d'option complet
-    const removeOption = (optionId) => {
-        setOptions(prev => prev.filter(opt => opt.id !== optionId));
-    };
-
-    // Algorithme de génération de la matrice cartésienne
-    const generateMatrix = () => {
-        const activeOptions = options.filter(opt => opt.name.trim() !== '' && opt.values.length > 0);
+    // --- AJOUT D'UNE VARIABLE / DÉCLINAISON SELON LE BESOIN DE L'UTILISATEUR ---
+    const handleAddVariable = (e) => {
+        if (e) e.preventDefault();
         
-        if (activeOptions.length === 0) {
-            setFormData(prev => ({ ...prev, variants: [] }));
+        const varName = varInput.name.trim();
+        const varVal = varInput.value.trim();
+        const varUnit = varInput.unit.trim();
+
+        if (!varName || !varVal) {
+            alert("Veuillez renseigner au moins le nom de la variable (ex: Poids) et sa valeur (ex: 25).");
             return;
         }
 
-        // Calcul du produit cartésien
-        const cartesian = (arrays) => {
-            return arrays.reduce((acc, curr) => {
-                return acc.flatMap(x => curr.map(y => [...x, y]));
-            }, [[]]);
+        // Si l'unité est renseignée, on l'associe à la valeur (ex: "25 kg")
+        const fullDisplayVal = varUnit ? `${varVal} ${varUnit}` : varVal;
+
+        // Prix de la variante : valeur saisie ou prix de base
+        const finalPrice = varInput.price !== '' ? parseFloat(varInput.price) : (parseFloat(formData.basePrice) || 0);
+        const finalStock = stockConfig.manageStockDirectly 
+            ? (varInput.stockQty !== '' ? parseInt(varInput.stockQty) : 0)
+            : 0;
+
+        // SKU variante auto-généré
+        const baseSku = formData.sku || slugify(formData.name) || 'PROD';
+        const skuVariant = `${baseSku}-${slugify(varName)}-${slugify(fullDisplayVal)}`.toUpperCase();
+
+        const newVariant = {
+            id: null,
+            skuVariant,
+            price: finalPrice,
+            stockQty: finalStock,
+            attributes: { [varName]: fullDisplayVal }
         };
 
-        const valuesArrays = activeOptions.map(opt => opt.values);
-        const combinations = cartesian(valuesArrays);
+        setFormData(prev => ({
+            ...prev,
+            variants: [...prev.variants, newVariant]
+        }));
 
-        const currentVariants = formData.variants || [];
-        const baseSku = formData.sku || slugify(formData.name) || 'PROD';
-        const defaultPrice = formData.basePrice ? parseFloat(formData.basePrice) : 0;
-
-        const newVariants = combinations.map(combo => {
-            // Création de l'objet d'attributs { "Conditionnement": "25 kg", "Race": "Goliath" }
-            const attrs = {};
-            activeOptions.forEach((opt, idx) => {
-                attrs[opt.name] = combo[idx];
-            });
-
-            // Vérification si cette combinaison existait déjà pour conserver les prix/stocks saisis
-            const existing = currentVariants.find(v => {
-                const vAttrs = v.attributes || {};
-                return activeOptions.every(opt => String(vAttrs[opt.name]) === String(attrs[opt.name]));
-            });
-
-            if (existing) {
-                return {
-                    ...existing,
-                    attributes: attrs
-                };
-            }
-
-            // Génération automatique du SKU de variante
-            const suffix = combo.map(c => slugify(c)).join('-');
-            const skuVariant = `${baseSku}-${suffix}`.toUpperCase();
-
-            return {
-                id: null,
-                skuVariant,
-                price: defaultPrice,
-                stockQty: 0,
-                attributes: attrs
-            };
-        });
-
-        setFormData(prev => ({ ...prev, variants: newVariants }));
+        // Reset partiel du champ valeur pour faciliter la saisie suivante (garde le nom de la variable)
+        setVarInput(prev => ({
+            ...prev,
+            value: '',
+            price: formData.basePrice || '',
+            stockQty: ''
+        }));
     };
 
-    // Mettre à jour un champ d'une variante spécifique
+    // Mettre à jour un champ d'une variante dans le tableau
     const updateVariantField = (index, field, value) => {
         setFormData(prev => {
             const updated = [...prev.variants];
@@ -303,7 +190,7 @@ const ProductForm = ({ product, onClose, onSave, theme }) => {
         });
     };
 
-    // Supprimer une variante
+    // Supprimer une variante du tableau
     const removeVariant = (index) => {
         setFormData(prev => ({
             ...prev,
@@ -311,47 +198,7 @@ const ProductForm = ({ product, onClose, onSave, theme }) => {
         }));
     };
 
-    // Ajouter une variante libre manuelle
-    const addManualVariant = () => {
-        const baseSku = formData.sku || slugify(formData.name) || 'PROD';
-        const newSku = `${baseSku}-VAR-${formData.variants.length + 1}`.toUpperCase();
-        setFormData(prev => ({
-            ...prev,
-            variants: [
-                ...prev.variants,
-                {
-                    id: null,
-                    skuVariant: newSku,
-                    price: prev.basePrice ? parseFloat(prev.basePrice) : 0,
-                    stockQty: 0,
-                    attributes: { "Option": `Variante ${prev.variants.length + 1}` }
-                }
-            ]
-        }));
-    };
-
-    // Actions en masse pour les variantes
-    const applyBulkPrice = () => {
-        if (!bulkPriceVal) return;
-        const p = parseFloat(bulkPriceVal);
-        setFormData(prev => ({
-            ...prev,
-            variants: prev.variants.map(v => ({ ...v, price: p }))
-        }));
-        setBulkPriceVal('');
-    };
-
-    const applyBulkStock = () => {
-        if (!bulkStockVal) return;
-        const s = parseInt(bulkStockVal) || 0;
-        setFormData(prev => ({
-            ...prev,
-            variants: prev.variants.map(v => ({ ...v, stockQty: s }))
-        }));
-        setBulkStockVal('');
-    };
-
-    // --- GESTION DES SPÉCIFICATIONS TECHNIQUES (EAV) ---
+    // --- SPÉCIFICATIONS DESCRIPTIVES (FICHE TECHNIQUE) ---
     const addSpecification = (key = '', value = '') => {
         setSpecifications(prev => [...prev, { key, value }]);
     };
@@ -415,7 +262,7 @@ const ProductForm = ({ product, onClose, onSave, theme }) => {
         e.preventDefault();
         setSubmitting(true);
         try {
-            // Formatage des spécifications en objet JSON
+            // Formatage des spécifications
             const specsObject = {};
             specifications.forEach(spec => {
                 if (spec.key.trim()) {
@@ -442,7 +289,7 @@ const ProductForm = ({ product, onClose, onSave, theme }) => {
                 costPrice: parseFloat(formData.costPrice) || 0,
                 discountPrice: formData.discountPrice !== '' && formData.discountPrice !== null ? parseFloat(formData.discountPrice) : null,
                 stockQty: computedTotalStock,
-                categoryId: parseInt(formData.categoryId),
+                categoryId: formData.categoryId ? parseInt(formData.categoryId) : null,
                 defaultSupplierId: formData.defaultSupplierId ? parseInt(formData.defaultSupplierId) : null,
                 specifications: Object.keys(specsObject).length > 0 ? JSON.stringify(specsObject) : null,
                 imageUrls: imageUrls,
@@ -465,14 +312,14 @@ const ProductForm = ({ product, onClose, onSave, theme }) => {
                 <div className={`p-5 sm:p-6 border-b flex justify-between items-center ${isDark ? 'border-white/5 bg-white/5' : 'border-gray-100 bg-gray-50/80'}`}>
                     <div className="flex items-center gap-3">
                         <div className="p-3 bg-indigo-600 rounded-2xl text-white shadow-lg shadow-indigo-600/30">
-                            <Sparkles size={20}/>
+                            <Tag size={20}/>
                         </div>
                         <div>
                             <h2 className="text-xl sm:text-2xl font-black italic uppercase tracking-tighter">
-                                {product ? 'Éditer le Produit' : 'Nouveau Produit Dynamique'}
+                                {product ? 'Éditer le Produit' : 'Nouveau Produit PEOC'}
                             </h2>
                             <p className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">
-                                Système d'attributs et de matrice de variantes PEOC
+                                Gestion des informations, prix, stock et déclinaisons variables
                             </p>
                         </div>
                     </div>
@@ -495,7 +342,7 @@ const ProductForm = ({ product, onClose, onSave, theme }) => {
                             <Input 
                                 required 
                                 label="Nom du produit"
-                                placeholder="Ex: Aliment Poussin Démarrage 25kg, Coq Goliath..." 
+                                placeholder="Ex: Aliment Poussin Démarrage, Coq Goliath, Alvéole d'oeufs..." 
                                 value={formData.name} 
                                 onChange={(e) => {
                                     const val = e.target.value;
@@ -559,16 +406,19 @@ const ProductForm = ({ product, onClose, onSave, theme }) => {
                             </div>
                         </div>
 
-                        {/* PRIX ET STOCK */}
+                        {/* PRIX ET STOCK DE BASE */}
                         <div className={`p-5 rounded-3xl border space-y-4 ${isDark ? 'bg-white/5 border-white/5' : 'bg-gray-50 border-gray-100'}`}>
-                            <span className="text-[10px] font-black uppercase text-indigo-400 tracking-widest block">3. Tarification & Stock Global</span>
+                            <span className="text-[10px] font-black uppercase text-indigo-400 tracking-widest block">3. Prix de base & Stock Standard</span>
                             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                                 <Input 
-                                    label="Prix Vente (CFA)" 
+                                    label="Prix Base (CFA)" 
                                     type="number" 
                                     required 
                                     value={formData.basePrice} 
-                                    onChange={(e) => setFormData({...formData, basePrice: e.target.value})} 
+                                    onChange={(e) => {
+                                        setFormData({...formData, basePrice: e.target.value});
+                                        if (!varInput.price) setVarInput(prev => ({...prev, price: e.target.value}));
+                                    }} 
                                     theme={theme} 
                                 />
                                 <div className="space-y-1">
@@ -599,16 +449,32 @@ const ProductForm = ({ product, onClose, onSave, theme }) => {
 
                             {/* Stock global si aucune variante */}
                             {formData.variants.length === 0 ? (
-                                <Input 
-                                    label="Stock en magasin (unités)" 
-                                    type="number" 
-                                    value={formData.stockQty} 
-                                    onChange={(e) => setFormData({...formData, stockQty: e.target.value})} 
-                                    theme={theme} 
-                                />
+                                !stockConfig.manageStockDirectly ? (
+                                    <div className={`p-4 rounded-2xl border space-y-1.5 ${isDark ? 'bg-amber-500/10 border-amber-500/20' : 'bg-amber-50 border-amber-200'}`}>
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-xs font-bold text-amber-500 flex items-center gap-1.5">
+                                                <Lock size={13} /> Stock Magasin (Verrouillé)
+                                            </span>
+                                            <span className="text-xs font-black px-2.5 py-0.5 bg-amber-500/20 text-amber-500 rounded-lg">
+                                                {formData.stockQty || 0} unité(s)
+                                            </span>
+                                        </div>
+                                        <p className="text-[10px] text-slate-400">
+                                            La saisie directe du stock est désactivée. Ce produit doit être approvisionné via l'onglet <strong>Ravitaillement</strong>.
+                                        </p>
+                                    </div>
+                                ) : (
+                                    <Input 
+                                        label="Stock en magasin (unités)" 
+                                        type="number" 
+                                        value={formData.stockQty} 
+                                        onChange={(e) => setFormData({...formData, stockQty: e.target.value})} 
+                                        theme={theme} 
+                                    />
+                                )
                             ) : (
                                 <div className="p-3 bg-indigo-500/10 border border-indigo-500/20 rounded-2xl flex items-center justify-between text-xs">
-                                    <span className="text-indigo-400 font-bold">Stock total calculé :</span>
+                                    <span className="text-indigo-400 font-bold">Stock total calculé (variantes) :</span>
                                     <span className="font-black text-sm px-2 py-0.5 bg-indigo-600 text-white rounded-lg">
                                         {computedTotalStock} unités
                                     </span>
@@ -620,22 +486,20 @@ const ProductForm = ({ product, onClose, onSave, theme }) => {
                         <div className="space-y-1">
                             <label className="text-[10px] font-black uppercase text-gray-400 ml-2">Description</label>
                             <textarea 
-                                placeholder="Description détaillée du produit, vertus, conseils..." 
+                                placeholder="Description détaillée du produit..." 
                                 className={`w-full border p-4 rounded-2xl h-24 text-xs font-medium outline-none transition-all ${isDark ? 'bg-white/5 border-white/10 text-white focus:border-indigo-500' : 'bg-gray-50 border-gray-200 text-slate-900'}`} 
                                 value={formData.description} 
                                 onChange={(e) => setFormData({...formData, description: e.target.value})} 
                             />
                         </div>
 
-                        {/* ======================================================== */}
-                        {/* FICHE TECHNIQUE DYNAMIQUE (ATTRIBUTS DESCRIPTIFS EAV)    */}
-                        {/* ======================================================== */}
+                        {/* FICHE TECHNIQUE DYNAMIQUE */}
                         <div className={`p-5 rounded-3xl border space-y-4 transition-all ${isDark ? 'bg-white/5 border-white/5' : 'bg-gray-50 border-gray-100'}`}>
                             <div className="flex justify-between items-center cursor-pointer" onClick={() => setShowSpecsSection(!showSpecsSection)}>
                                 <div className="flex items-center gap-2">
                                     <Layers size={16} className="text-indigo-400" />
                                     <span className="text-[11px] font-black uppercase tracking-wider text-indigo-400">
-                                        Fiche Technique & Attributs Descriptifs ({specifications.length})
+                                        Fiche Technique & Caractéristiques ({specifications.length})
                                     </span>
                                 </div>
                                 <button type="button" className="text-slate-400">
@@ -645,10 +509,6 @@ const ProductForm = ({ product, onClose, onSave, theme }) => {
 
                             {showSpecsSection && (
                                 <div className="space-y-4 pt-2">
-                                    <p className="text-[10px] text-slate-400 leading-relaxed">
-                                        Définissez ici les caractéristiques techniques du produit (Origine, Conservation, Posologie...) visibles sur la fiche publique.
-                                    </p>
-
                                     {/* Suggestions rapides */}
                                     <div className="flex flex-wrap gap-1.5">
                                         {SPEC_PRESETS.map(preset => (
@@ -695,7 +555,7 @@ const ProductForm = ({ product, onClose, onSave, theme }) => {
                                         onClick={() => addSpecification('', '')}
                                         className="w-full py-2 border-2 border-dashed border-indigo-500/30 text-indigo-400 hover:bg-indigo-500/10 rounded-xl text-[10px] font-black transition-all flex items-center justify-center gap-1.5"
                                     >
-                                        <Plus size={14} /> Ajouter un attribut personnalisé
+                                        <Plus size={14} /> Ajouter une caractéristique
                                     </button>
                                 </div>
                             )}
@@ -704,7 +564,7 @@ const ProductForm = ({ product, onClose, onSave, theme }) => {
                     </div>
 
                     {/* ======================================================== */}
-                    {/* COLONNE DROITE (7 colonnes) : IMAGES & MATRICE VARIANTES */}
+                    {/* COLONNE DROITE (7 colonnes) : IMAGES & VARIABLES / DÉCLINAISONS */}
                     {/* ======================================================== */}
                     <div className="lg:col-span-7 space-y-6">
                         
@@ -774,285 +634,176 @@ const ProductForm = ({ product, onClose, onSave, theme }) => {
                         </div>
 
                         {/* ======================================================== */}
-                        {/* SYSTÈME DYNAMIQUE DE VARIANTES & MATRICE CARTÉSIENNE    */}
+                        {/* SECTION DÉCLINAISONS & VARIABLES DYNAMIQUES DU PRODUIT   */}
                         {/* ======================================================== */}
-                        <div className={`p-5 rounded-3xl border space-y-6 ${isDark ? 'bg-[#131726] border-white/10' : 'bg-slate-50 border-slate-200'}`}>
+                        <div className={`p-5 rounded-3xl border space-y-5 ${isDark ? 'bg-[#131726] border-white/10' : 'bg-slate-50 border-slate-200'}`}>
                             
-                            {/* TITRE DE SECTION ET BOUTON D'AJOUT D'AXE */}
-                            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b pb-4 border-white/5">
-                                <div>
-                                    <div className="flex items-center gap-2">
-                                        <Sliders size={18} className="text-indigo-400" />
-                                        <h3 className="text-sm font-black uppercase tracking-wider text-indigo-400">
-                                            Matrice des Variantes Dynamiques
-                                        </h3>
+                            {/* TITRE ET EXPLICATION */}
+                            <div className="border-b pb-3 border-white/5">
+                                <h3 className="text-sm font-black uppercase tracking-wider text-indigo-400 flex items-center gap-2">
+                                    <Tag size={16} /> Déclinaisons & Variables du Produit
+                                </h3>
+                                <p className="text-[10px] text-slate-400 mt-1">
+                                    Ajoutez librement vos variables (ex: Nom: <strong>Poids</strong>, Valeur: <strong>25</strong>, Unité: <strong>kg</strong>) avec leurs prix et stocks respectifs.
+                                </p>
+                            </div>
+
+                            {/* 1. BARRE DE SAISIE DE NOUVELLE VARIABLE */}
+                            <div className={`p-4 rounded-2xl border space-y-3 ${isDark ? 'bg-black/25 border-white/10' : 'bg-white border-slate-200 shadow-sm'}`}>
+                                <span className="text-[9px] font-black uppercase text-indigo-400 tracking-wider block">
+                                    + Ajouter une déclinaison
+                                </span>
+                                
+                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                                    <div>
+                                        <span className="text-[8px] font-bold uppercase opacity-50 ml-1">Nom de la variable</span>
+                                        <input 
+                                            placeholder="Ex: Poids, Taille, Race..."
+                                            value={varInput.name}
+                                            onChange={e => setVarInput({...varInput, name: e.target.value})}
+                                            className={`w-full p-2.5 rounded-xl text-xs font-bold border outline-none ${isDark ? 'bg-white/5 border-white/10 text-white focus:border-indigo-500' : 'bg-slate-50 border-slate-200 text-slate-800'}`}
+                                        />
                                     </div>
-                                    <p className="text-[10px] text-slate-400 font-medium mt-0.5">
-                                        Générez automatiquement toutes les combinaisons possibles (comme dans EVA SHOE).
-                                    </p>
+                                    <div>
+                                        <span className="text-[8px] font-bold uppercase opacity-50 ml-1">Valeur</span>
+                                        <input 
+                                            placeholder="Ex: 5, 25, Blanc, XL..."
+                                            value={varInput.value}
+                                            onChange={e => setVarInput({...varInput, value: e.target.value})}
+                                            className={`w-full p-2.5 rounded-xl text-xs font-bold border outline-none ${isDark ? 'bg-white/5 border-white/10 text-white focus:border-indigo-500' : 'bg-slate-50 border-slate-200 text-slate-800'}`}
+                                        />
+                                    </div>
+                                    <div>
+                                        <span className="text-[8px] font-bold uppercase opacity-50 ml-1">Unité (optionnel)</span>
+                                        <input 
+                                            placeholder="Ex: kg, g, jours..."
+                                            value={varInput.unit}
+                                            onChange={e => setVarInput({...varInput, unit: e.target.value})}
+                                            className={`w-full p-2.5 rounded-xl text-xs font-bold border outline-none ${isDark ? 'bg-white/5 border-white/10 text-white focus:border-indigo-500' : 'bg-slate-50 border-slate-200 text-slate-800'}`}
+                                        />
+                                    </div>
                                 </div>
 
-                                <div className="relative">
-                                    <button 
-                                        type="button" 
-                                        onClick={() => setShowPresetMenu(!showPresetMenu)} 
-                                        className="bg-indigo-600 text-white px-3.5 py-2 rounded-xl text-[10px] font-black hover:bg-indigo-500 transition-all shadow-lg shadow-indigo-600/20 flex items-center gap-1.5"
-                                    >
-                                        <Plus size={14} /> AJOUTER UNE OPTION
-                                    </button>
-
-                                    {/* MENU DÉROULANT DES PRESETS */}
-                                    {showPresetMenu && (
-                                        <div className={`absolute right-0 top-11 w-72 rounded-2xl shadow-2xl border p-3 z-50 animate-in fade-in zoom-in-95 ${isDark ? 'bg-[#181d2e] border-white/10 text-white' : 'bg-white border-gray-200 text-slate-800'}`}>
-                                            <div className="space-y-3">
-                                                {OPTION_PRESETS.map((grp, i) => (
-                                                    <div key={i} className="space-y-1">
-                                                        <span className="text-[9px] font-black uppercase text-indigo-400 tracking-wider block px-1">
-                                                            {grp.category}
-                                                        </span>
-                                                        <div className="space-y-0.5">
-                                                            {grp.presets.map(p => (
-                                                                <button
-                                                                    key={p.name}
-                                                                    type="button"
-                                                                    onClick={() => addOption(p.name, p.values)}
-                                                                    className={`w-full text-left px-2.5 py-1.5 rounded-lg text-[11px] font-bold flex justify-between items-center transition-all ${isDark ? 'hover:bg-white/10 text-slate-200' : 'hover:bg-slate-100 text-slate-700'}`}
-                                                                >
-                                                                    <span>{p.name}</span>
-                                                                    <span className="text-[9px] opacity-40 font-normal">{p.values.length} vals</span>
-                                                                </button>
-                                                            ))}
-                                                        </div>
-                                                    </div>
-                                                ))}
-
-                                                <div className="border-t pt-2 border-white/10">
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => addOption('', [])}
-                                                        className="w-full text-left px-2.5 py-1.5 rounded-lg text-[11px] font-black text-indigo-400 hover:bg-indigo-500/10 flex items-center gap-1.5"
-                                                    >
-                                                        <Plus size={12} /> Autre option personnalisée...
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    )}
+                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 items-end pt-1">
+                                    <div>
+                                        <span className="text-[8px] font-black uppercase text-emerald-400 ml-1">Prix spécifique (CFA)</span>
+                                        <input 
+                                            type="number"
+                                            placeholder={formData.basePrice ? `Ex: ${formData.basePrice}` : 'Prix'}
+                                            value={varInput.price}
+                                            onChange={e => setVarInput({...varInput, price: e.target.value})}
+                                            className={`w-full p-2.5 rounded-xl text-xs font-black border outline-none ${isDark ? 'bg-white/5 border-white/10 text-emerald-400 focus:border-emerald-500' : 'bg-slate-50 border-slate-200 text-emerald-700'}`}
+                                        />
+                                    </div>
+                                    <div>
+                                        <span className="text-[8px] font-black uppercase text-indigo-400 ml-1">
+                                            Stock déclinaison {!stockConfig.manageStockDirectly && '(Verrouillé)'}
+                                        </span>
+                                        <input 
+                                            type={stockConfig.manageStockDirectly ? "number" : "text"}
+                                            placeholder={stockConfig.manageStockDirectly ? "Quantité" : "0 (Via Ravitaillement)"}
+                                            disabled={!stockConfig.manageStockDirectly}
+                                            value={stockConfig.manageStockDirectly ? varInput.stockQty : '0 (Via Ravitaillement)'}
+                                            onChange={e => setVarInput({...varInput, stockQty: e.target.value})}
+                                            className={`w-full p-2.5 rounded-xl text-xs font-black border outline-none ${
+                                                !stockConfig.manageStockDirectly 
+                                                    ? (isDark ? 'bg-white/5 border-white/5 text-slate-500 cursor-not-allowed' : 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed')
+                                                    : (isDark ? 'bg-white/5 border-white/10 text-white focus:border-indigo-500' : 'bg-slate-50 border-slate-200 text-slate-900')
+                                            }`}
+                                        />
+                                    </div>
+                                    <div>
+                                        <button 
+                                            type="button" 
+                                            onClick={handleAddVariable}
+                                            className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-black uppercase tracking-wider shadow-lg shadow-indigo-600/30 flex items-center justify-center gap-1.5 transition-all active:scale-95"
+                                        >
+                                            <Plus size={16} /> Ajouter au tableau
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
 
-                            {/* ÉTAPE 1 : DÉFINITION DES OPTIONS ET DE LEURS VALEURS */}
-                            {options.length > 0 && (
-                                <div className="space-y-3">
-                                    <div className="flex justify-between items-center">
-                                        <span className="text-[10px] font-black uppercase text-slate-400 tracking-wider">
-                                            Axes de variations définis ({options.length})
-                                        </span>
-                                        <button 
-                                            type="button" 
-                                            onClick={generateMatrix} 
-                                            className="text-[10px] font-black text-indigo-400 hover:text-indigo-300 flex items-center gap-1 underline underline-offset-4"
-                                        >
-                                            <RefreshCw size={12} /> Calculer la matrice cartésienne
-                                        </button>
-                                    </div>
-
-                                    {options.map((opt) => (
-                                        <div key={opt.id} className={`p-4 rounded-2xl border space-y-3 ${isDark ? 'bg-black/20 border-white/5' : 'bg-white border-slate-200 shadow-sm'}`}>
-                                            <div className="flex items-center gap-2">
-                                                <Tag size={14} className="text-indigo-400" />
-                                                <input 
-                                                    placeholder="Nom de l'option (ex: Conditionnement, Race, Couleur...)"
-                                                    value={opt.name}
-                                                    onChange={(e) => updateOptionName(opt.id, e.target.value)}
-                                                    className={`flex-1 bg-transparent text-xs font-black outline-none border-b border-transparent focus:border-indigo-500 pb-0.5 ${isDark ? 'text-white' : 'text-slate-800'}`}
-                                                />
-                                                <button 
-                                                    type="button" 
-                                                    onClick={() => removeOption(opt.id)} 
-                                                    className="p-1 text-rose-500 hover:scale-110 transition-transform"
-                                                    title="Supprimer cette option"
-                                                >
-                                                    <Trash2 size={14} />
-                                                </button>
-                                            </div>
-
-                                            {/* Liste des tags de valeurs */}
-                                            <div className="flex flex-wrap items-center gap-1.5">
-                                                {opt.values.map((val, valIdx) => (
-                                                    <span 
-                                                        key={valIdx} 
-                                                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-[10px] font-black border animate-in zoom-in-95 ${isDark ? 'bg-indigo-500/10 border-indigo-500/30 text-indigo-300' : 'bg-indigo-50 border-indigo-200 text-indigo-700'}`}
-                                                    >
-                                                        {val}
-                                                        <button 
-                                                            type="button" 
-                                                            onClick={() => removeValueFromOption(opt.id, valIdx)}
-                                                            className="hover:text-rose-400"
-                                                        >
-                                                            <X size={12} />
-                                                        </button>
-                                                    </span>
-                                                ))}
-
-                                                {/* Champ pour ajouter une valeur rapidement */}
-                                                <div className="inline-flex items-center gap-1">
-                                                    <input 
-                                                        placeholder="+ valeur (puis Entrée)"
-                                                        value={opt.inputVal || ''}
-                                                        onChange={(e) => updateOptionInputVal(opt.id, e.target.value)}
-                                                        onKeyDown={(e) => {
-                                                            if (e.key === 'Enter') {
-                                                                e.preventDefault();
-                                                                addValueToOption(opt.id);
-                                                            }
-                                                        }}
-                                                        className={`p-1.5 px-2.5 rounded-xl text-[10px] border outline-none font-bold w-36 ${isDark ? 'bg-white/5 border-white/10 text-white placeholder-slate-500 focus:border-indigo-500' : 'bg-slate-100 border-slate-200 text-slate-800'}`}
-                                                    />
-                                                    <button 
-                                                        type="button" 
-                                                        onClick={() => addValueToOption(opt.id)}
-                                                        className="p-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl"
-                                                    >
-                                                        <Plus size={12} />
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    ))}
-
-                                    <div className="pt-1">
-                                        <button 
-                                            type="button" 
-                                            onClick={generateMatrix}
-                                            className="w-full py-3 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white rounded-2xl text-xs font-black uppercase tracking-wider shadow-lg shadow-indigo-600/25 flex items-center justify-center gap-2 transition-all active:scale-98"
-                                        >
-                                            <Sparkles size={16} /> Générer les combinaisons ({options.reduce((acc, o) => acc * (o.values.length || 1), 1)} variantes)
-                                        </button>
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* ÉTAPE 2 : MATRICE DES VARIANTES GÉNÉRÉES */}
-                            <div className="space-y-4">
-                                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
-                                    <span className="text-[10px] font-black uppercase text-indigo-400 tracking-widest flex items-center gap-1.5">
-                                        Lignes de Variantes ({formData.variants.length})
+                            {/* 2. TABLEAU RÉCAPITULATIF DES VARIANTES ENREGISTRÉES */}
+                            <div className="space-y-3">
+                                <div className="flex justify-between items-center px-1">
+                                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+                                        Tableau des déclinaisons ({formData.variants.length})
                                     </span>
-                                    <button 
-                                        type="button" 
-                                        onClick={addManualVariant}
-                                        className="text-[9px] font-black text-slate-400 hover:text-white uppercase flex items-center gap-1"
-                                    >
-                                        <Plus size={12} /> Ajouter une ligne libre
-                                    </button>
+                                    {formData.variants.length > 0 && (
+                                        <span className="text-[10px] font-bold text-indigo-400">
+                                            Stock cumulé : {computedTotalStock}
+                                        </span>
+                                    )}
                                 </div>
 
-                                {/* BARRE D'ACTIONS RAPIDES EN MASSE */}
-                                {formData.variants.length > 1 && (
-                                    <div className={`p-3 rounded-2xl border flex flex-wrap items-center justify-between gap-3 ${isDark ? 'bg-black/30 border-white/5' : 'bg-slate-100 border-slate-200'}`}>
-                                        <span className="text-[9px] font-black uppercase text-slate-400">Actions de masse :</span>
-                                        <div className="flex items-center gap-2">
-                                            <input 
-                                                type="number"
-                                                placeholder="Prix commun"
-                                                value={bulkPriceVal}
-                                                onChange={e => setBulkPriceVal(e.target.value)}
-                                                className={`w-24 p-1 px-2 rounded-lg text-[10px] font-bold border outline-none ${isDark ? 'bg-white/5 border-white/10 text-white' : 'bg-white border-slate-200'}`}
-                                            />
-                                            <button 
-                                                type="button" 
-                                                onClick={applyBulkPrice} 
-                                                className="px-2 py-1 bg-white/10 hover:bg-white/20 text-[9px] font-black rounded-lg transition-all"
-                                            >
-                                                Appliquer Prix
-                                            </button>
-                                        </div>
-                                        <div className="flex items-center gap-2">
-                                            <input 
-                                                type="number"
-                                                placeholder="Stock commun"
-                                                value={bulkStockVal}
-                                                onChange={e => setBulkStockVal(e.target.value)}
-                                                className={`w-24 p-1 px-2 rounded-lg text-[10px] font-bold border outline-none ${isDark ? 'bg-white/5 border-white/10 text-white' : 'bg-white border-slate-200'}`}
-                                            />
-                                            <button 
-                                                type="button" 
-                                                onClick={applyBulkStock} 
-                                                className="px-2 py-1 bg-white/10 hover:bg-white/20 text-[9px] font-black rounded-lg transition-all"
-                                            >
-                                                Appliquer Stock
-                                            </button>
-                                        </div>
-                                    </div>
-                                )}
-
-                                {/* LISTE DES VARIANTES */}
-                                <div className="space-y-3 max-h-[380px] overflow-y-auto custom-scrollbar pr-1">
+                                <div className="space-y-2.5 max-h-[360px] overflow-y-auto custom-scrollbar pr-1">
                                     {formData.variants.map((v, i) => {
                                         const attrs = v.attributes || {};
                                         return (
                                             <div 
                                                 key={i} 
-                                                className={`p-4 rounded-2xl border space-y-3 transition-all ${isDark ? 'bg-[#181d2e] border-white/10' : 'bg-white border-slate-200 shadow-sm'}`}
+                                                className={`p-3.5 rounded-2xl border transition-all ${isDark ? 'bg-[#181d2e] border-white/10' : 'bg-white border-slate-200 shadow-sm'}`}
                                             >
-                                                {/* En-tête de la variante : Badges d'attributs */}
-                                                <div className="flex justify-between items-center">
+                                                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-2 pb-2 border-b border-white/5">
+                                                    {/* Badges des attributs */}
                                                     <div className="flex flex-wrap items-center gap-1.5">
                                                         {Object.entries(attrs).map(([key, val]) => (
                                                             <span 
                                                                 key={key} 
-                                                                className={`px-2 py-0.5 rounded-lg text-[9px] font-black border ${isDark ? 'bg-white/5 border-white/10 text-indigo-300' : 'bg-slate-100 border-slate-200 text-slate-800'}`}
+                                                                className={`px-2.5 py-1 rounded-xl text-[10px] font-black border ${isDark ? 'bg-indigo-500/10 border-indigo-500/20 text-indigo-300' : 'bg-indigo-50 border-indigo-200 text-indigo-700'}`}
                                                             >
-                                                                <span className="opacity-40">{key}:</span> {val}
+                                                                {key} : <span className="font-bold underline ml-0.5">{val}</span>
                                                             </span>
                                                         ))}
                                                         {Object.keys(attrs).length === 0 && (
-                                                            <span className="text-[9px] font-bold opacity-30 italic">Variante personnalisée #{i + 1}</span>
+                                                            <span className="text-[10px] opacity-40 italic">Déclinaison #{i + 1}</span>
                                                         )}
                                                     </div>
 
                                                     <button 
                                                         type="button" 
                                                         onClick={() => removeVariant(i)} 
-                                                        className="text-rose-500 hover:scale-110 transition-transform p-1"
-                                                        title="Supprimer cette combinaison"
+                                                        className="text-rose-500 hover:bg-rose-500/10 p-1.5 rounded-lg transition-all"
+                                                        title="Supprimer cette déclinaison"
                                                     >
-                                                        <Trash2 size={14} />
+                                                        <Trash2 size={15} />
                                                     </button>
                                                 </div>
 
-                                                {/* Champs de saisie : SKU, Prix, Stock */}
-                                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 items-center">
-                                                    <div className="space-y-1">
-                                                        <span className="text-[8px] font-black uppercase opacity-40 ml-1">SKU Variante</span>
+                                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 items-center">
+                                                    <div>
+                                                        <span className="text-[8px] font-bold uppercase opacity-40 ml-1">SKU</span>
                                                         <input 
-                                                            placeholder="SKU"
                                                             value={v.skuVariant} 
                                                             onChange={e => updateVariantField(i, 'skuVariant', e.target.value)} 
-                                                            className={`w-full p-2 rounded-xl text-[11px] font-mono border outline-none ${isDark ? 'bg-black/30 border-white/5 text-slate-300 focus:border-indigo-500' : 'bg-slate-50 border-slate-200 text-slate-700'}`}
+                                                            className={`w-full p-2 rounded-xl text-[11px] font-mono border outline-none ${isDark ? 'bg-black/30 border-white/5 text-slate-300' : 'bg-slate-50 border-slate-200 text-slate-700'}`}
                                                         />
                                                     </div>
-
-                                                    <div className="space-y-1">
+                                                    <div>
                                                         <span className="text-[8px] font-black uppercase text-emerald-400 ml-1">Prix (CFA)</span>
                                                         <input 
                                                             type="number" 
-                                                            placeholder="Prix" 
                                                             value={v.price} 
                                                             onChange={e => updateVariantField(i, 'price', e.target.value)} 
-                                                            className={`w-full p-2 rounded-xl text-[11px] font-black border outline-none ${isDark ? 'bg-black/30 border-white/5 text-emerald-400 focus:border-emerald-500' : 'bg-slate-50 border-slate-200 text-emerald-700'}`}
+                                                            className={`w-full p-2 rounded-xl text-[11px] font-black border outline-none ${isDark ? 'bg-black/30 border-white/5 text-emerald-400' : 'bg-slate-50 border-slate-200 text-emerald-700'}`}
                                                         />
                                                     </div>
-
-                                                    <div className="space-y-1">
-                                                        <span className="text-[8px] font-black uppercase text-indigo-400 ml-1">Stock disponible</span>
+                                                    <div>
+                                                        <span className="text-[8px] font-black uppercase text-indigo-400 ml-1">
+                                                            Stock {!stockConfig.manageStockDirectly && '(Verrouillé)'}
+                                                        </span>
                                                         <input 
                                                             type="number" 
-                                                            placeholder="Quantité" 
+                                                            disabled={!stockConfig.manageStockDirectly}
+                                                            title={!stockConfig.manageStockDirectly ? "Stock géré uniquement par le module de ravitaillement" : "Quantité en stock"}
                                                             value={v.stockQty} 
                                                             onChange={e => updateVariantField(i, 'stockQty', e.target.value)} 
-                                                            className={`w-full p-2 rounded-xl text-[11px] font-black border outline-none ${isDark ? 'bg-black/30 border-white/5 text-white focus:border-indigo-500' : 'bg-slate-50 border-slate-200 text-slate-900'}`}
+                                                            className={`w-full p-2 rounded-xl text-[11px] font-black border outline-none ${
+                                                                !stockConfig.manageStockDirectly
+                                                                    ? (isDark ? 'bg-white/5 border-white/5 text-slate-500 cursor-not-allowed' : 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed')
+                                                                    : (isDark ? 'bg-black/30 border-white/5 text-white' : 'bg-slate-50 border-slate-200 text-slate-900')
+                                                            }`}
                                                         />
                                                     </div>
                                                 </div>
@@ -1061,15 +812,16 @@ const ProductForm = ({ product, onClose, onSave, theme }) => {
                                     })}
 
                                     {formData.variants.length === 0 && (
-                                        <div className={`p-8 rounded-2xl border-2 border-dashed text-center space-y-2 ${isDark ? 'border-white/5 text-slate-500' : 'border-slate-200 text-slate-400'}`}>
-                                            <p className="text-xs font-bold">Aucune variante générée.</p>
+                                        <div className={`p-8 rounded-2xl border-2 border-dashed text-center space-y-1 ${isDark ? 'border-white/5 text-slate-500' : 'border-slate-200 text-slate-400'}`}>
+                                            <p className="text-xs font-bold">Aucune variable définie.</p>
                                             <p className="text-[10px]">
-                                                Cliquez sur <strong className="text-indigo-400">AJOUTER UNE OPTION</strong> ci-dessus pour définir les axes (ex: Conditionnement, Poids, Race...) ou laissez vide pour un produit sans déclinaison.
+                                                Utilisez le formulaire ci-dessus pour ajouter des déclinaisons (ex: Poids 25 kg, Poids 50 kg...) avec leurs prix et stocks respectifs.
                                             </p>
                                         </div>
                                     )}
                                 </div>
                             </div>
+
                         </div>
 
                     </div>
@@ -1078,11 +830,11 @@ const ProductForm = ({ product, onClose, onSave, theme }) => {
                 {/* FOOTER */}
                 <div className={`p-5 sm:p-6 border-t flex flex-col sm:flex-row justify-between items-center gap-4 ${isDark ? 'border-white/5 bg-white/5' : 'border-gray-100 bg-gray-50/80'}`}>
                     <div className="flex items-center gap-4 text-xs font-bold opacity-50">
-                        <span>{formData.variants.length} variante(s)</span>
+                        <span>{formData.variants.length} déclinaison(s)</span>
                         <span>•</span>
                         <span>Stock total : {computedTotalStock}</span>
                         <span>•</span>
-                        <span>{specifications.length} spécification(s)</span>
+                        <span>{specifications.length} caractéristique(s)</span>
                     </div>
 
                     <div className="flex items-center gap-4 w-full sm:w-auto">

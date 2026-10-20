@@ -63,8 +63,10 @@ const Categories = () => {
     };
 
     // --- CHARGEMENT DES DONNÉES DEPUIS L'API ---
-    const loadData = async () => {
-        setLoading(true);
+    const loadData = async (isBackground = false) => {
+        if (!isBackground && categories.length === 0) {
+            setLoading(true);
+        }
         try {
             const res = await AdminService.getAllAdminCategories();
             if (res.status === 'success' || Array.isArray(res)) {
@@ -94,15 +96,18 @@ const Categories = () => {
         setFilteredList(filtered);
     }, [categories, filters]);
 
-    // --- SUPPRESSION INDIVIDUELLE ---
+    // --- SUPPRESSION INDIVIDUELLE RÉACTIVE ---
     const handleDelete = async (id, name) => {
         if (window.confirm(`Confirmer la suppression définitive du rayon "${name || ''}" ?`)) {
+            // Mise à jour optimiste immédiate dans l'UI
+            setCategories(prev => prev.filter(c => c.id !== id));
             try { 
                 await AdminService.deleteCategory(id); 
-                await loadData(); 
+                loadData(true); 
             } catch (e) { 
                 console.error(e);
                 alert("Erreur lors de la suppression : " + (e.response?.data?.message || e.message));
+                loadData(true);
             }
         }
     };
@@ -114,10 +119,10 @@ const Categories = () => {
             return;
         }
         if (window.confirm(`⚠️ ATTENTION : Voulez-vous supprimer DÉFINITIVEMENT les ${categories.length} catégories existantes ?\nCette action est irréversible.`)) {
-            setLoading(true);
+            setCategories([]);
             try {
                 await AdminService.purgeCategories();
-                await loadData();
+                loadData(true);
                 alert("Toutes les catégories ont été supprimées avec succès !");
             } catch (e) {
                 console.error("Erreur purge globale :", e);
@@ -126,22 +131,15 @@ const Categories = () => {
                     for (const cat of categories) {
                         await AdminService.deleteCategory(cat.id);
                     }
-                    await loadData();
+                    loadData(true);
                     alert("Toutes les catégories ont été supprimées !");
                 } catch (err2) {
                     alert("Erreur lors de la suppression des catégories : " + (err2.response?.data?.message || err2.message));
+                    loadData(true);
                 }
-            } finally {
-                setLoading(false);
             }
         }
     };
-
-    if (loading) return (
-        <div className={`h-screen flex items-center justify-center ${isDark ? 'bg-[#0b0e14]' : 'bg-white'}`}>
-            <RefreshCw className="animate-spin text-indigo-500" size={32} />
-        </div>
-    );
 
     return (
         <AdminLayout 
@@ -211,7 +209,17 @@ const Categories = () => {
 
                 {/* --- AFFICHAGE DES DONNÉES --- */}
                 <div className="w-full">
-                    {categories.length === 0 ? (
+                    {loading && categories.length === 0 ? (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-6 gap-6 w-full pb-20">
+                            {[...Array(6)].map((_, i) => (
+                                <div key={i} className={`p-6 rounded-[2.5rem] border animate-pulse space-y-4 flex flex-col items-center justify-center min-h-[220px] ${isDark ? 'bg-[#161926] border-white/5' : 'bg-white border-slate-100'}`}>
+                                    <div className="w-16 h-16 rounded-2xl bg-white/10" />
+                                    <div className="h-4 bg-white/10 rounded-xl w-3/4" />
+                                    <div className="h-3 bg-white/5 rounded-xl w-1/2" />
+                                </div>
+                            ))}
+                        </div>
+                    ) : categories.length === 0 ? (
                         <div className={`p-16 rounded-[2.5rem] border text-center flex flex-col items-center justify-center gap-4 ${isDark ? 'bg-[#161926] border-white/5' : 'bg-white border-slate-100 shadow-sm'}`}>
                             <div className="w-20 h-20 rounded-full bg-emerald-500/10 text-emerald-500 flex items-center justify-center text-4xl">
                                 🐔
@@ -362,7 +370,19 @@ const Categories = () => {
                 <CategoryForm 
                     category={selectedCategory} 
                     onClose={() => setShowForm(false)} 
-                    onSave={() => { loadData(); setShowForm(false); }} 
+                    onSave={(savedCat) => { 
+                        if (savedCat) {
+                            setCategories(prev => {
+                                const exists = prev.some(c => c.id === savedCat.id);
+                                if (exists) {
+                                    return prev.map(c => c.id === savedCat.id ? { ...c, ...savedCat } : c);
+                                }
+                                return [savedCat, ...prev];
+                            });
+                        }
+                        loadData(true); 
+                        setShowForm(false); 
+                    }} 
                     theme={theme} 
                 />
             )}
