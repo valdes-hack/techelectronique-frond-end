@@ -4,6 +4,7 @@ import AdminLayout from '../../components/admin/AdminLayout';
 import AdminService from '../../services/admin.service';
 import CategoryForm from './CategoryForm'; 
 import AdminFilter from '../../components/admin/AdminFilter';
+import { getFullImageUrl } from '../../utils/imageUtils';
 
 // Import des icônes Lucide
 import { 
@@ -43,7 +44,7 @@ const Categories = () => {
         if (iconUrl.startsWith('http://') || iconUrl.startsWith('https://') || iconUrl.startsWith('data:') || iconUrl.startsWith('/uploads')) {
             return (
                 <img 
-                    src={iconUrl.startsWith('http') ? iconUrl : `${import.meta.env.VITE_API_URL}${iconUrl}`} 
+                    src={getFullImageUrl(iconUrl)} 
                     className="w-full h-full object-cover p-2 rounded-[2.2rem] group-hover:scale-110 transition-transform" 
                     alt={name || ""}
                     onError={(e) => {
@@ -98,10 +99,10 @@ const Categories = () => {
         if (window.confirm(`Confirmer la suppression définitive du rayon "${name || ''}" ?`)) {
             try { 
                 await AdminService.deleteCategory(id); 
-                loadData(); 
+                await loadData(); 
             } catch (e) { 
                 console.error(e);
-                alert("Erreur lors de la suppression");
+                alert("Erreur lors de la suppression : " + (e.response?.data?.message || e.message));
             }
         }
     };
@@ -128,7 +129,7 @@ const Categories = () => {
                     await loadData();
                     alert("Toutes les catégories ont été supprimées !");
                 } catch (err2) {
-                    alert("Erreur lors de la suppression des catégories.");
+                    alert("Erreur lors de la suppression des catégories : " + (err2.response?.data?.message || err2.message));
                 }
             } finally {
                 setLoading(false);
