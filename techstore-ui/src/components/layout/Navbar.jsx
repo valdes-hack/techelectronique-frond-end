@@ -85,7 +85,7 @@ const Navbar = () => {
                         ? 'md:rounded-2xl bg-white dark:bg-[#0b0e14] border border-gray-100 dark:border-white/5 shadow-lg shadow-black/5 py-3 px-4 md:px-6'
                         : 'bg-transparent py-4 px-4 md:px-2'
                 }`}>
-                    <div className="flex items-center justify-between gap-3 md:gap-6">
+                    <div className="flex flex-wrap items-center justify-between gap-3 md:gap-6">
 
                         {/* ── LOGO ── */}
                         <Link to="/" className="flex items-center gap-2.5 shrink-0 group">
