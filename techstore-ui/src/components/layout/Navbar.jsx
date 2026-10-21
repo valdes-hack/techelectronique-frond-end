@@ -85,15 +85,15 @@ const Navbar = () => {
                         ? 'md:rounded-2xl bg-white dark:bg-[#0b0e14] border border-gray-100 dark:border-white/5 shadow-lg shadow-black/5 py-3 px-4 md:px-6'
                         : 'bg-transparent py-4 px-4 md:px-2'
                 }`}>
-                    <div className="flex flex-wrap items-center justify-between gap-3 md:gap-6">
+                    <div className="flex items-center justify-between gap-2 md:gap-6">
 
                         {/* ── LOGO ── */}
-                        <Link to="/" className="flex items-center gap-2.5 shrink-0 group">
-                            <div className="w-9 h-9 md:w-10 md:h-10 rounded-xl overflow-hidden flex items-center justify-center bg-white dark:bg-white/5 border border-black/5 dark:border-white/10 shadow-md group-hover:scale-105 transition-transform p-0.5">
+                        <Link to="/" className="flex items-center gap-2 min-w-0 group shrink">
+                            <div className="w-9 h-9 md:w-10 md:h-10 rounded-xl overflow-hidden flex items-center justify-center bg-white dark:bg-white/5 border border-black/5 dark:border-white/10 shadow-md group-hover:scale-105 transition-transform p-0.5 shrink-0">
                                 <img src={siteLogo} alt="PEOC Logo" className="w-full h-full object-contain rounded-lg" onError={(e) => { e.target.style.display = 'none'; }} />
                             </div>
-                            <div className="flex flex-col">
-                                <span className="text-base md:text-lg font-black text-apple-dark dark:text-white uppercase tracking-tight leading-none">
+                            <div className="flex flex-col min-w-0">
+                                <span className="text-sm md:text-lg font-black text-apple-dark dark:text-white uppercase tracking-tight leading-none truncate max-w-[120px] sm:max-w-[180px] md:max-w-none">
                                     {siteName}
                                 </span>
                                 <span className="text-[8px] md:text-[9px] font-bold text-indigo-500 uppercase tracking-wider hidden sm:block leading-none mt-1">
