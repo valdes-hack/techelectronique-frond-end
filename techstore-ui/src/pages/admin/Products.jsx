@@ -482,8 +482,9 @@ const AdminProducts = () => {
                             loadData(true);
                             setShowForm(false);
                         } catch (err) {
-                            console.error(err);
-                            notifyError("Erreur lors de l'enregistrement. Vérifiez vos données.", "Erreur");
+                            console.error("Détail erreur enregistrement :", err);
+                            const errMsg = err.response?.data?.message || err.message || "Erreur lors de l'enregistrement.";
+                            notifyError(errMsg, "Erreur Serveur");
                         }
                     }} 
                 />
