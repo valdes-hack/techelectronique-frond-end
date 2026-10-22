@@ -6,7 +6,8 @@ import ProductService from '../../services/product.service';
 import ProductCard from '../../components/product/ProductCard';
 import { 
     Search, SlidersHorizontal, Box, X, ChevronDown, 
-    LayoutGrid, Grid2X2, Grid3X3, StretchHorizontal, List, Sparkles, Check, RefreshCw
+    LayoutGrid, Grid2X2, Grid3X3, StretchHorizontal, List, Sparkles, Check, RefreshCw,
+    Maximize2, Minimize2
 } from 'lucide-react';
 
 const Catalog = () => {
@@ -39,6 +40,20 @@ const Catalog = () => {
     const handleViewChange = (mode) => {
         setViewMode(mode);
         localStorage.setItem('techstore_catalog_view', mode);
+    };
+
+    // 3 Options d'affichage de la photo produit (demande utilisateur : couvre tout + 2 autres)
+    // 1. 'cover'     : Plein Cadre (remplit 100% de la surface, 0 espace vide)
+    // 2. 'contain'   : Ajusté sans perte (photo entière sans bordures démesurées)
+    // 3. 'cinematic' : Vitrine Cinématique (format 4:3 avec zoom & profondeur)
+    const [imageFit, setImageFit] = useState(() => {
+        return localStorage.getItem('techstore_image_fit') || 'cover';
+    });
+
+    const handleImageFitChange = (fit) => {
+        setImageFit(fit);
+        localStorage.setItem('techstore_image_fit', fit);
+        window.dispatchEvent(new Event('techstore_image_fit_changed'));
     };
 
     // États des filtres
@@ -413,6 +428,58 @@ const Catalog = () => {
                                     <List size={15} />
                                 </button>
                             </div>
+
+                            {/* ── SÉLECTEUR DES 3 OPTIONS D'AFFICHAGE DE L'IMAGE ── */}
+                            <div className="flex items-center bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 p-1 rounded-2xl shadow-sm gap-1">
+                                <span className="text-[9px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-500 px-2 hidden xl:inline">
+                                    Image :
+                                </span>
+                                
+                                {/* 1. Couvre tout (Plein cadre - 0 espace inutile) */}
+                                <button
+                                    type="button"
+                                    onClick={() => handleImageFitChange('cover')}
+                                    title="Plein Cadre : L'image remplit tout l'espace (Zéro espace inutile)"
+                                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[10px] font-black transition-all ${
+                                        imageFit === 'cover'
+                                            ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/20'
+                                            : 'text-gray-400 hover:text-slate-900 dark:hover:text-white'
+                                    }`}
+                                >
+                                    <Maximize2 size={13} />
+                                    <span className="hidden sm:inline">Plein Cadre</span>
+                                </button>
+
+                                {/* 2. Ajusté (Photo entière sans perte) */}
+                                <button
+                                    type="button"
+                                    onClick={() => handleImageFitChange('contain')}
+                                    title="Ajusté : Photo entière visible sans bordures excessives"
+                                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[10px] font-black transition-all ${
+                                        imageFit === 'contain'
+                                            ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/20'
+                                            : 'text-gray-400 hover:text-slate-900 dark:hover:text-white'
+                                    }`}
+                                >
+                                    <Minimize2 size={13} />
+                                    <span className="hidden sm:inline">Ajusté</span>
+                                </button>
+
+                                {/* 3. Vitrine (Cinématique & Zoom dynamique) */}
+                                <button
+                                    type="button"
+                                    onClick={() => handleImageFitChange('cinematic')}
+                                    title="Vitrine : Format cinématique 4:3 avec zoom doux"
+                                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[10px] font-black transition-all ${
+                                        imageFit === 'cinematic'
+                                            ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/20'
+                                            : 'text-gray-400 hover:text-slate-900 dark:hover:text-white'
+                                    }`}
+                                >
+                                    <Sparkles size={13} />
+                                    <span className="hidden sm:inline">Vitrine</span>
+                                </button>
+                            </div>
                         </div>
                     </div>
 
@@ -571,7 +638,7 @@ const Catalog = () => {
                                         animate={{ opacity: 1, y: 0 }}
                                         transition={{ delay: Math.min(index * 0.02, 0.25) }}
                                     >
-                                        <ProductCard product={p} viewMode={viewMode} />
+                                        <ProductCard product={p} viewMode={viewMode} imageFit={imageFit} />
                                     </motion.div>
                                 ))}
                             </motion.div>

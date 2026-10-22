@@ -37,7 +37,7 @@ const ProductCard = ({ prod, index = 0 }) => (
                 <img
                     src={getProductImage(prod)}
                     alt={prod.name}
-                    className="h-[80%] w-auto object-contain group-hover:scale-110 transition-transform duration-700"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                     loading="lazy"
                 />
                 {prod.discountPrice && (

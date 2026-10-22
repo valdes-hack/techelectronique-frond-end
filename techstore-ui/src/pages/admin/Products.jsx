@@ -569,7 +569,7 @@ const AdminProducts = () => {
                 <ProductForm 
                     product={selectedProduct} 
                     theme={theme} 
-                    onClose={() => setShowForm(false)} 
+                    onClose={() => { setShowForm(false); setSelectedProduct(null); }} 
                     onSave={async (payload, files) => {
                         try {
                             let res;
@@ -593,8 +593,9 @@ const AdminProducts = () => {
                                 });
                             }
                             
-                            loadData(true);
+                            await loadData(true);
                             setShowForm(false);
+                            setSelectedProduct(null);
                         } catch (err) {
                             console.error("Détail erreur enregistrement :", err);
                             const errMsg = err.response?.data?.message || err.message || "Erreur lors de l'enregistrement.";

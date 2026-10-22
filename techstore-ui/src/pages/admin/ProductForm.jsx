@@ -82,7 +82,16 @@ const ProductForm = ({ product, onClose, onSave, theme }) => {
             const parsedVariants = (product.variants || []).map(v => {
                 let attrs = {};
                 try {
-                    attrs = typeof v.attributes === 'string' ? JSON.parse(v.attributes) : (v.attributes || {});
+                    let raw = v.attributes;
+                    if (typeof raw === 'string') {
+                        try { raw = JSON.parse(raw); } catch {}
+                    }
+                    if (typeof raw === 'string') {
+                        try { raw = JSON.parse(raw); } catch {}
+                    }
+                    if (raw && typeof raw === 'object' && !Array.isArray(raw)) {
+                        attrs = raw;
+                    }
                 } catch (e) {
                     console.error("Erreur parsing variante attributes", e);
                 }
@@ -272,7 +281,16 @@ const ProductForm = ({ product, onClose, onSave, theme }) => {
 
             // Formatage des variantes
             const formattedVariants = formData.variants.map((v, i) => {
-                const attrs = v.attributes || {};
+                let attrs = v.attributes || {};
+                if (typeof attrs === 'string') {
+                    try { attrs = JSON.parse(attrs); } catch {}
+                }
+                if (typeof attrs === 'string') {
+                    try { attrs = JSON.parse(attrs); } catch {}
+                }
+                if (!attrs || typeof attrs !== 'object' || Array.isArray(attrs)) {
+                    attrs = {};
+                }
                 const autoSuffix = Object.values(attrs).join('-') || `V${i + 1}`;
                 return {
                     id: v.id || null,

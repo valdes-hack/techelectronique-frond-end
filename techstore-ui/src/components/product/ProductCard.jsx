@@ -1,15 +1,59 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Star, Plus, ShieldCheck, Heart, Zap, Check, ShoppingBag, Eye } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
 import { getFullImageUrl } from '../../utils/imageUtils';
 
-const ProductCard = ({ product, viewMode = 'grid' }) => {
+const ProductCard = ({ product, viewMode = 'grid', imageFit: propImageFit }) => {
     const { addToCart } = useCart();
     const [added, setAdded] = useState(false);
     const [wished, setWished] = useState(false);
 
+    // ── 3 Options d'affichage d'image : 'cover' (couvre tout), 'contain' (ajusté), 'cinematic' (vitrine) ──
+    const [imageFit, setImageFit] = useState(() => {
+        return propImageFit || localStorage.getItem('techstore_image_fit') || 'cover';
+    });
+
+    useEffect(() => {
+        if (propImageFit) {
+            setImageFit(propImageFit);
+        } else {
+            const syncFit = () => {
+                setImageFit(localStorage.getItem('techstore_image_fit') || 'cover');
+            };
+            window.addEventListener('storage', syncFit);
+            window.addEventListener('techstore_image_fit_changed', syncFit);
+            return () => {
+                window.removeEventListener('storage', syncFit);
+                window.removeEventListener('techstore_image_fit_changed', syncFit);
+            };
+        }
+    }, [propImageFit]);
+
     if (!product) return null;
+
+    // Helper classes pour le conteneur selon l'option choisie (élimine les espaces inutiles)
+    const getImageContainerClasses = (defaultAspect = 'aspect-square') => {
+        if (imageFit === 'contain') {
+            return `relative w-full ${defaultAspect} bg-gray-50 dark:bg-[#111421] flex items-center justify-center p-2 sm:p-2.5 overflow-hidden`;
+        }
+        if (imageFit === 'cinematic') {
+            return `relative w-full aspect-[4/3] bg-gray-900/10 dark:bg-black/30 flex items-center justify-center p-0 overflow-hidden`;
+        }
+        // Mode 'cover' par défaut : couvre 100% de la zone (0 padding, 0 espace vide)
+        return `relative w-full ${defaultAspect} bg-gray-100 dark:bg-[#111421] flex items-center justify-center p-0 overflow-hidden`;
+    };
+
+    const getImageClasses = () => {
+        if (imageFit === 'contain') {
+            return 'w-full h-full object-contain group-hover:scale-105 transition-transform duration-500';
+        }
+        if (imageFit === 'cinematic') {
+            return 'w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out';
+        }
+        // Mode 'cover'
+        return 'w-full h-full object-cover group-hover:scale-105 transition-transform duration-500';
+    };
 
     // ── Détection et Gestion des Variantes & Stock ──
     const hasVariants = product.variants && product.variants.length > 0;
@@ -64,13 +108,15 @@ const ProductCard = ({ product, viewMode = 'grid' }) => {
                 className="group relative flex flex-col sm:flex-row bg-white dark:bg-[#161926] rounded-3xl border border-gray-100 dark:border-white/5 overflow-hidden hover:shadow-2xl hover:shadow-indigo-500/10 hover:border-indigo-500/30 transition-all duration-300 p-4 sm:p-5 gap-4 sm:gap-6 items-center"
             >
                 {/* Image miniature */}
-                <div className="relative w-full sm:w-44 md:w-52 aspect-square bg-gray-50 dark:bg-[#111421] rounded-2xl flex items-center justify-center p-4 overflow-hidden shrink-0">
+                <div className={`relative w-full sm:w-44 md:w-52 aspect-square rounded-2xl flex items-center justify-center overflow-hidden shrink-0 ${
+                    imageFit === 'contain' ? 'bg-gray-50 dark:bg-[#111421] p-2' : 'bg-gray-100 dark:bg-[#111421] p-0'
+                }`}>
                     <img
                         src={displayImage}
                         alt={product.name}
                         loading="lazy"
                         decoding="async"
-                        className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500"
+                        className={getImageClasses()}
                         onError={(e) => {
                             e.target.onerror = null;
                             e.target.src = "https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?auto=format&fit=crop&w=600&q=80";
@@ -198,13 +244,15 @@ const ProductCard = ({ product, viewMode = 'grid' }) => {
                 className="group relative flex flex-col md:flex-row bg-white dark:bg-[#161926] rounded-[2.5rem] border border-gray-100 dark:border-white/5 overflow-hidden hover:shadow-2xl hover:shadow-indigo-500/10 transition-all duration-500 p-6 sm:p-8 gap-8 items-center"
             >
                 {/* Grand Visuel */}
-                <div className="relative w-full md:w-80 aspect-square bg-gray-50 dark:bg-[#111421] rounded-3xl flex items-center justify-center p-8 overflow-hidden shrink-0">
+                <div className={`relative w-full md:w-80 aspect-square rounded-3xl flex items-center justify-center overflow-hidden shrink-0 ${
+                    imageFit === 'contain' ? 'bg-gray-50 dark:bg-[#111421] p-3' : 'bg-gray-100 dark:bg-[#111421] p-0'
+                }`}>
                     <img
                         src={displayImage}
                         alt={product.name}
                         loading="lazy"
                         decoding="async"
-                        className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-700 ease-out"
+                        className={getImageClasses()}
                         onError={(e) => {
                             e.target.onerror = null;
                             e.target.src = "https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?auto=format&fit=crop&w=600&q=80";
@@ -331,18 +379,21 @@ const ProductCard = ({ product, viewMode = 'grid' }) => {
                 </button>
 
                 {/* Grand Visuel */}
-                <div className="relative w-full aspect-[4/3] bg-gray-50 dark:bg-[#111421] flex items-center justify-center p-8 overflow-hidden">
+                <div className={getImageContainerClasses('aspect-[4/3]')}>
                     <img
                         src={displayImage}
                         alt={product.name}
                         loading="lazy"
                         decoding="async"
-                        className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-700 ease-out"
+                        className={getImageClasses()}
                         onError={(e) => {
                             e.target.onerror = null;
                             e.target.src = "https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?auto=format&fit=crop&w=600&q=80";
                         }}
                     />
+                    {imageFit === 'cinematic' && (
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none" />
+                    )}
                 </div>
 
                 {/* Infos */}
@@ -447,13 +498,13 @@ const ProductCard = ({ product, viewMode = 'grid' }) => {
             </button>
 
             {/* ── Image ── */}
-            <div className="relative w-full aspect-square bg-gray-50 dark:bg-[#111421] flex items-center justify-center p-4 sm:p-6 overflow-hidden">
+            <div className={getImageContainerClasses('aspect-square')}>
                 <img
                     src={displayImage}
                     alt={product.name}
                     loading="lazy"
                     decoding="async"
-                    className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-700 ease-out"
+                    className={getImageClasses()}
                     onError={(e) => {
                         e.target.onerror = null;
                         e.target.src = "https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?auto=format&fit=crop&w=600&q=80";
@@ -466,6 +517,9 @@ const ProductCard = ({ product, viewMode = 'grid' }) => {
                             Rupture de Stock
                         </span>
                     </div>
+                )}
+                {imageFit === 'cinematic' && (
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none" />
                 )}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
             </div>
