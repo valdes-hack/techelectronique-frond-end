@@ -49,18 +49,13 @@ const AdminService = {
      */
     createProduct: async (productData, files) => {
         const formData = new FormData();
-        
-        // Emballage obligatoire du JSON en Blob avec type application/json
-        const productBlob = new Blob([JSON.stringify(productData)], { type: 'application/json' });
-        formData.append('product', productBlob);
+        formData.append('product', JSON.stringify(productData));
 
         if (files && files.length > 0) {
             files.forEach(file => formData.append('files', file));
         }
 
-        const response = await api.post('/admin/products', formData, {
-            headers: { 'Content-Type': 'multipart/form-data' }
-        });
+        const response = await api.post('/admin/products', formData);
         return response.data;
     },
 
@@ -69,18 +64,13 @@ const AdminService = {
      */
     updateProduct: async (id, productData, files) => {
         const formData = new FormData();
-        
-        const productBlob = new Blob([JSON.stringify(productData)], { type: 'application/json' });
-        formData.append('product', productBlob);
+        formData.append('product', JSON.stringify(productData));
 
         if (files && files.length > 0) {
             files.forEach(file => formData.append('files', file));
         }
 
-        // Selon ton Swagger, le PUT pour le produit est aussi en multipart/form-data
-        const response = await api.put(`/admin/products/${id}`, formData, {
-            headers: { 'Content-Type': 'multipart/form-data' }
-        });
+        const response = await api.put(`/admin/products/${id}`, formData);
         return response.data;
     },
 

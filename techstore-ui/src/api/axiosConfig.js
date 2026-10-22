@@ -34,6 +34,11 @@ baseApi.interceptors.request.use((config) => {
         config.headers['X-Session-Id'] = sessionId.replace(/"/g, '');
     }
 
+    // Si les données sont un FormData, laisser le navigateur définir multipart/form-data avec son boundary unique
+    if (config.data instanceof FormData) {
+        delete config.headers['Content-Type'];
+    }
+
     return config;
 }, error => Promise.reject(error));
 

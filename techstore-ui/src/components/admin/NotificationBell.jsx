@@ -31,14 +31,18 @@ const NotificationBell = () => {
         }
     };
 
-    // Polling with backoff: 30s normally, 5min after repeated errors
+    // Polling propre toutes les 60 secondes, stoppé en cas d'erreur répétée
     useEffect(() => {
         fetchNotifications();
-        const getInterval = () => errorCountRef.current >= 3 ? 300000 : 30000;
-        let interval = setInterval(() => {
-            interval = setInterval(fetchNotifications, getInterval());
-        }, getInterval());
-        return () => clearInterval(interval);
+        
+        const timer = setInterval(() => {
+            // Si le serveur a échoué 3 fois de suite, ne plus bombarder
+            if (errorCountRef.current < 3) {
+                fetchNotifications();
+            }
+        }, 60000); // 1 requête par minute max
+
+        return () => clearInterval(timer);
     }, []);
 
     // Fermeture automatique au clic extérieur
