@@ -89,6 +89,16 @@ const AdminService = {
         return response.data;
     },
 
+    bulkDeleteProducts: async (ids) => {
+        const response = await api.delete('/admin/products/bulk', { data: ids });
+        return response.data;
+    },
+
+    bulkToggleProductStatus: async (ids, active) => {
+        const response = await api.patch(`/admin/products/bulk-status?active=${active}`, ids);
+        return response.data;
+    },
+
     toggleProductStatus: async (id) => {
         const response = await api.patch(`/admin/products/${id}/toggle-status`);
         return response.data;

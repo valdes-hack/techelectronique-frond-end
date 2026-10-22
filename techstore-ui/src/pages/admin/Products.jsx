@@ -36,6 +36,7 @@ const AdminProducts = () => {
     const [showForm, setShowForm] = useState(false);
     const [selectedProduct, setSelectedProduct] = useState(null);
     const [selectedVariantProduct, setSelectedVariantProduct] = useState(null);
+    const [selectedIds, setSelectedIds] = useState([]);
 
     const isDark = theme === 'dark';
 
@@ -120,21 +121,71 @@ const AdminProducts = () => {
         }
     };
 
+    // GESTION DE LA SÉLECTION MULTIPLE
+    const handleToggleSelect = (id) => {
+        setSelectedIds(prev => 
+            prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
+        );
+    };
+
+    const handleSelectAll = () => {
+        if (selectedIds.length === filteredList.length) {
+            setSelectedIds([]);
+        } else {
+            setSelectedIds(filteredList.map(p => p.id));
+        }
+    };
+
+    const handleBulkDelete = async () => {
+        if (selectedIds.length === 0) return;
+        if (!window.confirm(`⚠️ Confirmer la suppression DÉFINITIVE de ces ${selectedIds.length} produit(s) ?\nCette action est irréversible.`)) return;
+
+        const count = selectedIds.length;
+        const idsToDelete = [...selectedIds];
+        setProducts(prev => prev.filter(p => !idsToDelete.includes(p.id)));
+        setSelectedIds([]);
+
+        try {
+            await AdminService.bulkDeleteProducts(idsToDelete);
+            notifyAction('delete', `${count} produit(s)`, 'Supprimé(s) définitivement du catalogue');
+            loadData(true);
+        } catch (err) {
+            console.error("Erreur suppression groupée :", err);
+            notifyError("Erreur lors de la suppression multiple", "Erreur");
+            loadData(true);
+        }
+    };
+
+    const handleBulkStatus = async (active) => {
+        if (selectedIds.length === 0) return;
+        const count = selectedIds.length;
+        const idsToUpdate = [...selectedIds];
+        setProducts(prev => prev.map(p => idsToUpdate.includes(p.id) ? { ...p, isActive: active } : p));
+
+        try {
+            await AdminService.bulkToggleProductStatus(idsToUpdate, active);
+            notifyAction('update', `${count} produit(s)`, active ? 'Mis en ligne' : 'Mis hors ligne');
+            loadData(true);
+        } catch (err) {
+            console.error("Erreur statut groupé :", err);
+            notifyError("Erreur lors de la mise à jour des statuts", "Erreur");
+            loadData(true);
+        }
+    };
+
     const handleDelete = async (id) => {
         const productToDelete = products.find(p => p.id === id);
-        if (window.confirm(`Confirmer la suppression définitive de "${productToDelete?.name || 'ce produit'}" ?`)) {
+        if (window.confirm(`Confirmer la suppression DÉFINITIVE de "${productToDelete?.name || 'ce produit'}" ?`)) {
             // Mise à jour réactive immédiate dans l'UI
             setProducts(prev => prev.filter(p => p.id !== id));
+            setSelectedIds(prev => prev.filter(x => x !== id));
             try {
-                try {
-                    await AdminService.hardDeleteProduct(id);
-                } catch {
-                    await AdminService.deleteProduct(id);
-                }
-                notifyAction('delete', productToDelete?.name || 'Produit', 'Supprimé du catalogue');
+                await AdminService.hardDeleteProduct(id);
+                notifyAction('delete', productToDelete?.name || 'Produit', 'Supprimé définitivement du catalogue');
                 loadData(true);
             } catch (err) {
-                notifyError("Erreur lors de la suppression du produit", "Erreur");
+                console.error("Erreur suppression produit :", err);
+                notifyError("Erreur lors de la suppression définitive du produit", "Erreur");
                 loadData(true);
             }
         }
@@ -147,26 +198,15 @@ const AdminProducts = () => {
         }
         if (window.confirm(`⚠️ ATTENTION : Voulez-vous supprimer DÉFINITIVEMENT tous les ${products.length} produits du catalogue ?\nCette action est irréversible.`)) {
             setProducts([]);
+            setSelectedIds([]);
             try {
                 await AdminService.purgeProducts();
                 await loadData(true);
-                notifyAction('delete', 'Catalogue', 'Tous les produits ont été supprimés');
+                notifyAction('delete', 'Catalogue', 'Tous les produits ont été supprimés définitivement');
             } catch (e) {
                 console.error("Erreur purge globale :", e);
-                try {
-                    for (const p of products) {
-                        try {
-                            await AdminService.hardDeleteProduct(p.id);
-                        } catch {
-                            await AdminService.deleteProduct(p.id);
-                        }
-                    }
-                    await loadData(true);
-                    notifyAction('delete', 'Catalogue', 'Produits supprimés');
-                } catch (err2) {
-                    notifyError("Erreur lors de la suppression des produits", "Erreur");
-                    loadData(true);
-                }
+                notifyError("Erreur lors de la purge du catalogue", "Erreur");
+                loadData(true);
             }
         }
     };
@@ -223,12 +263,72 @@ const AdminProducts = () => {
                     <StatCard theme={theme} title="SOURCES" value={new Set(products.map(p => p.defaultSupplierId)).size} sub="Fournisseurs" icon={<Truck size={22}/>} color="#10b981"/>
                 </div>
 
+                {/* BANDEAU D'ACTIONS GROUPÉES (SI SÉLECTION) */}
+                {selectedIds.length > 0 && (
+                    <div className="flex flex-wrap items-center justify-between gap-4 p-5 rounded-[2rem] bg-indigo-600/10 border border-indigo-500/30 backdrop-blur-xl animate-in fade-in slide-in-from-top-2 duration-300 shadow-2xl">
+                        <div className="flex items-center gap-3">
+                            <span className="w-9 h-9 rounded-2xl bg-indigo-600 text-white font-black text-sm flex items-center justify-center shadow-lg shadow-indigo-600/40">
+                                {selectedIds.length}
+                            </span>
+                            <div>
+                                <span className={`text-xs font-black uppercase tracking-wider block ${isDark ? 'text-white' : 'text-slate-800'}`}>
+                                    {selectedIds.length} produit(s) sélectionné(s)
+                                </span>
+                                <span className="text-[10px] text-gray-500">Actions groupées applicables à toute la sélection</span>
+                            </div>
+                        </div>
+                        <div className="flex flex-wrap items-center gap-2">
+                            <button
+                                type="button"
+                                onClick={() => handleBulkStatus(true)}
+                                className="px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30 transition-all border border-emerald-500/30 active:scale-95 flex items-center gap-1.5"
+                            >
+                                <Eye size={14} />
+                                <span>Mettre en ligne</span>
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => handleBulkStatus(false)}
+                                className="px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider bg-slate-500/20 text-slate-300 hover:bg-slate-500/30 transition-all border border-slate-500/30 active:scale-95 flex items-center gap-1.5"
+                            >
+                                <EyeOff size={14} />
+                                <span>Mettre hors ligne</span>
+                            </button>
+                            <button
+                                type="button"
+                                onClick={handleBulkDelete}
+                                className="px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider bg-rose-500/20 text-rose-400 hover:bg-rose-500/30 transition-all border border-rose-500/30 active:scale-95 flex items-center gap-1.5"
+                            >
+                                <Trash2 size={14} />
+                                <span>Supprimer ({selectedIds.length})</span>
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setSelectedIds([])}
+                                className="px-3 py-2 rounded-xl text-xs font-black text-gray-400 hover:text-white hover:bg-white/5 transition-all"
+                                title="Tout désélectionner"
+                            >
+                                Annuler
+                            </button>
+                        </div>
+                    </div>
+                )}
+
                 {/* TABLEAU AVEC SCROLLBAR */}
                 <div className={`w-full max-w-full rounded-[2.5rem] border flex flex-col ${isDark ? 'bg-[#161926] border-white/5 shadow-2xl' : 'bg-white border-slate-200 shadow-xl'}`}>
                     <div className="overflow-x-auto w-full custom-scrollbar rounded-[2.5rem]">
                         <table className="w-full text-left min-w-[1000px] border-collapse">
                             <thead className={`sticky top-0 z-20 ${isDark ? 'bg-[#1a1e2e]' : 'bg-slate-50'} text-[11px] font-black uppercase tracking-widest ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
                                 <tr>
+                                    <th className="p-6 w-14 text-center">
+                                        <input 
+                                            type="checkbox"
+                                            checked={filteredList.length > 0 && selectedIds.length === filteredList.length}
+                                            onChange={handleSelectAll}
+                                            className="w-4 h-4 rounded cursor-pointer accent-indigo-500"
+                                            title="Tout sélectionner / Tout désélectionner"
+                                        />
+                                    </th>
                                     <th className="p-6">RÉFÉRENCE</th>
                                     <th className="p-6 text-center">VISUEL</th>
                                     <th className="p-6">NOM DU PRODUIT</th>
@@ -240,8 +340,21 @@ const AdminProducts = () => {
                                 </tr>
                             </thead>
                             <tbody className={`divide-y ${isDark ? 'divide-white/5' : 'divide-slate-100'}`}>
-                                {filteredList.map((p) => (
-                                    <tr key={p.id} className={`${isDark ? 'hover:bg-white/5' : 'hover:bg-slate-50'} transition-all group`}>
+                                {filteredList.map((p) => {
+                                    const isSelected = selectedIds.includes(p.id);
+                                    return (
+                                    <tr 
+                                        key={p.id} 
+                                        className={`${isSelected ? (isDark ? 'bg-indigo-600/10' : 'bg-indigo-50/60') : ''} ${isDark ? 'hover:bg-white/5' : 'hover:bg-slate-50'} transition-all group`}
+                                    >
+                                        <td className="p-6 text-center">
+                                            <input 
+                                                type="checkbox"
+                                                checked={isSelected}
+                                                onChange={() => handleToggleSelect(p.id)}
+                                                className="w-4 h-4 rounded cursor-pointer accent-indigo-500"
+                                            />
+                                        </td>
                                         <td className="p-6 font-mono text-xs text-indigo-400 font-bold">#{p.sku || p.id}</td>
                                         <td className="p-6">
                                             <div onClick={() => setImgIdxMap({...imgIdxMap, [p.id]: (imgIdxMap[p.id] + 1) % (p.images?.length || 1)})}
@@ -332,7 +445,8 @@ const AdminProducts = () => {
                                             <button onClick={() => handleDelete(p.id)} className={`p-2.5 rounded-xl border transition-all ${isDark ? 'border-white/5 text-red-400 hover:border-red-400' : 'border-slate-200 text-red-600 hover:bg-red-50'}`}><Trash2 size={16}/></button>
                                         </td>
                                     </tr>
-                                ))}
+                                    );
+                                })}
                             </tbody>
                         </table>
                     </div>
