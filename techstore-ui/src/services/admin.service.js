@@ -35,6 +35,11 @@ const AdminService = {
         return response.data;
     },
 
+    bulkDeleteUsers: async (ids) => {
+        const response = await api.delete('/admin/users/bulk-delete', { data: ids });
+        return response.data;
+    },
+
     // ==========================================
     // 📦 GESTION DES PRODUITS (Multipart compatible)
     // ==========================================
@@ -209,6 +214,16 @@ const AdminService = {
         return response.data;
     },
 
+    deleteOrder: async (orderId) => {
+        const response = await api.delete(`/admin/orders/${orderId}`);
+        return response.data;
+    },
+
+    bulkDeleteOrders: async (ids) => {
+        const response = await api.delete('/admin/orders/bulk-delete', { data: ids });
+        return response.data;
+    },
+
     // ==========================================
     // 🚀 GESTION DU STOCK (RAVITAILLEMENT)
     // ==========================================
@@ -249,6 +264,16 @@ const AdminService = {
     // Récupérer tout l'historique
     getAllHistory: async (page = 0, size = 50) => {
         const response = await api.get(`/admin/notifications?page=${page}&size=${size}`);
+        return response.data;
+    },
+
+    deleteNotification: async (id) => {
+        const response = await api.delete(`/admin/notifications/${id}`);
+        return response.data;
+    },
+
+    bulkDeleteNotifications: async (ids) => {
+        const response = await api.delete('/admin/notifications/bulk-delete', { data: ids });
         return response.data;
     },
     // ==========================================

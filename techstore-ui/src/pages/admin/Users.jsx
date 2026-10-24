@@ -4,9 +4,10 @@ import AdminLayout from '../../components/admin/AdminLayout';
 import AdminFilter from '../../components/admin/AdminFilter';
 import AdminService from '../../services/admin.service';
 import UserForm from './UserForm'; 
+import { useToast } from '../../context/ToastContext';
 import { 
     ShieldAlert, UserCheck, Mail, Award, Edit2, 
-    UserMinus, UserPlus, RefreshCw, ChevronRight, Search 
+    UserMinus, UserPlus, RefreshCw, ChevronRight, Search, Trash2 
 } from 'lucide-react';
 
 const AdminUsers = () => {
@@ -14,9 +15,11 @@ const AdminUsers = () => {
     const [users, setUsers] = useState([]);
     const [filteredList, setFilteredList] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [selectedIds, setSelectedIds] = useState([]);
     
-    // 2. ÉTAT DU THÈME (Persistance)
+    // 2. ÉTAT DU THÈME & NOTIFICATIONS
     const { theme, toggleTheme } = useTheme();
+    const { notifyAction, notifyError } = useToast();
 
     // 3. ÉTATS DU FORMULAIRE ET FILTRES
     const [showForm, setShowForm] = useState(false);
@@ -75,14 +78,63 @@ const AdminUsers = () => {
         setFilteredList(filtered);
     }, [users, filters]);
 
+    // GESTION DE LA SÉLECTION MULTIPLE
+    const handleToggleSelect = (id) => {
+        setSelectedIds(prev => 
+            prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
+        );
+    };
+
+    const handleSelectAll = () => {
+        if (selectedIds.length === filteredList.length) {
+            setSelectedIds([]);
+        } else {
+            setSelectedIds(filteredList.map(u => u.id));
+        }
+    };
+
+    const handleDeleteUser = async (userId) => {
+        if (!window.confirm("Êtes-vous sûr de vouloir supprimer cet utilisateur ?")) return;
+        try {
+            await AdminService.deleteUser(userId);
+            notifyAction('delete', 'Utilisateur', 'Compte désactivé');
+            setUsers(prev => prev.filter(u => u.id !== userId));
+            setSelectedIds(prev => prev.filter(id => id !== userId));
+        } catch (err) {
+            console.error(err);
+            notifyError("Erreur lors de la suppression de l'utilisateur", "Erreur");
+        }
+    };
+
+    const handleBulkDelete = async () => {
+        if (selectedIds.length === 0) return;
+        if (!window.confirm(`⚠️ Confirmer la désactivation de ces ${selectedIds.length} utilisateur(s) ?`)) return;
+
+        const count = selectedIds.length;
+        const idsToDelete = [...selectedIds];
+        setUsers(prev => prev.filter(u => !idsToDelete.includes(u.id)));
+        setSelectedIds([]);
+
+        try {
+            await AdminService.bulkDeleteUsers(idsToDelete);
+            notifyAction('delete', `${count} utilisateur(s)`, 'Comptes désactivés');
+            loadUsers();
+        } catch (err) {
+            console.error("Erreur suppression groupée :", err);
+            notifyError("Erreur lors de la désactivation groupée", "Erreur");
+            loadUsers();
+        }
+    };
+
     // --- FONCTION ACTIVER / DÉSACTIVER ---
     const handleToggleStatus = async (userId) => {
-        if(window.confirm("Bébé, changer l'accès de ce membre ? 🔐")) {
+        if(window.confirm("Changer l'accès de ce membre ? 🔐")) {
             try {
                 await AdminService.toggleUserStatus(userId);
+                notifyAction('update', 'Statut utilisateur', 'Accès modifié');
                 loadUsers(); 
             } catch (err) {
-                alert("Erreur lors de la modification de l'accès.");
+                notifyError("Erreur lors de la modification de l'accès.", "Erreur");
             }
         }
     };
@@ -139,6 +191,41 @@ const AdminUsers = () => {
                     <StatCard theme={theme} title="RECOMPENSES" value={users.reduce((acc, u) => acc + (u.loyaltyPoints || 0), 0)} sub="Points Fidelité" icon={<Award/>} color="#fbbf24" />
                 </div>
 
+                {/* BANDEAU D'ACTIONS GROUPÉES (SI SÉLECTION) */}
+                {selectedIds.length > 0 && (
+                    <div className="flex flex-wrap items-center justify-between gap-4 p-5 rounded-[2rem] bg-indigo-600/10 border border-indigo-500/30 backdrop-blur-xl animate-in fade-in slide-in-from-top-2 duration-300 shadow-2xl">
+                        <div className="flex items-center gap-3">
+                            <span className="w-9 h-9 rounded-2xl bg-indigo-600 text-white font-black text-sm flex items-center justify-center shadow-lg shadow-indigo-600/40">
+                                {selectedIds.length}
+                            </span>
+                            <div>
+                                <span className={`text-xs font-black uppercase tracking-wider block ${theme === 'dark' ? 'text-white' : 'text-slate-800'}`}>
+                                    {selectedIds.length} utilisateur(s) sélectionné(s)
+                                </span>
+                                <span className="text-[10px] text-gray-500">Actions groupées applicables à toute la sélection</span>
+                            </div>
+                        </div>
+                        <div className="flex flex-wrap items-center gap-2">
+                            <button
+                                type="button"
+                                onClick={handleBulkDelete}
+                                className="px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider bg-rose-500/20 text-rose-400 hover:bg-rose-500/30 transition-all border border-rose-500/30 active:scale-95 flex items-center gap-1.5"
+                            >
+                                <Trash2 size={14} />
+                                <span>Désactiver ({selectedIds.length})</span>
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setSelectedIds([])}
+                                className="px-3 py-2 rounded-xl text-xs font-black text-gray-400 hover:text-white hover:bg-white/5 transition-all"
+                                title="Tout désélectionner"
+                            >
+                                Annuler
+                            </button>
+                        </div>
+                    </div>
+                )}
+
                 <div className={`rounded-3xl border overflow-hidden shadow-2xl ${
                     theme === 'dark' ? 'bg-[#161926] border-white/5 shadow-black/40' : 'bg-white border-gray-100 shadow-slate-200'
                 }`}>
@@ -146,6 +233,15 @@ const AdminUsers = () => {
                         <table className="w-full text-left min-w-[1000px]">
                             <thead className={`${theme === 'dark' ? 'bg-white/5 text-gray-500' : 'bg-gray-50 text-slate-400'} text-[11px] font-black uppercase tracking-widest`}>
                                 <tr className="border-b border-inherit">
+                                    <th className="p-6 w-14 text-center">
+                                        <input 
+                                            type="checkbox"
+                                            checked={filteredList.length > 0 && selectedIds.length === filteredList.length}
+                                            onChange={handleSelectAll}
+                                            className="w-4 h-4 rounded cursor-pointer accent-indigo-500"
+                                            title="Tout sélectionner / Tout désélectionner"
+                                        />
+                                    </th>
                                     <th className="p-6 text-center">ID</th>
                                     <th className="p-6">PROFIL ET INSCRIPTION</th>
                                     <th className="p-6 text-center">ROLE</th>
@@ -156,7 +252,15 @@ const AdminUsers = () => {
                             </thead>
                             <tbody className={`divide-y ${theme === 'dark' ? 'divide-white/5' : 'divide-gray-100'}`}>
                                 {filteredList.map((u, idx) => (
-                                    <tr key={u.id} className="hover:bg-[#6366f1]/5 transition-all group">
+                                    <tr key={u.id} className={`hover:bg-[#6366f1]/5 transition-all group ${selectedIds.includes(u.id) ? (theme === 'dark' ? 'bg-indigo-600/10' : 'bg-indigo-50') : ''}`}>
+                                        <td className="p-6 text-center">
+                                            <input 
+                                                type="checkbox"
+                                                checked={selectedIds.includes(u.id)}
+                                                onChange={() => handleToggleSelect(u.id)}
+                                                className="w-4 h-4 rounded cursor-pointer accent-indigo-500"
+                                            />
+                                        </td>
                                         <td className="p-6 text-center font-mono text-xs opacity-40"># {u.id}</td>
                                         <td className="p-6 flex items-center space-x-4">
                                             <div className="w-12 h-12 rounded-2xl bg-indigo-500 text-white flex items-center justify-center font-black text-lg shadow-xl shadow-indigo-500/20">
@@ -181,18 +285,27 @@ const AdminUsers = () => {
                                                 <span className="text-[10px] font-black uppercase">{u.verified ? 'Actif' : 'Bloqué'}</span>
                                             </div>
                                         </td>
-                                        <td className="p-6 text-center space-x-2">
+                                        <td className="p-6 text-center space-x-2 whitespace-nowrap">
                                             <button 
                                                 onClick={() => { setSelectedUser(u); setShowForm(true); }}
                                                 className={`p-2.5 rounded-xl border border-white/5 text-indigo-400 hover:border-indigo-400 transition-all shadow-sm ${theme === 'light' ? 'bg-gray-50 border-gray-200' : ''}`}
+                                                title="Modifier"
                                             >
                                                 <Edit2 size={16}/>
                                             </button>
                                             <button 
                                                 onClick={() => handleToggleStatus(u.id)}
-                                                className={`p-2.5 rounded-xl border border-white/5 transition-all shadow-sm ${u.verified ? 'text-red-500 hover:bg-red-500/10' : 'text-green-500 hover:bg-green-500/10'} ${theme === 'light' ? 'bg-gray-50 border-gray-200' : ''}`}
+                                                className={`p-2.5 rounded-xl border border-white/5 transition-all shadow-sm ${u.verified ? 'text-amber-500 hover:bg-amber-500/10' : 'text-green-500 hover:bg-green-500/10'} ${theme === 'light' ? 'bg-gray-50 border-gray-200' : ''}`}
+                                                title={u.verified ? "Bloquer" : "Débloquer"}
                                             >
                                                 {u.verified ? <UserMinus size={16}/> : <UserPlus size={16}/>}
+                                            </button>
+                                            <button 
+                                                onClick={() => handleDeleteUser(u.id)}
+                                                className={`p-2.5 rounded-xl border border-white/5 text-rose-400 hover:bg-rose-500 hover:text-white transition-all shadow-sm ${theme === 'light' ? 'bg-gray-50 border-gray-200' : ''}`}
+                                                title="Désactiver le compte"
+                                            >
+                                                <Trash2 size={16}/>
                                             </button>
                                         </td>
                                     </tr>

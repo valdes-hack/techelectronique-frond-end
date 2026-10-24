@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useTheme } from '../../context/ThemeContext';
+import { useToast } from '../../context/ToastContext';
 import { useNavigate } from 'react-router-dom';
 import AdminLayout from '../../components/admin/AdminLayout';
 import AdminFilter from '../../components/admin/AdminFilter';
@@ -7,7 +8,7 @@ import AdminService from '../../services/admin.service';
 import { 
     ShoppingCart, Clock, DollarSign, Eye, Truck, 
     RefreshCw, ChevronRight, Printer, X, FileText, 
-    MapPin, Phone, Mail, MessageCircle, CreditCard, Calendar, User
+    MapPin, Phone, Mail, MessageCircle, CreditCard, Calendar, User, Trash2
 } from 'lucide-react';
 import { useReactToPrint } from 'react-to-print';
 
@@ -18,10 +19,12 @@ const AdminOrders = () => {
     const [selectedOrder, setSelectedOrder] = useState(null);
     const [showInvoice, setShowInvoice] = useState(false);
     const [showDetails, setShowDetails] = useState(false);
+    const [selectedIds, setSelectedIds] = useState([]);
     
     const navigate = useNavigate();
     const invoiceRef = useRef();
     const { theme, toggleTheme } = useTheme();
+    const { notifyAction, notifyError } = useToast();
     const isDark = theme === 'dark';
 
     const [filters, setFilters] = useState({ searchTerm: "", selCat: "Tous", dispo: "Tous" });
@@ -51,6 +54,54 @@ const AdminOrders = () => {
         setFilteredList(filtered);
     }, [orders, filters]);
 
+    // GESTION DE LA SÉLECTION MULTIPLE
+    const handleToggleSelect = (id) => {
+        setSelectedIds(prev => 
+            prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
+        );
+    };
+
+    const handleSelectAll = () => {
+        if (selectedIds.length === filteredList.length) {
+            setSelectedIds([]);
+        } else {
+            setSelectedIds(filteredList.map(o => o.id));
+        }
+    };
+
+    const handleDeleteOrder = async (orderId) => {
+        if (!window.confirm("Êtes-vous sûr de vouloir supprimer cette commande ?")) return;
+        try {
+            await AdminService.deleteOrder(orderId);
+            notifyAction('delete', 'Commande', 'Supprimée avec succès');
+            setOrders(prev => prev.filter(o => o.id !== orderId));
+            setSelectedIds(prev => prev.filter(id => id !== orderId));
+        } catch (err) {
+            console.error(err);
+            notifyError("Erreur lors de la suppression de la commande", "Erreur");
+        }
+    };
+
+    const handleBulkDelete = async () => {
+        if (selectedIds.length === 0) return;
+        if (!window.confirm(`⚠️ Confirmer la suppression de ces ${selectedIds.length} commande(s) ?`)) return;
+
+        const count = selectedIds.length;
+        const idsToDelete = [...selectedIds];
+        setOrders(prev => prev.filter(o => !idsToDelete.includes(o.id)));
+        setSelectedIds([]);
+
+        try {
+            await AdminService.bulkDeleteOrders(idsToDelete);
+            notifyAction('delete', `${count} commande(s)`, 'Supprimée(s) avec succès');
+            loadOrders();
+        } catch (err) {
+            console.error("Erreur suppression groupée :", err);
+            notifyError("Erreur lors de la suppression groupée", "Erreur");
+            loadOrders();
+        }
+    };
+
     // ✨ CONFIGURATION IMPRESSION OPTIMALE ✨
     const handlePrint = useReactToPrint({
         content: () => invoiceRef.current,
@@ -60,9 +111,10 @@ const AdminOrders = () => {
     const handleStatusChange = async (orderId, newStatus) => {
         try {
             await AdminService.updateOrderStatus(orderId, newStatus);
+            notifyAction('order', 'Statut', `Commande mise à jour : ${newStatus}`);
             loadOrders(); 
         } catch (e) { 
-            alert("Erreur lors de la mise à jour du statut"); 
+            notifyError("Erreur lors de la mise à jour du statut", "Erreur");
         }
     };
 
@@ -106,12 +158,56 @@ const AdminOrders = () => {
                     <StatCard theme={theme} title="GLOBAL" value={orders.length} icon={<ShoppingCart/>} color="#f43f5e" sub="Commandes"/>
                 </div>
 
+                {/* BANDEAU D'ACTIONS GROUPÉES (SI SÉLECTION) */}
+                {selectedIds.length > 0 && (
+                    <div className="flex flex-wrap items-center justify-between gap-4 p-5 rounded-[2rem] bg-indigo-600/10 border border-indigo-500/30 backdrop-blur-xl animate-in fade-in slide-in-from-top-2 duration-300 shadow-2xl">
+                        <div className="flex items-center gap-3">
+                            <span className="w-9 h-9 rounded-2xl bg-indigo-600 text-white font-black text-sm flex items-center justify-center shadow-lg shadow-indigo-600/40">
+                                {selectedIds.length}
+                            </span>
+                            <div>
+                                <span className={`text-xs font-black uppercase tracking-wider block ${isDark ? 'text-white' : 'text-slate-800'}`}>
+                                    {selectedIds.length} commande(s) sélectionnée(s)
+                                </span>
+                                <span className="text-[10px] text-gray-500">Actions groupées applicables à toute la sélection</span>
+                            </div>
+                        </div>
+                        <div className="flex flex-wrap items-center gap-2">
+                            <button
+                                type="button"
+                                onClick={handleBulkDelete}
+                                className="px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider bg-rose-500/20 text-rose-400 hover:bg-rose-500/30 transition-all border border-rose-500/30 active:scale-95 flex items-center gap-1.5"
+                            >
+                                <Trash2 size={14} />
+                                <span>Supprimer ({selectedIds.length})</span>
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setSelectedIds([])}
+                                className="px-3 py-2 rounded-xl text-xs font-black text-gray-400 hover:text-white hover:bg-white/5 transition-all"
+                                title="Tout désélectionner"
+                            >
+                                Annuler
+                            </button>
+                        </div>
+                    </div>
+                )}
+
                 {/* TABLEAU PRINCIPAL */}
                 <div className={`w-full max-w-full rounded-2xl sm:rounded-3xl border flex flex-col ${isDark ? 'bg-[#161926] border-white/5 shadow-2xl' : 'bg-white border-slate-100 shadow-xl'}`}>
                     <div className="overflow-x-auto custom-scrollbar">
                         <table className="w-full text-left min-w-[700px] border-collapse">
                             <thead className={`sticky top-0 z-20 ${isDark ? 'bg-[#1a1e2e]' : 'bg-gray-50'} text-[11px] font-black uppercase tracking-widest text-slate-500`}>
                                 <tr>
+                                    <th className="p-4 sm:p-6 w-14 text-center">
+                                        <input 
+                                            type="checkbox"
+                                            checked={filteredList.length > 0 && selectedIds.length === filteredList.length}
+                                            onChange={handleSelectAll}
+                                            className="w-4 h-4 rounded cursor-pointer accent-indigo-500"
+                                            title="Tout sélectionner / Tout désélectionner"
+                                        />
+                                    </th>
                                     <th className="p-4 sm:p-6">RÉFÉRENCE</th>
                                     <th className="p-4 sm:p-6">CLIENT</th>
                                     <th className="p-6 text-center">MONTANT</th>
@@ -121,7 +217,15 @@ const AdminOrders = () => {
                             </thead>
                             <tbody className={`divide-y ${isDark ? 'divide-white/5' : 'divide-gray-100'}`}>
                                 {filteredList.map((o) => (
-                                    <tr key={o.id} className="hover:bg-indigo-600/5 transition-all group">
+                                    <tr key={o.id} className={`hover:bg-indigo-600/5 transition-all group ${selectedIds.includes(o.id) ? (isDark ? 'bg-indigo-600/10' : 'bg-indigo-50') : ''}`}>
+                                        <td className="p-4 sm:p-6 text-center">
+                                            <input 
+                                                type="checkbox"
+                                                checked={selectedIds.includes(o.id)}
+                                                onChange={() => handleToggleSelect(o.id)}
+                                                className="w-4 h-4 rounded cursor-pointer accent-indigo-500"
+                                            />
+                                        </td>
                                         <td className="p-6 font-mono text-xs text-indigo-400 font-bold">#{o.orderNumber}</td>
                                         <td className="p-4 sm:p-6">
                                             <div className="flex flex-col">
@@ -142,9 +246,10 @@ const AdminOrders = () => {
                                             </select>
                                         </td>
                                         <td className="p-4 sm:p-6 text-right space-x-1.5 sm:space-x-2 whitespace-nowrap">
-                                            <button onClick={() => openWhatsApp(o.customerPhone, o.orderNumber)} className="p-2.5 rounded-xl border border-white/5 text-emerald-500 hover:bg-emerald-500 hover:text-white transition-all shadow-sm"><MessageCircle size={16}/></button>
-                                            <button onClick={() => { setSelectedOrder(o); setShowDetails(true); }} className="p-2.5 rounded-xl border border-white/5 text-indigo-400 hover:bg-indigo-500 hover:text-white transition-all"><Eye size={16}/></button>
-                                            <button onClick={() => { setSelectedOrder(o); setShowInvoice(true); }} className="p-2.5 rounded-xl border border-white/5 text-emerald-400 hover:bg-emerald-500 hover:text-white transition-all"><FileText size={16}/></button>
+                                            <button onClick={() => openWhatsApp(o.customerPhone, o.orderNumber)} className="p-2.5 rounded-xl border border-white/5 text-emerald-500 hover:bg-emerald-500 hover:text-white transition-all shadow-sm" title="WhatsApp"><MessageCircle size={16}/></button>
+                                            <button onClick={() => { setSelectedOrder(o); setShowDetails(true); }} className="p-2.5 rounded-xl border border-white/5 text-indigo-400 hover:bg-indigo-500 hover:text-white transition-all" title="Détails"><Eye size={16}/></button>
+                                            <button onClick={() => { setSelectedOrder(o); setShowInvoice(true); }} className="p-2.5 rounded-xl border border-white/5 text-emerald-400 hover:bg-emerald-500 hover:text-white transition-all" title="Facture"><FileText size={16}/></button>
+                                            <button onClick={() => handleDeleteOrder(o.id)} className="p-2.5 rounded-xl border border-white/5 text-rose-400 hover:bg-rose-500 hover:text-white transition-all" title="Supprimer"><Trash2 size={16}/></button>
                                         </td>
                                     </tr>
                                 ))}
