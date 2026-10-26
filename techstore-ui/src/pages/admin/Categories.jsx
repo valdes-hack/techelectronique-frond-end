@@ -11,12 +11,14 @@ import {
     Layers, Plus, Edit2, Trash2, LayoutGrid, List, RefreshCw, ChevronRight, AlertTriangle, Sparkles, Smile, Box
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { getFastCache, setFastCache } from '../../utils/fastCache';
 
 const Categories = () => {
-    // --- ÉTATS DES DONNÉES ---
-    const [categories, setCategories] = useState([]);
-    const [filteredList, setFilteredList] = useState([]);
-    const [loading, setLoading] = useState(true);
+    // --- ÉTATS DES DONNÉES (0ms instant cache) ---
+    const cachedCategories = getFastCache('admin_categories', []);
+    const [categories, setCategories] = useState(cachedCategories);
+    const [filteredList, setFilteredList] = useState(cachedCategories);
+    const [loading, setLoading] = useState(cachedCategories.length === 0);
     const [viewType, setViewType] = useState('grid');
     const [showForm, setShowForm] = useState(false);
     const [selectedCategory, setSelectedCategory] = useState(null);
@@ -72,15 +74,16 @@ const Categories = () => {
             if (res.status === 'success' || Array.isArray(res)) {
                 const list = res.data || (Array.isArray(res) ? res : []);
                 setCategories(list);
+                setFastCache('admin_categories', list, 86400);
             }
         } catch (e) { 
-            console.error("Erreur lors du chargement des rayons:", e); 
+            console.warn("Erreur lors du chargement des rayons (conservation du cache):", e); 
         } finally { 
             setLoading(false); 
         }
     };
 
-    useEffect(() => { loadData(); }, []);
+    useEffect(() => { loadData(cachedCategories.length > 0); }, []);
 
     // --- FILTRAGE DYNAMIQUE ---
     useEffect(() => {

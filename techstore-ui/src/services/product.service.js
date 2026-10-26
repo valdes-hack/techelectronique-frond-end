@@ -1,19 +1,22 @@
 import api from '../api/axiosConfig'; // On importe 'api'
-
-// Cache mémoire client (évite les requêtes réseau répétitives lors de la navigation)
-let categoriesCache = null;
-let groupedCategoriesCache = null;
+import { getFastCache, setFastCache } from '../utils/fastCache';
 
 const ProductService = {
-    // 1. Lister tous les produits (Paginé)
+    // 1. Lister tous les produits (Paginé) avec cache rapide sur la première page
     getAll: async (page = 0, size = 12) => {
+        const cacheKey = `products_${page}_${size}`;
         try {
             const response = await api.get('products', {
                 params: { page, size }
             });
+            if (response.data && response.data.status === 'success') {
+                setFastCache(cacheKey, response.data, 3600); // 1h cache
+            }
             return response.data;
         } catch (error) {
             console.error("Erreur getAllProducts", error);
+            const cached = getFastCache(cacheKey);
+            if (cached) return cached;
             throw error;
         }
     },
@@ -33,59 +36,84 @@ const ProductService = {
 
     // 3. Filtrer par catégorie
     getByCategory: async (slug, page = 0, size = 12) => {
+        const cacheKey = `products_cat_${slug}_${page}_${size}`;
         try {
             const response = await api.get(`products/category/${slug}`, {
                 params: { page, size }
             });
+            if (response.data && response.data.status === 'success') {
+                setFastCache(cacheKey, response.data, 3600);
+            }
             return response.data;
         } catch (error) {
             console.error("Erreur getByCategory", error);
+            const cached = getFastCache(cacheKey);
+            if (cached) return cached;
             throw error;
         }
     },
 
     // 4. Détails d'un produit (Slug)
     getBySlug: async (slug) => {
+        const cacheKey = `product_slug_${slug}`;
         try {
             const response = await api.get(`products/${slug}`);
+            if (response.data && response.data.status === 'success') {
+                setFastCache(cacheKey, response.data, 3600);
+            }
             return response.data;
         } catch (error) {
             console.error("Erreur detail produit", error);
+            const cached = getFastCache(cacheKey);
+            if (cached) return cached;
             throw error;
         }
     },
 
-    // 5. Récupérer toutes les catégories pour la Navbar (Avec cache mémoire client)
+    // 5. Récupérer toutes les catégories pour la Navbar (Avec cache persistant 0ms)
     getCategories: async (forceRefresh = false) => {
-        if (!forceRefresh && categoriesCache) {
-            return categoriesCache;
+        const cached = getFastCache('categories_all');
+        if (!forceRefresh && cached) {
+            // Revalidation silencieuse en arrière-plan sans bloquer
+            api.get('categories').then(res => {
+                if (res.data && res.data.status === 'success') {
+                    setFastCache('categories_all', res.data, 86400);
+                }
+            }).catch(() => {});
+            return cached;
         }
         try {
             const response = await api.get('categories');
             if (response.data && response.data.status === 'success') {
-                categoriesCache = response.data;
+                setFastCache('categories_all', response.data, 86400);
             }
             return response.data;
         } catch (error) {
             console.error("Erreur getCategories", error);
-            return categoriesCache || { status: 'error', data: [] }; 
+            return cached || { status: 'error', data: [] }; 
         }
     },
 
-    // Récupérer les catégories avec un échantillon de produits pour l'accueil (Avec cache mémoire client)
+    // Récupérer les catégories avec un échantillon de produits pour l'accueil (Avec cache persistant 0ms)
     getGroupedCategories: async (forceRefresh = false) => {
-        if (!forceRefresh && groupedCategoriesCache) {
-            return groupedCategoriesCache;
+        const cached = getFastCache('grouped_categories');
+        if (!forceRefresh && cached) {
+            api.get('categories/grouped-products').then(res => {
+                if (res.data && res.data.status === 'success') {
+                    setFastCache('grouped_categories', res.data, 86400);
+                }
+            }).catch(() => {});
+            return cached;
         }
         try {
             const response = await api.get('categories/grouped-products');
             if (response.data && response.data.status === 'success') {
-                groupedCategoriesCache = response.data;
+                setFastCache('grouped_categories', response.data, 86400);
             }
             return response.data;
         } catch (error) {
             console.error("Erreur getGroupedCategories", error);
-            return groupedCategoriesCache || { status: 'error', data: [] };
+            return cached || { status: 'error', data: [] };
         }
     },
     

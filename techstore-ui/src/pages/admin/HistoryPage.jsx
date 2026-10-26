@@ -4,33 +4,36 @@ import { History, CheckCircle, Package, ShoppingBag, AlertTriangle, Info, Trash2
 import { useTheme } from '../../context/ThemeContext';
 import { useToast } from '../../context/ToastContext';
 import AdminLayout from '../../components/admin/AdminLayout';
+import { getFastCache, setFastCache } from '../../utils/fastCache';
 
 const HistoryPage = () => {
     const { theme } = useTheme();
     const isDark = theme === 'dark';
     const { notifyAction, notifyError } = useToast();
-    const [history, setHistory] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const cachedHistory = getFastCache('admin_history', []);
+    const [history, setHistory] = useState(cachedHistory);
+    const [loading, setLoading] = useState(cachedHistory.length === 0);
     const [selectedIds, setSelectedIds] = useState([]);
     const [selectedItem, setSelectedItem] = useState(null);
 
-    const fetchHistory = async () => {
+    const fetchHistory = async (isBackground = false) => {
         try {
-            setLoading(true);
+            if (!isBackground && history.length === 0) setLoading(true);
             const response = await AdminService.getAllHistory(0, 100);
             if (response.status === 'success') {
                 const list = response.data?.content || response.data || [];
                 setHistory(list);
+                setFastCache('admin_history', list, 3600);
             }
         } catch (error) {
-            console.error('Failed to fetch history:', error);
+            console.warn('Failed to fetch fresh history (keeping cache):', error);
         } finally {
             setLoading(false);
         }
     };
 
     useEffect(() => {
-        fetchHistory();
+        fetchHistory(cachedHistory.length > 0);
     }, []);
 
     const getIcon = (type) => {

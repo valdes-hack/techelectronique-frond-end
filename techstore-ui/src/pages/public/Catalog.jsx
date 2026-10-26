@@ -9,19 +9,18 @@ import {
     LayoutGrid, Grid2X2, Grid3X3, StretchHorizontal, List, Sparkles, Check, RefreshCw,
     Maximize2, Minimize2
 } from 'lucide-react';
+import { getFastCache, setFastCache } from '../../utils/fastCache';
 
 const Catalog = () => {
     const { slug } = useParams();
     const [searchParams, setSearchParams] = useSearchParams();
 
-    // Cache local pour les produits afin d'éviter tout écran blanc au chargement
+    const cacheKey = slug ? `catalog_cat_${slug}` : 'catalog_all';
+
+    // Cache persistant ultra-rapide (0ms même hors ligne / PWA)
     const [products, setProducts] = useState(() => {
-        try {
-            const cached = sessionStorage.getItem('techstore_catalog_cache');
-            return cached ? JSON.parse(cached).filter(p => p.isActive !== false) : [];
-        } catch {
-            return [];
-        }
+        const cached = getFastCache(cacheKey, []);
+        return Array.isArray(cached) ? cached.filter(p => p.isActive !== false) : [];
     });
 
     const [loading, setLoading] = useState(products.length === 0);
@@ -80,14 +79,10 @@ const Catalog = () => {
                 const list = res.data?.content || res.data || [];
                 const validList = Array.isArray(list) ? list.filter(p => p.isActive !== false) : [];
                 setProducts(validList);
-                try {
-                    sessionStorage.setItem('techstore_catalog_cache', JSON.stringify(validList));
-                } catch (e) {
-                    console.error("Cache save error", e);
-                }
+                setFastCache(cacheKey, validList, 3600);
             }
         } catch (err) {
-            console.error("Erreur liaison", err);
+            console.warn("Erreur chargement catalogue (maintien du cache):", err);
         } finally {
             setLoading(false);
         }

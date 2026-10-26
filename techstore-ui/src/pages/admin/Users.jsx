@@ -9,12 +9,14 @@ import {
     ShieldAlert, UserCheck, Mail, Award, Edit2, 
     UserMinus, UserPlus, RefreshCw, ChevronRight, Search, Trash2 
 } from 'lucide-react';
+import { getFastCache, setFastCache } from '../../utils/fastCache';
 
 const AdminUsers = () => {
     // 1. ÉTATS DES DONNÉES
-    const [users, setUsers] = useState([]);
-    const [filteredList, setFilteredList] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const cachedUsers = getFastCache('admin_users', []);
+    const [users, setUsers] = useState(cachedUsers);
+    const [filteredList, setFilteredList] = useState(cachedUsers);
+    const [loading, setLoading] = useState(cachedUsers.length === 0);
     const [selectedIds, setSelectedIds] = useState([]);
     
     // 2. ÉTAT DU THÈME & NOTIFICATIONS
@@ -30,21 +32,23 @@ const AdminUsers = () => {
         dispo: "Tous"   // Utilisé pour l'état (Vérifié/Bloqué)
     });
 
-    const loadUsers = async () => {
-        setLoading(true);
+    const loadUsers = async (isBackground = false) => {
+        if (!isBackground && users.length === 0) setLoading(true);
         try {
             const res = await AdminService.getUsers();
             if (res && res.status === 'success') {
-                setUsers(res.data || []);
+                const list = res.data || [];
+                setUsers(list);
+                setFastCache('admin_users', list, 3600);
             }
         } catch (e) { 
-            console.error("Erreur chargement membres :", e); 
+            console.warn("Erreur chargement membres (conservation du cache):", e); 
         } finally { 
             setLoading(false); 
         }
     };
 
-    useEffect(() => { loadUsers(); }, []);
+    useEffect(() => { loadUsers(cachedUsers.length > 0); }, []);
 
     useEffect(() => {
         

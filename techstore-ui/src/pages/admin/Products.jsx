@@ -12,12 +12,14 @@ import {
     X, Layers, Tag
 } from 'lucide-react';
 import { getFullImageUrl } from '../../utils/imageUtils';
+import { getFastCache, setFastCache } from '../../utils/fastCache';
 
 const AdminProducts = () => {
-    // 1. ÉTATS DES DONNÉES
-    const [products, setProducts] = useState([]);
-    const [filteredList, setFilteredList] = useState([]);
-    const [loading, setLoading] = useState(true);
+    // 1. ÉTATS DES DONNÉES (0ms instant cache)
+    const cachedProducts = getFastCache('admin_products', []);
+    const [products, setProducts] = useState(cachedProducts);
+    const [filteredList, setFilteredList] = useState(cachedProducts);
+    const [loading, setLoading] = useState(cachedProducts.length === 0);
     
     // 2. ÉTAT DU THÈME & NOTIFICATIONS
     const { theme, toggleTheme } = useTheme();
@@ -50,7 +52,7 @@ const AdminProducts = () => {
         }
     };
 
-    // FONCTION DE CHARGEMENT RÉACTIVE
+    // FONCTION DE CHARGEMENT RÉACTIVE (0ms + Revalidation silencieuse)
     const loadData = async (isBackground = false) => {
         if (!isBackground && products.length === 0) {
             setLoading(true);
@@ -61,6 +63,7 @@ const AdminProducts = () => {
                 // Gestion de la pagination (Page.content)
                 const data = res.data.content || res.data || [];
                 setProducts(data);
+                setFastCache('admin_products', data, 3600);
                 
                 // Init pour le changement d'image au clic
                 const idxs = {}; 
@@ -68,13 +71,13 @@ const AdminProducts = () => {
                 setImgIdxMap(idxs);
             }
         } catch (e) { 
-            console.error("Erreur serveur :", e); 
+            console.warn("Erreur serveur produits (conservation du cache) :", e); 
         } finally { 
             setLoading(false); 
         }
     };
 
-    useEffect(() => { loadData(); }, []);
+    useEffect(() => { loadData(cachedProducts.length > 0); }, []);
 
     // LOGIQUE DE FILTRAGE
     useEffect(() => {

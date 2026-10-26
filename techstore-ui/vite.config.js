@@ -10,20 +10,39 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'icons/*.png'],
       workbox: {
+        navigateFallback: '/index.html',
+        navigateFallbackDenylist: [/^\/api/],
         runtimeCaching: [
           {
-            // API – stale-while-revalidate pour réponse immédiate
-            urlPattern: ({ url }) => url.hostname === 'techelectronic-api.onrender.com',
-            handler: 'StaleWhileRevalidate',
+            // API GET publiques (produits, catégories, réglages) – NetworkFirst avec timeout court
+            // Si le serveur est en veille (cold start), sert le cache PWA au bout de 3.5s au lieu de bloquer
+            urlPattern: ({ url, request }) => 
+              request.method === 'GET' && 
+              url.hostname === 'techelectronic-api.onrender.com' &&
+              !url.pathname.includes('/cart') &&
+              !url.pathname.includes('/admin') &&
+              !url.pathname.includes('/auth'),
+            handler: 'NetworkFirst',
             options: {
-              cacheName: 'api-cache',
-              expiration: { maxEntries: 100, maxAgeSeconds: 60 * 5 },
+              cacheName: 'peoc-api-cache',
+              networkTimeoutSeconds: 3.5,
+              expiration: { maxEntries: 150, maxAgeSeconds: 60 * 60 * 24 },
               cacheableResponse: { statuses: [0, 200] },
             },
           },
           {
-            // Images produits – cache-first (30 jours)
-            urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp)$/,
+            // Images Cloudinary – CacheFirst 30 jours (chargement ultra-rapide en PWA)
+            urlPattern: /^https:\/\/res\.cloudinary\.com/,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'cloudinary-images-cache',
+              expiration: { maxEntries: 300, maxAgeSeconds: 60 * 60 * 24 * 30 },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
+          {
+            // Images locales & assets – cache-first (30 jours)
+            urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp|ico)$/,
             handler: 'CacheFirst',
             options: {
               cacheName: 'images-cache',

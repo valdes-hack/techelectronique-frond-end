@@ -11,11 +11,13 @@ import {
     MapPin, Phone, Mail, MessageCircle, CreditCard, Calendar, User, Trash2
 } from 'lucide-react';
 import { useReactToPrint } from 'react-to-print';
+import { getFastCache, setFastCache } from '../../utils/fastCache';
 
 const AdminOrders = () => {
-    const [orders, setOrders] = useState([]);
-    const [filteredList, setFilteredList] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const cachedOrders = getFastCache('admin_orders', []);
+    const [orders, setOrders] = useState(cachedOrders);
+    const [filteredList, setFilteredList] = useState(cachedOrders);
+    const [loading, setLoading] = useState(cachedOrders.length === 0);
     const [selectedOrder, setSelectedOrder] = useState(null);
     const [showInvoice, setShowInvoice] = useState(false);
     const [showDetails, setShowDetails] = useState(false);
@@ -29,19 +31,23 @@ const AdminOrders = () => {
 
     const [filters, setFilters] = useState({ searchTerm: "", selCat: "Tous", dispo: "Tous" });
 
-    const loadOrders = async () => {
-        setLoading(true);
+    const loadOrders = async (isBackground = false) => {
+        if (!isBackground && orders.length === 0) setLoading(true);
         try {
             const res = await AdminService.getOrders();
-            if (res?.status === 'success') setOrders(res.data || []);
+            if (res?.status === 'success') {
+                const list = res.data || [];
+                setOrders(list);
+                setFastCache('admin_orders', list, 3600);
+            }
         } catch (e) { 
-            console.error("Erreur API:", e); 
+            console.warn("Erreur API commandes (maintien du cache):", e); 
         } finally { 
             setLoading(false); 
         }
     };
 
-    useEffect(() => { loadOrders(); }, []);
+    useEffect(() => { loadOrders(cachedOrders.length > 0); }, []);
 
     useEffect(() => {
         const filtered = orders.filter(o => {

@@ -8,6 +8,7 @@ import { Link } from 'react-router-dom';
 import ProductService from '../../services/product.service';
 import { useAppContext } from '../../context/AppContext';
 import { getFullImageUrl } from '../../utils/imageUtils';
+import { getFastCache, setFastCache } from '../../utils/fastCache';
 
 // ─── UTILITAIRE IMAGE ───
 const getProductImage = (p) => {
@@ -116,10 +117,13 @@ const Home = () => {
     const yHero = useTransform(scrollYProgress, [0, 0.4], [0, 120]);
     const opacityHero = useTransform(scrollYProgress, [0, 0.4], [1, 0]);
 
-    const [allProducts, setAllProducts] = useState([]);
-    const [trendingProducts, setTrendingProducts] = useState([]);
+    const initialHomeProds = getFastCache('home_products', []);
+    const initialHomeTrending = getFastCache('home_trending', []);
+
+    const [allProducts, setAllProducts] = useState(initialHomeProds);
+    const [trendingProducts, setTrendingProducts] = useState(initialHomeTrending);
     const [currentHeroSlide, setCurrentHeroSlide] = useState(0);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(initialHomeProds.length === 0);
 
     const poultryImg = settings?.bentoPoultryImageUrl ? getFullImageUrl(settings.bentoPoultryImageUrl) : (getProductImage(allProducts.find(p => p.name?.toLowerCase().includes('poulet') || p.name?.toLowerCase().includes('volaille'))) || "https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?auto=format&fit=crop&w=1200&q=80");
     const incubatorImg = settings?.bentoIncubatorImageUrl ? getFullImageUrl(settings.bentoIncubatorImageUrl) : (getProductImage(allProducts.find(p => p.name?.toLowerCase().includes('couveuse'))) || "https://images.unsplash.com/photo-1582722872445-44dc5f7e3c8f?auto=format&fit=crop&w=800&q=80");
@@ -196,13 +200,13 @@ const Home = () => {
         return () => clearTimeout(id);
     }, [heroSlides.length, currentHeroSlide]);
 
-    const [homeCategories, setHomeCategories] = useState([]);
+    const [homeCategories, setHomeCategories] = useState(() => getFastCache('home_categories', []));
 
-    // Fetch data
+    // Fetch data ultra-rapide (SWR : mise à jour silencieuse)
     useEffect(() => {
         const fetchAll = async () => {
             try {
-                setLoading(true);
+                if (allProducts.length === 0) setLoading(true);
                 const [prods, cats] = await Promise.allSettled([
                     ProductService.getAll(0, 24),
                     ProductService.getCategories()
@@ -210,16 +214,21 @@ const Home = () => {
 
                 if (prods.status === 'fulfilled') {
                     const all = prods.value?.data?.content || prods.value?.data || [];
-                    setAllProducts(all);
-                    setTrendingProducts(all.slice(0, 6));
+                    const validProds = Array.isArray(all) ? all.filter(p => p.isActive !== false) : [];
+                    setAllProducts(validProds);
+                    const trending = validProds.slice(0, 6);
+                    setTrendingProducts(trending);
+                    setFastCache('home_products', validProds, 3600);
+                    setFastCache('home_trending', trending, 3600);
                 }
 
                 if (cats.status === 'fulfilled') {
                     const cList = cats.value?.data || (Array.isArray(cats.value) ? cats.value : []);
                     setHomeCategories(cList);
+                    setFastCache('home_categories', cList, 86400);
                 }
             } catch (err) {
-                console.error("Erreur chargement home:", err);
+                console.warn("Erreur chargement home (conservation du cache):", err);
             } finally {
                 setLoading(false);
             }

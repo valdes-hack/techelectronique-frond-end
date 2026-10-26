@@ -8,36 +8,50 @@ import {
     Zap, Clock, Award, ArrowRight, AlertCircle, Box, CheckCircle, RefreshCw
 } from 'lucide-react';
 import { XAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
+import { getFastCache, setFastCache } from '../../utils/fastCache';
 
 const Dashboard = () => {
-    const [data, setData] = useState(null);
-    const [lowStockData, setLowStockData] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const cachedStats = getFastCache('admin_dashboard_stats', null);
+    const cachedLowStock = getFastCache('admin_low_stock', []);
+
+    const [data, setData] = useState(cachedStats);
+    const [lowStockData, setLowStockData] = useState(cachedLowStock);
+    const [loading, setLoading] = useState(!cachedStats);
+    const [isRefreshing, setIsRefreshing] = useState(false);
     const { theme, toggleTheme } = useTheme();
     const navigate = useNavigate();
 
     const isDark = theme === 'dark';
 
-    useEffect(() => {
-        const loadData = async () => {
-            try {
-                const [resStats, resLowStock] = await Promise.all([
-                    AdminService.getDashboardStats(),
-                    AdminService.getLowStockItems()
-                ]);
-                if (resStats.status === 'success') {
-                    setData(resStats.data);
-                }
-                if (resLowStock.status === 'success') {
-                    setLowStockData(resLowStock.data);
-                }
-            } catch (e) {
-                console.error("Erreur Dashboard", e);
-            } finally {
-                setLoading(false);
+    const loadData = async (isBackground = false) => {
+        if (!isBackground && !data) {
+            setLoading(true);
+        } else {
+            setIsRefreshing(true);
+        }
+        try {
+            const [resStats, resLowStock] = await Promise.all([
+                AdminService.getDashboardStats(),
+                AdminService.getLowStockItems()
+            ]);
+            if (resStats.status === 'success') {
+                setData(resStats.data);
+                setFastCache('admin_dashboard_stats', resStats.data, 3600);
             }
-        };
-        loadData();
+            if (resLowStock.status === 'success') {
+                setLowStockData(resLowStock.data);
+                setFastCache('admin_low_stock', resLowStock.data, 3600);
+            }
+        } catch (e) {
+            console.warn("Erreur Dashboard (conservation du cache):", e);
+        } finally {
+            setLoading(false);
+            setIsRefreshing(false);
+        }
+    };
+
+    useEffect(() => {
+        loadData(!!cachedStats);
     }, []);
 
     if (loading) return (
