@@ -50,30 +50,56 @@ const AdminService = {
     },
 
     /**
-     * Crée un produit (JSON + Fichiers)
+     * Crée un produit (JSON direct ou Multipart si fichiers)
      */
     createProduct: async (productData, files) => {
-        const formData = new FormData();
-        formData.append('product', JSON.stringify(productData));
-
-        if (files && files.length > 0) {
-            files.forEach(file => formData.append('files', file));
+        const hasFiles = files && Array.isArray(files) && files.length > 0;
+        if (!hasFiles) {
+            // Envoi JSON pur direct : 100% propre, sans risque de désérialisation multipart
+            const response = await api.post('/admin/products', productData);
+            return response.data;
         }
+
+        const formData = new FormData();
+        const jsonStr = JSON.stringify(productData);
+        try {
+            formData.append('product', new Blob([jsonStr], { type: 'application/json' }));
+        } catch {
+            formData.append('product', jsonStr);
+        }
+        formData.append('productJson', jsonStr);
+
+        files.forEach(file => {
+            if (file) formData.append('files', file);
+        });
 
         const response = await api.post('/admin/products', formData);
         return response.data;
     },
 
     /**
-     * Modifie un produit (JSON + Fichiers)
+     * Modifie un produit (JSON direct ou Multipart si fichiers)
      */
     updateProduct: async (id, productData, files) => {
-        const formData = new FormData();
-        formData.append('product', JSON.stringify(productData));
-
-        if (files && files.length > 0) {
-            files.forEach(file => formData.append('files', file));
+        const hasFiles = files && Array.isArray(files) && files.length > 0;
+        if (!hasFiles) {
+            // Envoi JSON pur direct
+            const response = await api.put(`/admin/products/${id}`, productData);
+            return response.data;
         }
+
+        const formData = new FormData();
+        const jsonStr = JSON.stringify(productData);
+        try {
+            formData.append('product', new Blob([jsonStr], { type: 'application/json' }));
+        } catch {
+            formData.append('product', jsonStr);
+        }
+        formData.append('productJson', jsonStr);
+
+        files.forEach(file => {
+            if (file) formData.append('files', file);
+        });
 
         const response = await api.put(`/admin/products/${id}`, formData);
         return response.data;

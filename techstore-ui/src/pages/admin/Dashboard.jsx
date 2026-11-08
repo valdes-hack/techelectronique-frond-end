@@ -129,18 +129,24 @@ const Dashboard = () => {
                             <h3 className={`text-base sm:text-xl font-black italic ${isDark ? 'text-white' : 'text-slate-800'}`}>Performance des Rayons</h3>
                             <button onClick={() => navigate('/admin/categories')} className="text-[10px] font-black text-indigo-500 uppercase hover:underline tracking-widest">Voir détails</button>
                         </div>
-                        <div className="h-[250px] sm:h-[300px] w-full min-w-0 min-h-[250px]">
-                            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={250}>
-                                <BarChart data={data?.salesBreakdownByCategory}>
-                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)"} />
-                                    <XAxis dataKey="categoryName" axisLine={false} tickLine={false} tick={{fill: '#6b7280', fontSize: 10}} />
-                                    <Tooltip 
-                                        cursor={{fill: isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)'}} 
-                                        contentStyle={{ backgroundColor: isDark ? '#111421' : '#fff', borderRadius: '15px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }} 
-                                    />
-                                    <Bar dataKey="totalSales" fill="#6366f1" radius={[10, 10, 0, 0]} barSize={40} />
-                                </BarChart>
-                            </ResponsiveContainer>
+                        <div className="h-[260px] sm:h-[300px] w-full min-w-0 flex items-center justify-center">
+                            {data?.salesBreakdownByCategory && data.salesBreakdownByCategory.length > 0 ? (
+                                <ResponsiveContainer width="100%" height={260}>
+                                    <BarChart data={data.salesBreakdownByCategory}>
+                                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)"} />
+                                        <XAxis dataKey="categoryName" axisLine={false} tickLine={false} tick={{fill: '#6b7280', fontSize: 10}} />
+                                        <Tooltip 
+                                            cursor={{fill: isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)'}} 
+                                            contentStyle={{ backgroundColor: isDark ? '#111421' : '#fff', borderRadius: '15px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }} 
+                                        />
+                                        <Bar dataKey="totalSales" fill="#6366f1" radius={[10, 10, 0, 0]} barSize={40} />
+                                    </BarChart>
+                                </ResponsiveContainer>
+                            ) : (
+                                <div className="text-center py-12 text-gray-400 text-xs sm:text-sm font-medium">
+                                    Aucune vente enregistrée pour le moment.
+                                </div>
+                            )}
                         </div>
                     </div>
 

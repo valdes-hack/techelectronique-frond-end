@@ -5,7 +5,7 @@ import {
     Save, Loader, Settings as SettingsIcon, Image as ImageIcon, Video, 
     Plus, X, Upload, Building2, PhoneCall, Sparkles, CheckCircle2, 
     AlertCircle, Eye, Globe, Mail, MapPin, Phone, Bell, Check, Flame, Percent,
-    LayoutGrid, RotateCcw, PackagePlus, Lock, Unlock
+    LayoutGrid, RotateCcw, PackagePlus, Lock, Unlock, ChevronDown, ChevronUp, Layers
 } from 'lucide-react';
 import { useAppContext } from '../../context/AppContext';
 import { useTheme } from '../../context/ThemeContext';
@@ -20,13 +20,15 @@ const Settings = () => {
     const { stockConfig, updateStockConfig } = useStockConfig();
     const isDark = theme === 'dark';
 
-    const [activeTab, setActiveTab] = useState('general'); // 'general' | 'stock' | 'contact' | 'hero' | 'bento' | 'promotions' | 'notifications'
+    const [activeTab, setActiveTab] = useState('general'); // 'general' | 'collections' | 'stock' | 'contact' | 'hero' | 'bento' | 'promotions' | 'notifications'
+    const [dropdownOpen, setDropdownOpen] = useState(false);
     const [formData, setFormData] = useState({
         siteName: '',
         contactEmail: '',
         contactPhone: '',
         contactAddress: '',
         logoUrl: '',
+        defaultCollectionBannerUrl: '',
         bentoPoultryImageUrl: '',
         bentoIncubatorImageUrl: '',
         bentoFeedImageUrl: '',
@@ -73,6 +75,7 @@ const Settings = () => {
 
     const imageInputRef = useRef(null);
     const logoInputRef = useRef(null);
+    const collectionBannerRef = useRef(null);
     const videoInputRef = useRef(null);
     const bentoPoultryRef = useRef(null);
     const bentoIncubatorRef = useRef(null);
@@ -153,6 +156,9 @@ const Settings = () => {
             } else if (type === 'bentoHealth') {
                 setFormData(prev => ({ ...prev, bentoHealthImageUrl: url }));
                 showToast('success', 'Visuel "Soins Vétérinaires" mis à jour !');
+            } else if (type === 'collectionBanner') {
+                setFormData(prev => ({ ...prev, defaultCollectionBannerUrl: url }));
+                showToast('success', 'Bannière par défaut des collections mise à jour !');
             }
         } catch (error) {
             console.error(error);
@@ -186,6 +192,7 @@ const Settings = () => {
 
     const tabs = [
         { id: 'general', label: 'Boutique & Identité', icon: Building2, desc: 'Nom, marque et logo' },
+        { id: 'collections', label: 'Arrière-plan Collections', icon: Layers, desc: 'Bannière et photo des rayons' },
         { id: 'stock', label: 'Gestion des Stocks', icon: PackagePlus, desc: 'Ravitaillement vs Saisie directe' },
         { id: 'contact', label: 'Contact & Support', icon: PhoneCall, desc: 'Email, téléphone et adresse' },
         { id: 'hero', label: 'Médias d\'Accueil', icon: ImageIcon, desc: 'Bannières et vidéo hero' },
@@ -193,6 +200,9 @@ const Settings = () => {
         { id: 'promotions', label: 'Promos & Remises', icon: Flame, desc: 'Comportement des offres et badges' },
         { id: 'notifications', label: 'Alertes & Actions', icon: Bell, desc: 'Activer/Désactiver les alertes d\'actions' },
     ];
+
+    const currentTabObj = tabs.find(t => t.id === activeTab) || tabs[0];
+    const ActiveIcon = currentTabObj.icon;
 
     return (
         <AdminLayout filters={null}>
@@ -234,41 +244,129 @@ const Settings = () => {
                     </div>
                 )}
 
-                {/* ── ONGLETS DE NAVIGATION RESPONSIVES ── */}
-                <div className="flex overflow-x-auto no-scrollbar sm:grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-7 gap-2.5 sm:gap-3 pb-2 -mx-2 px-2 sm:mx-0 sm:px-0">
-                    {tabs.map(tab => {
-                        const Icon = tab.icon;
-                        const isActive = activeTab === tab.id;
-                        return (
-                            <button
-                                key={tab.id}
-                                onClick={() => setActiveTab(tab.id)}
-                                className={`flex items-center sm:items-start gap-3 sm:gap-4 p-3 sm:p-4 rounded-2xl border text-left transition-all shrink-0 sm:shrink min-w-[210px] sm:min-w-0 ${
-                                    isActive
-                                        ? 'bg-indigo-600 text-white border-indigo-600 shadow-xl shadow-indigo-500/20'
-                                        : isDark
-                                            ? 'bg-[#161926] border-white/5 text-gray-400 hover:text-white hover:bg-white/5'
-                                            : 'bg-white border-gray-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50 shadow-sm'
-                                }`}
-                            >
-                                <div className={`p-2 sm:p-2.5 rounded-xl shrink-0 ${
-                                    isActive 
-                                        ? 'bg-white/20 text-white' 
-                                        : isDark ? 'bg-white/5 text-indigo-400' : 'bg-indigo-50 text-indigo-600'
-                                }`}>
-                                    <Icon size={18} />
+                {/* ── ORGANISATION EN MENU DÉROULANT DES PARAMÈTRES ── */}
+                <div className="space-y-3">
+                    <div className="relative">
+                        {/* Bouton du menu déroulant principal */}
+                        <button
+                            type="button"
+                            onClick={() => setDropdownOpen(!dropdownOpen)}
+                            className={`w-full flex items-center justify-between p-4 sm:p-5 rounded-2xl sm:rounded-3xl border transition-all shadow-xl ${
+                                isDark 
+                                    ? 'bg-[#161926] border-white/10 hover:border-indigo-500/40 text-white' 
+                                    : 'bg-white border-gray-200 hover:border-indigo-500/40 text-slate-900 shadow-slate-200'
+                            }`}
+                        >
+                            <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+                                <div className="p-3 rounded-2xl bg-indigo-600 text-white shrink-0 shadow-lg shadow-indigo-600/30">
+                                    <ActiveIcon size={22} />
                                 </div>
-                                <div className="min-w-0">
-                                    <h4 className="font-black text-xs sm:text-sm uppercase tracking-wide truncate">{tab.label}</h4>
-                                    <p className={`text-[10px] sm:text-[11px] font-medium truncate mt-0.5 ${
-                                        isActive ? 'text-white/80' : 'text-gray-400'
-                                    }`}>
-                                        {tab.desc}
+                                <div className="text-left min-w-0">
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-indigo-500">
+                                            Rubrique active (cliquez pour dérouler)
+                                        </span>
+                                    </div>
+                                    <h3 className="font-black text-sm sm:text-lg uppercase tracking-wide truncate">
+                                        {currentTabObj.label}
+                                    </h3>
+                                    <p className="text-xs text-gray-400 font-medium truncate mt-0.5">
+                                        {currentTabObj.desc}
                                     </p>
                                 </div>
-                            </button>
-                        );
-                    })}
+                            </div>
+
+                            <div className="flex items-center gap-2 pl-3 shrink-0">
+                                <span className="hidden sm:inline text-xs font-bold text-indigo-500">
+                                    Menu déroulant
+                                </span>
+                                <div className="w-9 h-9 rounded-xl bg-white/5 flex items-center justify-center text-gray-400">
+                                    {dropdownOpen ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                                </div>
+                            </div>
+                        </button>
+
+                        {/* Volet déroulant au clic */}
+                        {dropdownOpen && (
+                            <div className={`absolute top-full left-0 right-0 mt-2 z-50 rounded-2xl sm:rounded-3xl border shadow-2xl p-2 sm:p-3 space-y-1 animate-in fade-in zoom-in-95 duration-200 max-h-96 overflow-y-auto ${
+                                isDark 
+                                    ? 'bg-[#121522] border-white/10 text-white' 
+                                    : 'bg-white border-gray-200 text-slate-800'
+                            }`}>
+                                <div className="px-3 py-2 text-[10px] font-black uppercase tracking-widest text-gray-500">
+                                    Choisissez une section de configuration :
+                                </div>
+                                <div className="grid sm:grid-cols-2 gap-1.5">
+                                    {tabs.map(tab => {
+                                        const Icon = tab.icon;
+                                        const isSelected = activeTab === tab.id;
+                                        return (
+                                            <button
+                                                key={tab.id}
+                                                type="button"
+                                                onClick={() => {
+                                                    setActiveTab(tab.id);
+                                                    setDropdownOpen(false);
+                                                }}
+                                                className={`flex items-center gap-3 p-3 rounded-2xl text-left transition-all w-full ${
+                                                    isSelected
+                                                        ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30'
+                                                        : isDark
+                                                            ? 'hover:bg-white/5 text-gray-300 hover:text-white'
+                                                            : 'hover:bg-slate-50 text-slate-700 hover:text-slate-900'
+                                                }`}
+                                            >
+                                                <div className={`p-2 rounded-xl shrink-0 ${
+                                                    isSelected 
+                                                        ? 'bg-white/20 text-white' 
+                                                        : isDark ? 'bg-white/5 text-indigo-400' : 'bg-indigo-50 text-indigo-600'
+                                                }`}>
+                                                    <Icon size={18} />
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                    <div className="font-bold text-xs uppercase tracking-wide truncate">
+                                                        {tab.label}
+                                                    </div>
+                                                    <div className={`text-[10px] truncate ${isSelected ? 'text-white/80' : 'text-gray-400'}`}>
+                                                        {tab.desc}
+                                                    </div>
+                                                </div>
+                                                {isSelected && <Check size={16} className="text-white shrink-0 ml-1" />}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Raccourcis de navigation rapides (pills déroulantes) */}
+                    <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1">
+                        {tabs.map(t => {
+                            const isSelected = activeTab === t.id;
+                            const Icon = t.icon;
+                            return (
+                                <button
+                                    key={t.id}
+                                    type="button"
+                                    onClick={() => {
+                                        setActiveTab(t.id);
+                                        setDropdownOpen(false);
+                                    }}
+                                    className={`px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all flex items-center gap-1.5 shrink-0 ${
+                                        isSelected
+                                            ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20'
+                                            : isDark
+                                                ? 'bg-[#161926] text-gray-400 hover:text-white border border-white/5'
+                                                : 'bg-white text-slate-600 hover:text-slate-900 border border-gray-200'
+                                    }`}
+                                >
+                                    <Icon size={12} />
+                                    <span>{t.label}</span>
+                                </button>
+                            );
+                        })}
+                    </div>
                 </div>
 
                 {/* ── CONTENU DE L'ONGLET SÉLECTIONNÉ ── */}
@@ -358,6 +456,100 @@ const Settings = () => {
                                                 </div>
                                             </div>
                                         </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* ONGLET ARRIÈRE-PLAN DES COLLECTIONS */}
+                            {activeTab === 'collections' && (
+                                <div className="space-y-6 animate-in fade-in duration-300">
+                                    <div className="border-b border-gray-100 dark:border-white/5 pb-4">
+                                        <div className="flex items-center gap-2 text-indigo-500 text-xs font-black uppercase tracking-widest mb-1">
+                                            <Layers size={16} /> Habillage & Bannières des Rayons
+                                        </div>
+                                        <h3 className="text-lg font-black uppercase tracking-wider text-slate-900 dark:text-white flex items-center gap-2">
+                                            Arrière-plan & Visuel des Collections
+                                        </h3>
+                                        <p className="text-xs text-gray-500 mt-1">
+                                            Définissez la photo d'arrière-plan globale pour vos rayons ou personnalisez chaque collection individuellement.
+                                        </p>
+                                    </div>
+
+                                    {/* CHAMP URL BANNIÈRE PAR DÉFAUT */}
+                                    <div className="space-y-3">
+                                        <label className="block text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400">
+                                            Photo d'Arrière-Plan par défaut des collections
+                                        </label>
+                                        <input
+                                            type="text"
+                                            name="defaultCollectionBannerUrl"
+                                            value={formData.defaultCollectionBannerUrl || ''}
+                                            onChange={handleChange}
+                                            placeholder="https://images.unsplash.com/... (URL de la photo)"
+                                            className="w-full bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-2xl p-4 text-sm font-bold outline-none focus:border-indigo-500 text-slate-900 dark:text-white"
+                                        />
+
+                                        {/* Suggestions de bannières */}
+                                        <div className="space-y-2 pt-1">
+                                            <span className="text-[10px] font-black uppercase text-gray-500 tracking-wider">
+                                                Suggestions thématiques prêtes à l'emploi :
+                                            </span>
+                                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                                                {[
+                                                    { label: 'Couveuses & Poussins', url: 'https://images.unsplash.com/photo-1582722872445-44dc5f7e3c8f?w=1200&q=80' },
+                                                    { label: 'Ferme & Volailles', url: 'https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?w=1200&q=80' },
+                                                    { label: 'Aliments & Granulés', url: 'https://images.unsplash.com/photo-1574943320219-553eb213f72d?w=1200&q=80' },
+                                                    { label: 'Matériel Vétérinaire', url: 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=1200&q=80' }
+                                                ].map((sug, i) => (
+                                                    <button
+                                                        key={i}
+                                                        type="button"
+                                                        onClick={() => setFormData(prev => ({ ...prev, defaultCollectionBannerUrl: sug.url }))}
+                                                        className={`p-2.5 rounded-xl border text-left transition-all text-xs font-bold ${
+                                                            formData.defaultCollectionBannerUrl === sug.url
+                                                                ? 'bg-indigo-600 text-white border-indigo-600'
+                                                                : 'bg-gray-50 dark:bg-white/5 border-gray-200 dark:border-white/10 text-gray-700 dark:text-gray-300 hover:border-indigo-500'
+                                                        }`}
+                                                    >
+                                                        {sug.label}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+
+                                        {/* Aperçu */}
+                                        {formData.defaultCollectionBannerUrl && (
+                                            <div className="mt-3 h-36 rounded-2xl overflow-hidden relative border border-gray-200 dark:border-white/10 shadow-lg">
+                                                <img
+                                                    src={formData.defaultCollectionBannerUrl}
+                                                    alt="Bannière collection"
+                                                    className="w-full h-full object-cover"
+                                                />
+                                                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent flex items-end p-4">
+                                                    <span className="text-white text-xs font-black uppercase tracking-wider">
+                                                        Aperçu visuel de l'arrière-plan des collections
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {/* Raccourci vers la gestion des collections */}
+                                    <div className="p-5 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                                        <div>
+                                            <h4 className="font-black text-sm text-indigo-400 uppercase tracking-wide">
+                                                Gérer vos collections individuellement
+                                            </h4>
+                                            <p className="text-xs text-gray-400 mt-0.5">
+                                                Attribuez une photo d'arrière-plan propre à chaque rayon (Couveuses, Poussins, etc.) et gérez les produits associés.
+                                            </p>
+                                        </div>
+                                        <a
+                                            href="/admin/collections"
+                                            className="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-black uppercase tracking-wider text-center shrink-0 transition-all shadow-lg shadow-indigo-600/30"
+                                        >
+                                            Ouvrir les Collections →
+                                        </a>
                                     </div>
                                 </div>
                             )}
