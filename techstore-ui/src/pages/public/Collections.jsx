@@ -91,48 +91,64 @@ const Collections = () => {
                             </span>
                         </div>
 
-                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
-                            {items.map((col) => (
-                                <Link
-                                    key={col.id}
-                                    to={`/collections/${col.slug}`}
-                                    className="group relative flex flex-col items-center text-center bg-white dark:bg-[#161926] rounded-[1.75rem] sm:rounded-[2rem] border border-gray-100 dark:border-white/5 p-5 sm:p-7 hover:shadow-2xl hover:shadow-indigo-500/10 hover:-translate-y-1.5 transition-all duration-500 overflow-hidden"
-                                >
-                                    {/* Halo au survol */}
-                                    <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/0 via-transparent to-indigo-500/0 group-hover:from-indigo-500/5 group-hover:to-purple-500/5 transition-all duration-500 pointer-events-none" />
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+                            {items.map((col) => {
+                                const hasBanner = Boolean(col.bannerUrl);
 
-                                    {/* Icône / Emoji */}
-                                    <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-br from-gray-50 to-gray-100 dark:from-white/5 dark:to-white/10 border border-gray-100 dark:border-white/5 flex items-center justify-center text-3xl sm:text-4xl mb-4 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-500 shadow-sm">
-                                        {col.iconUrl && col.iconUrl.startsWith('http') ? (
-                                            <img src={col.iconUrl} alt={col.name} className="w-9 h-9 sm:w-10 sm:h-10 object-contain" loading="lazy" />
+                                return (
+                                    <Link
+                                        key={col.id}
+                                        to={`/collections/${col.slug}`}
+                                        className="group relative flex flex-col justify-end text-left rounded-[2rem] border border-gray-100 dark:border-white/5 p-6 hover:shadow-2xl hover:shadow-indigo-500/20 hover:-translate-y-1.5 transition-all duration-500 overflow-hidden min-h-[220px]"
+                                    >
+                                        {/* Image d'arrière-plan (Background) */}
+                                        {hasBanner ? (
+                                            <>
+                                                <img
+                                                    src={col.bannerUrl}
+                                                    alt={col.name}
+                                                    className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                                                    loading="lazy"
+                                                />
+                                                <div className="absolute inset-0 bg-gradient-to-t from-[#0e111a] via-[#0e111a]/70 to-[#0e111a]/20 group-hover:via-[#0e111a]/60 transition-colors duration-500" />
+                                            </>
                                         ) : (
-                                            (col.iconUrl || '📦')
+                                            <div className="absolute inset-0 bg-gradient-to-br from-indigo-900/30 via-[#161926] to-[#0f121d]" />
                                         )}
-                                    </div>
 
-                                    {/* Nom */}
-                                    <h3 className="text-sm sm:text-base font-black text-apple-dark dark:text-white leading-tight group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
-                                        {col.name}
-                                    </h3>
+                                        {/* Icône / Emoji flottante */}
+                                        <div className="relative z-10 w-13 h-13 w-12 h-12 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-2xl sm:text-3xl mb-auto group-hover:scale-110 group-hover:rotate-6 transition-transform duration-500 shadow-xl">
+                                            {col.iconUrl && col.iconUrl.startsWith('http') ? (
+                                                <img src={col.iconUrl} alt={col.name} className="w-7 h-7 object-contain" loading="lazy" />
+                                            ) : (
+                                                (col.iconUrl || '📦')
+                                            )}
+                                        </div>
 
-                                    {/* Description (desktop) */}
-                                    {col.description && (
-                                        <p className="hidden sm:block text-[11px] text-gray-400 dark:text-gray-500 mt-2 leading-relaxed line-clamp-2">
-                                            {col.description}
-                                        </p>
-                                    )}
+                                        {/* Contenu textuel */}
+                                        <div className="relative z-10 mt-6">
+                                            <h3 className="text-base sm:text-lg font-black text-white leading-tight group-hover:text-indigo-400 transition-colors">
+                                                {col.name}
+                                            </h3>
 
-                                    {/* Nb produits */}
-                                    <span className="mt-3 text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-gray-400 bg-gray-50 dark:bg-white/5 px-3 py-1 rounded-full">
-                                        {col.productCount ?? 0} produit{(col.productCount ?? 0) > 1 ? 's' : ''}
-                                    </span>
+                                            {col.description && (
+                                                <p className="text-[11px] text-gray-300 mt-1 line-clamp-2 leading-relaxed font-normal">
+                                                    {col.description}
+                                                </p>
+                                            )}
 
-                                    {/* CTA au survol */}
-                                    <span className="mt-4 inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-indigo-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                                        Explorer <ArrowRight size={11} />
-                                    </span>
-                                </Link>
-                            ))}
+                                            <div className="flex items-center justify-between mt-3 pt-3 border-t border-white/10">
+                                                <span className="text-[9px] font-black uppercase tracking-widest text-indigo-300 bg-white/10 px-2.5 py-1 rounded-full backdrop-blur-sm">
+                                                    {col.productCount ?? 0} produit{(col.productCount ?? 0) > 1 ? 's' : ''}
+                                                </span>
+                                                <span className="inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-wider text-white group-hover:translate-x-1 transition-transform">
+                                                    Découvrir <ArrowRight size={11} className="text-indigo-400" />
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </Link>
+                                );
+                            })}
                         </div>
                     </section>
                 );

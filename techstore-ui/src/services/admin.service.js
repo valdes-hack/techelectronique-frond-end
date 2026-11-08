@@ -298,6 +298,19 @@ const AdminService = {
         return response.data;
     },
 
+    // ==========================================
+    // 📁 UPLOAD DE MÉDIAS (Local / Cloudinary)
+    // ==========================================
+    uploadMedia: async (file) => {
+        const formData = new FormData();
+        formData.append('file', file);
+        const response = await api.post('/settings/upload-media', formData, {
+            headers: { 'Content-Type': 'multipart/form-data' }
+        });
+        return response.data?.data || response.data;
+    }
+    },
+
     bulkDeleteNotifications: async (ids) => {
         const response = await api.delete('/admin/notifications/bulk-delete', { data: ids });
         return response.data;

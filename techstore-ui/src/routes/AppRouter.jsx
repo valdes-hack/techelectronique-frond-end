@@ -76,8 +76,9 @@ const CollectionDetail = lazy(() => import('../pages/public/CollectionDetail'));
 const InfoPage = lazy(() => import('../pages/public/InfoPage'));
 
 // ─── PAGES CLIENT (lazy) ─────────────────────────────────────────────────────
-const Profile  = lazy(() => import('../pages/client/Profile'));
-const MyOrders = lazy(() => import('../pages/client/MyOrders'));
+const Profile     = lazy(() => import('../pages/client/Profile'));
+const MyOrders    = lazy(() => import('../pages/client/MyOrders'));
+const OrderDetail = lazy(() => import('../pages/client/OrderDetail'));
 
 // ─── PAGES ADMIN (lazy) ──────────────────────────────────────────────────────
 const Dashboard      = lazy(() => import('../pages/admin/Dashboard'));
@@ -112,6 +113,8 @@ const AppRouter = () => {
             {/* 2. ESPACE CLIENT */}
             <Route path="/profile" element={<PrivateRoute><Suspense fallback={<PageSkeleton />}><Profile /></Suspense></PrivateRoute>} />
             <Route path="/my-orders" element={<PrivateRoute><Suspense fallback={<PageSkeleton />}><MyOrders /></Suspense></PrivateRoute>} />
+            <Route path="/my-orders/:id" element={<PrivateRoute><Suspense fallback={<PageSkeleton />}><OrderDetail /></Suspense></PrivateRoute>} />
+            <Route path="/orders/:id" element={<PrivateRoute><Suspense fallback={<PageSkeleton />}><OrderDetail /></Suspense></PrivateRoute>} />
 
             {/* 3. CENTRE DE CONTRÔLE ADMIN AVEC SUSPENSE DÉDIÉ (SIDEBAR PERSISTANTE) */}
             <Route path="/admin" element={<AdminRoute><Suspense fallback={<AdminSkeleton />}><Dashboard /></Suspense></AdminRoute>} />

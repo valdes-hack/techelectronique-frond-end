@@ -2,6 +2,7 @@ import React from 'react';
 import Navbar from './Navbar';
 import Footer from './Footer';
 import CartDrawer from '../cart/CartDrawer';
+import ChatWidget from '../chat/ChatWidget';
 import { motion } from 'framer-motion';
 
 const Layout = ({ children }) => {
@@ -24,6 +25,9 @@ const Layout = ({ children }) => {
             >
                 {children}
             </motion.main>
+
+            {/* Bouton flottant de contact & consultation client */}
+            <ChatWidget />
 
             {/* Pied de page */}
             <Footer />

@@ -53,34 +53,55 @@ const MyOrders = () => {
                     {orders.map((o) => (
                         <div 
                             key={o.id}
-                            className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-xl hover:shadow-2xl transition-all cursor-pointer group flex flex-col md:flex-row justify-between items-center"
+                            onClick={() => navigate(`/my-orders/${o.id}`)}
+                            className="bg-white dark:bg-[#161926] p-6 sm:p-8 rounded-[2.5rem] border border-slate-100 dark:border-white/5 shadow-xl hover:shadow-2xl hover:border-indigo-500/20 transition-all cursor-pointer group flex flex-col md:flex-row justify-between items-center gap-6"
                         >
-                            <div className="flex items-center space-x-8 w-full">
+                            <div className="flex items-center space-x-6 w-full">
                                 {/* Petite icône avec effet selon statut */}
-                                <div className={`p-5 rounded-3xl ${o.status === 'LIVRE' ? 'bg-green-500/10 text-green-500' : 'bg-indigo-500/10 text-indigo-500'}`}>
-                                    <Package size={32} />
+                                <div className={`p-4 sm:p-5 rounded-3xl shrink-0 ${
+                                    o.status === 'LIVRE' || o.status === 'COMPLETED'
+                                        ? 'bg-emerald-500/10 text-emerald-500' 
+                                        : 'bg-indigo-500/10 text-indigo-500'
+                                }`}>
+                                    <Package size={30} />
                                 </div>
-                                <div className="flex-1">
+                                <div className="flex-1 min-w-0">
                                     <div className="flex items-center space-x-3 mb-2">
-                                        <p className="text-xs font-black text-slate-300 uppercase tracking-widest">N° {o.orderNumber || o.id}</p>
-                                        <span className={`text-[8px] font-black px-2 py-0.5 rounded-md ${o.status === 'EN_ATTENTE' ? 'bg-orange-100 text-orange-600' : 'bg-green-100 text-green-600'}`}>
-                                            {o.status}
+                                        <p className="text-xs font-black text-slate-400 font-mono tracking-widest truncate">
+                                            N° {o.orderNumber || o.id}
+                                        </p>
+                                        <span className={`text-[9px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full ${
+                                            o.status === 'LIVRE' || o.status === 'COMPLETED'
+                                                ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300' 
+                                                : 'bg-indigo-100 text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-300'
+                                        }`}>
+                                            {o.status || 'Confirmée'}
                                         </span>
                                     </div>
-                                    <p className="font-black text-2xl text-slate-900 leading-none">
-                                        {o.totalAmount.toLocaleString()} <span className="text-sm font-medium">FCFA</span>
+                                    <p className="font-black text-2xl text-slate-900 dark:text-white leading-none">
+                                        {(o.totalAmount || 0).toLocaleString('fr-FR')} <span className="text-sm font-medium">FCFA</span>
                                     </p>
-                                    <div className="flex items-center text-[10px] mt-4 text-slate-400 space-x-4">
-                                        <span className="flex items-center"><Clock size={12} className="mr-1"/> {o.createdAt?.split('T')[0]}</span>
-                                        <span className="flex items-center"><MapPin size={12} className="mr-1"/> {o.shippingAddressLabel}</span>
+                                    <div className="flex flex-wrap items-center text-[10px] mt-4 text-slate-400 gap-4">
+                                        <span className="flex items-center"><Clock size={12} className="mr-1"/> {o.createdAt ? new Date(o.createdAt).toLocaleDateString('fr-FR') : 'Date récente'}</span>
+                                        {o.shippingAddressLabel && (
+                                            <span className="flex items-center truncate max-w-xs"><MapPin size={12} className="mr-1 shrink-0"/> {o.shippingAddressLabel}</span>
+                                        )}
                                     </div>
                                 </div>
                             </div>
 
-                            <button className="mt-8 md:mt-0 w-full md:w-auto flex items-center justify-center space-x-2 bg-slate-900 text-white px-6 py-4 rounded-full font-bold group-hover:bg-indigo-600 transition-all shadow-lg">
-                                <span>Voir détail</span>
-                                <ExternalLink size={16} />
-                            </button>
+                            <div className="flex items-center gap-3 w-full md:w-auto shrink-0">
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        navigate(`/my-orders/${o.id}`);
+                                    }}
+                                    className="w-full md:w-auto flex items-center justify-center space-x-2 bg-slate-900 hover:bg-indigo-600 dark:bg-white/10 dark:hover:bg-indigo-600 text-white px-6 py-3.5 rounded-2xl font-bold transition-all shadow-lg text-xs uppercase tracking-wider"
+                                >
+                                    <span>Facture & Détail</span>
+                                    <ExternalLink size={14} />
+                                </button>
+                            </div>
                         </div>
                     ))}
                 </div>

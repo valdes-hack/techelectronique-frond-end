@@ -1,8 +1,8 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import {
     Plus, Pencil, Trash2, X, Search, Package, PackagePlus, PackageMinus,
     LayoutGrid, Eye, EyeOff, Loader2, Image as ImageIcon, Sparkles,
-    Filter, Check, ArrowRight, Layers, Tag, HelpCircle
+    Filter, Check, ArrowRight, Layers, Tag, HelpCircle, Upload
 } from 'lucide-react';
 import CollectionService from '../../services/collection.service';
 import AdminService from '../../services/admin.service';
@@ -45,6 +45,43 @@ const CollectionsAdminContent = () => {
     const [editing, setEditing] = useState(null);
     const [form, setForm] = useState(EMPTY_FORM);
     const [saving, setSaving] = useState(false);
+    const [uploadingBanner, setUploadingBanner] = useState(false);
+    const [uploadingIcon, setUploadingIcon] = useState(false);
+
+    const bannerFileInputRef = useRef(null);
+    const iconFileInputRef = useRef(null);
+
+    const handleBannerFileUpload = async (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        setUploadingBanner(true);
+        try {
+            const url = await AdminService.uploadMedia(file);
+            setForm(prev => ({ ...prev, bannerUrl: url }));
+            showToast({ type: 'success', title: 'Photo uploadée', message: 'Photo d\'arrière-plan enregistrée avec succès !' });
+        } catch (err) {
+            showToast({ type: 'error', title: 'Échec upload', message: "Impossible d'uploader l'image depuis l'ordinateur." });
+        } finally {
+            setUploadingBanner(false);
+            if (e.target) e.target.value = null;
+        }
+    };
+
+    const handleIconFileUpload = async (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        setUploadingIcon(true);
+        try {
+            const url = await AdminService.uploadMedia(file);
+            setForm(prev => ({ ...prev, iconUrl: url }));
+            showToast({ type: 'success', title: 'Icône uploadée', message: 'Icône de collection enregistrée avec succès !' });
+        } catch (err) {
+            showToast({ type: 'error', title: 'Échec upload', message: "Impossible d'uploader l'icône depuis l'ordinateur." });
+        } finally {
+            setUploadingIcon(false);
+            if (e.target) e.target.value = null;
+        }
+    };
 
     // ── Filtres de la liste des collections ──
     const [statusFilter, setStatusFilter] = useState('ALL'); // 'ALL' | 'ACTIVE' | 'INACTIVE'
@@ -586,14 +623,37 @@ const CollectionsAdminContent = () => {
 
                             {/* ── PHOTO D'ARRIÈRE-PLAN (BANNIÈRE) ── */}
                             <div className="bg-[#111421] border border-white/5 rounded-2xl p-4 space-y-3">
-                                <label className="block text-[10px] font-black uppercase tracking-widest text-indigo-400 flex items-center gap-2">
-                                    <ImageIcon size={14} /> Photo / Image d'arrière-plan de la collection
-                                </label>
+                                <div className="flex items-center justify-between">
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-indigo-400 flex items-center gap-2">
+                                        <ImageIcon size={14} /> Photo / Image d'arrière-plan de la collection
+                                    </label>
+                                    
+                                    {/* Bouton Upload en Local */}
+                                    <div>
+                                        <input
+                                            type="file"
+                                            ref={bannerFileInputRef}
+                                            accept="image/*"
+                                            className="hidden"
+                                            onChange={handleBannerFileUpload}
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => bannerFileInputRef.current?.click()}
+                                            disabled={uploadingBanner}
+                                            className="px-3 py-1.5 rounded-xl bg-indigo-600/20 hover:bg-indigo-600 text-indigo-300 hover:text-white text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5 transition-all border border-indigo-500/30"
+                                        >
+                                            {uploadingBanner ? <Loader2 size={12} className="animate-spin" /> : <Upload size={12} />}
+                                            <span>{uploadingBanner ? 'Upload...' : 'Uploader en local'}</span>
+                                        </button>
+                                    </div>
+                                </div>
+
                                 <input
                                     type="text"
                                     value={form.bannerUrl}
                                     onChange={(e) => setForm({ ...form, bannerUrl: e.target.value })}
-                                    placeholder="https://images.unsplash.com/... (ou choisissez une suggestion ci-dessous)"
+                                    placeholder="https://... (URL ou cliquez sur 'Uploader en local')"
                                     className="w-full bg-[#161926] border border-white/10 rounded-2xl px-4 py-2.5 text-xs text-white placeholder-gray-600 focus:outline-none focus:border-indigo-500"
                                 />
                                 
@@ -622,10 +682,19 @@ const CollectionsAdminContent = () => {
 
                                 {/* Prévisualisation bannière */}
                                 {form.bannerUrl && (
-                                    <div className="h-24 rounded-xl overflow-hidden relative border border-white/10">
+                                    <div className="h-28 rounded-xl overflow-hidden relative border border-white/10 group/prev">
                                         <img src={form.bannerUrl} alt="Aperçu" className="w-full h-full object-cover" />
-                                        <div className="absolute inset-0 bg-black/40 flex items-center justify-center text-white text-[11px] font-bold">
-                                            Aperçu de la bannière
+                                        <div className="absolute inset-0 bg-black/40 flex items-center justify-between p-3">
+                                            <span className="text-white text-[11px] font-bold">
+                                                Aperçu de la bannière d'arrière-plan
+                                            </span>
+                                            <button
+                                                type="button"
+                                                onClick={() => setForm({ ...form, bannerUrl: '' })}
+                                                className="px-2.5 py-1 rounded-lg bg-red-500 text-white text-[10px] font-bold"
+                                            >
+                                                Supprimer
+                                            </button>
                                         </div>
                                     </div>
                                 )}
@@ -634,9 +703,26 @@ const CollectionsAdminContent = () => {
                             {/* Icône & Emojis rapides */}
                             <div className="grid sm:grid-cols-3 gap-4 items-start">
                                 <div>
-                                    <label className="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1.5">
-                                        Icône (Emoji ou URL)
-                                    </label>
+                                    <div className="flex items-center justify-between mb-1.5">
+                                        <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">
+                                            Icône (Emoji ou URL)
+                                        </label>
+                                        <input
+                                            type="file"
+                                            ref={iconFileInputRef}
+                                            accept="image/*"
+                                            className="hidden"
+                                            onChange={handleIconFileUpload}
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => iconFileInputRef.current?.click()}
+                                            disabled={uploadingIcon}
+                                            className="text-[9px] font-black uppercase text-indigo-400 hover:underline flex items-center gap-1"
+                                        >
+                                            <Upload size={10} /> Local
+                                        </button>
+                                    </div>
                                     <input
                                         type="text"
                                         value={form.iconUrl}

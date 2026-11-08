@@ -124,37 +124,49 @@ const CollectionDetail = () => {
                 <span className="text-apple-dark dark:text-white truncate">{collection?.name || '…'}</span>
             </nav>
 
-            {/* ── Bannière de la collection ── */}
+            {/* ── Bannière de la collection avec Background ── */}
             {collection && (
-                <header className="relative overflow-hidden bg-white dark:bg-[#161926] rounded-[2.5rem] border border-gray-100 dark:border-white/5 p-8 sm:p-12 mb-10">
-                    <div className="absolute -top-24 -right-24 w-72 h-72 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
-                    <div className="absolute -bottom-24 -left-24 w-72 h-72 bg-purple-500/10 rounded-full blur-3xl pointer-events-none" />
-                    <div className="relative flex flex-col sm:flex-row items-start sm:items-center gap-6">
-                        <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-[1.75rem] bg-gradient-to-br from-gray-50 to-gray-100 dark:from-white/5 dark:to-white/10 border border-gray-100 dark:border-white/5 flex items-center justify-center text-5xl sm:text-6xl shrink-0 shadow-sm">
+                <header className="relative overflow-hidden rounded-[2.5rem] border border-gray-100 dark:border-white/5 p-8 sm:p-14 mb-10 min-h-[220px] flex items-center shadow-xl">
+                    {/* Background de la collection */}
+                    {collection.bannerUrl ? (
+                        <>
+                            <img
+                                src={collection.bannerUrl}
+                                alt={collection.name}
+                                className="absolute inset-0 w-full h-full object-cover"
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/75 to-black/40 backdrop-blur-[2px]" />
+                        </>
+                    ) : (
+                        <div className="absolute inset-0 bg-gradient-to-br from-indigo-950 via-[#161926] to-[#0e111a]" />
+                    )}
+
+                    <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center gap-6 sm:gap-8 w-full">
+                        <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-[1.75rem] bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-4xl sm:text-5xl shrink-0 shadow-2xl">
                             {collection.iconUrl && collection.iconUrl.startsWith('http') ? (
                                 <img src={collection.iconUrl} alt={collection.name} className="w-12 h-12 sm:w-14 sm:h-14 object-contain" />
                             ) : (
                                 (collection.iconUrl || '📦')
                             )}
                         </div>
-                        <div className="min-w-0">
-                            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-indigo-500 mb-2">Collection</p>
-                            <h1 className="text-3xl sm:text-5xl font-black italic tracking-tighter text-apple-dark dark:text-white leading-none">
+                        <div className="min-w-0 flex-1">
+                            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-indigo-400 mb-2">Rayon PEOC</p>
+                            <h1 className="text-3xl sm:text-5xl font-black italic tracking-tighter text-white leading-none">
                                 {collection.name}
                             </h1>
                             {collection.description && (
-                                <p className="text-gray-500 dark:text-gray-400 mt-3 max-w-xl font-medium text-sm sm:text-base">
+                                <p className="text-gray-200 mt-3 max-w-2xl font-medium text-sm sm:text-base leading-relaxed">
                                     {collection.description}
                                 </p>
                             )}
                             <div className="flex flex-wrap items-center gap-2 mt-4">
-                                <span className="inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-indigo-500 bg-indigo-500/10 px-3 py-1.5 rounded-full">
-                                    <Package size={11} />
-                                    {totalElements} produit{totalElements > 1 ? 's' : ''}
+                                <span className="inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-white bg-white/15 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-white/10">
+                                    <Package size={11} className="text-indigo-400" />
+                                    {totalElements} produit{totalElements > 1 ? 's' : ''} disponible{totalElements > 1 ? 's' : ''}
                                 </span>
-                                <span className="inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-emerald-500 bg-emerald-500/10 px-3 py-1.5 rounded-full">
+                                <span className="inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-emerald-300 bg-emerald-500/20 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-emerald-500/30">
                                     <Sparkles size={11} />
-                                    Sélection PEOC
+                                    Qualité PEOC Garantie
                                 </span>
                             </div>
                         </div>
