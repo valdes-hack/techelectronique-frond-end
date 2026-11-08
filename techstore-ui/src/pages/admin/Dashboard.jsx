@@ -129,8 +129,8 @@ const Dashboard = () => {
                             <h3 className={`text-base sm:text-xl font-black italic ${isDark ? 'text-white' : 'text-slate-800'}`}>Performance des Rayons</h3>
                             <button onClick={() => navigate('/admin/categories')} className="text-[10px] font-black text-indigo-500 uppercase hover:underline tracking-widest">Voir détails</button>
                         </div>
-                        <div className="h-[250px] sm:h-[300px] w-full min-w-0">
-                            <ResponsiveContainer width="100%" height="100%">
+                        <div className="h-[250px] sm:h-[300px] w-full min-w-0 min-h-[250px]">
+                            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={250}>
                                 <BarChart data={data?.salesBreakdownByCategory}>
                                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)"} />
                                     <XAxis dataKey="categoryName" axisLine={false} tickLine={false} tick={{fill: '#6b7280', fontSize: 10}} />
