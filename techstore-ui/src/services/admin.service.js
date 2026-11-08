@@ -308,7 +308,6 @@ const AdminService = {
             headers: { 'Content-Type': 'multipart/form-data' }
         });
         return response.data?.data || response.data;
-    }
     },
 
     bulkDeleteNotifications: async (ids) => {
